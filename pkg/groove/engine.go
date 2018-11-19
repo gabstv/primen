@@ -5,6 +5,7 @@ import (
 
 	"github.com/gabstv/ecs"
 	"github.com/gabstv/groove/pkg/groove/common"
+	"github.com/hajimehoshi/ebiten"
 )
 
 // EbitenScreen = ebiten_screen
@@ -118,8 +119,12 @@ func (e *Engine) Default() *ecs.World {
 	return e.defaultWorld
 }
 
-/*func (e *engine) loop(screen *ebiten.Image) error {
-	e.vars.Set("ebiten_screen", screen)
-	e.worldManager.Step(ebiten.IsDrawingSkipped())
+func (e *Engine) Run() error {
+	width, height, scale, title := e.options.Width, e.options.Height, e.options.Scale, e.options.Title
+	return ebiten.Run(e.loop, width, height, scale, title)
+}
+
+func (e *Engine) loop(screen *ebiten.Image) error {
+	e.dmap.Set(EbitenScreen, screen)
 	return nil
-}*/
+}
