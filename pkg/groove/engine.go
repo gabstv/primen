@@ -1,7 +1,9 @@
 package groove
 
 import (
+	"sort"
 	"sync"
+	"time"
 
 	"github.com/gabstv/ecs"
 	"github.com/gabstv/groove/pkg/groove/common"
@@ -14,7 +16,8 @@ const EbitenScreen = "ebiten_screen"
 // Engine is what controls the ECS of groove.
 type Engine struct {
 	lock         sync.Mutex
-	worlds       []*ecs.World
+	lt           time.Time
+	worlds       []worldContainer
 	defaultWorld *ecs.World
 	dmap         common.Dict
 	options      EngineOptions
@@ -74,7 +77,12 @@ func NewEngine(v *NewEngineInput) *Engine {
 	// assign the default systems and controllers
 
 	e := &Engine{
-		worlds:       []*ecs.World{dw},
+		worlds: []worldContainer{
+			worldContainer{
+				priority: 0,
+				world:    dw,
+			},
+		},
 		defaultWorld: dw,
 		options:      v.Options(),
 	}
@@ -82,14 +90,20 @@ func NewEngine(v *NewEngineInput) *Engine {
 	return e
 }
 
-// AddWorld adds a world to the engine
-func (e *Engine) AddWorld(w *ecs.World) {
+// AddWorld adds a world to the engine.
+// The priority is used to sort world execution, from hight to low.
+func (e *Engine) AddWorld(w *ecs.World, priority int) {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 	if e.worlds == nil {
-		e.worlds = make([]*ecs.World, 0, 2)
+		e.worlds = make([]worldContainer, 0, 2)
 	}
-	e.worlds = append(e.worlds, w)
+	e.worlds = append(e.worlds, worldContainer{
+		priority: priority,
+		world:    w,
+	})
+	// sort by priority
+	sort.Sort(sortedWorldContainer(e.worlds))
 }
 
 // RemoveWorld removes a *ecs.World
@@ -98,8 +112,9 @@ func (e *Engine) RemoveWorld(w *ecs.World) bool {
 	defer e.lock.Unlock()
 	wi := -1
 	for k, ww := range e.worlds {
-		if ww == w {
+		if ww.world == w {
 			wi = k
+			ww.world = nil
 			break
 		}
 	}
@@ -119,12 +134,36 @@ func (e *Engine) Default() *ecs.World {
 	return e.defaultWorld
 }
 
+// Run boots up the game engine
 func (e *Engine) Run() error {
+	e.lock.Lock()
 	width, height, scale, title := e.options.Width, e.options.Height, e.options.Scale, e.options.Title
+	e.lt = time.Now()
+	e.lock.Unlock()
 	return ebiten.Run(e.loop, width, height, scale, title)
 }
 
 func (e *Engine) loop(screen *ebiten.Image) error {
 	e.dmap.Set(EbitenScreen, screen)
+	e.lock.Lock()
+	now := time.Now()
+	ld := now.Sub(e.lt).Seconds()
+	e.lt = now
+	e.dmap.Set(TagDelta, ld)
+	worlds := e.worlds
+	e.lock.Unlock()
+
+	for _, w := range worlds {
+		w.world.RunWithoutTag(WorldTagDraw, ld)
+	}
+
+	if ebiten.IsDrawingSkipped() {
+		return nil
+	}
+
+	for _, w := range worlds {
+		w.world.RunWithTag(WorldTagDraw, ld)
+	}
+
 	return nil
 }
