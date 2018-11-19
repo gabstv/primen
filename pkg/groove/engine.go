@@ -167,3 +167,13 @@ func (e *Engine) loop(screen *ebiten.Image) error {
 
 	return nil
 }
+
+// Get an item from the global map
+func (e *Engine) Get(key string) interface{} {
+	return e.dmap.Get(key)
+}
+
+// Set an item to the global map
+func (e *Engine) Set(key string, value interface{}) {
+	e.dmap.Set(key, value)
+}
