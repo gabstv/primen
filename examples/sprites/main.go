@@ -40,16 +40,16 @@ func main() {
 			Image: ebimg,
 			X: 128,
 			Y: 64,
-			Angle: math.Pi/4,
+			Angle: 0,
 			ScaleX: 2,
 			ScaleY: 2,
 			Bounds: image.Rect(16,16,32,32),
 		})
-		dw.NewSystem(0, func(dt float64, v *ecs.View){
+		dw.NewSystem(0, func(dt float64, v *ecs.View, s *ecs.System){
 			matches := v.Matches()
 			for _, m := range matches {
 				sprite := m.Components[sc].(*gcs.Sprite)
-				sprite.Angle = sprite.Angle + (math.Pi * dt)
+				sprite.Angle = sprite.Angle + (math.Pi * dt * 0.0125)
 			}
 		}, sc)
 	//}()

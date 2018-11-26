@@ -37,7 +37,10 @@ type Transform struct {
 	M ebiten.GeoM
 
 	// priv
-	lastTick uint64
+	lastTick    uint64
+	globalX     float64
+	globalY     float64
+	globalAngle float64
 }
 
 // TransformComponent will get the registered transform component of the world.
@@ -93,15 +96,34 @@ func resolveTransform(t *Transform, tick uint64) {
 	if t.Parent != nil && t.Parent.lastTick != tick {
 		resolveTransform(t.Parent, tick)
 	}
-	var m0 ebiten.GeoM
+	var pX float64
+	var pY float64
+	var pA float64
+	//var m0 ebiten.GeoM
 	if t.Parent != nil {
-		m0 = t.Parent.M
+		//	m0 = t.Parent.M
+		pX = t.Parent.globalX
+		pY = t.Parent.globalY
 	}
-	//TODO: test
+	//TODO: fix
 	m1 := t.M
 	m1.Reset()
-	m1.Concat(m0)
-	m1.Translate(t.X, t.Y)
+	t.globalX = 0
+	t.globalY = 0
+	t.globalAngle = 0
+
+	if pX != 0 || pY != 0 {
+		m1.Translate(pX, pY)
+	}
+
+	if pA != 0 {
+		m1.Rotate(pA)
+	}
+
+	//m1.Concat(m0)
+	t.globalX, t.globalY = m1.Apply(t.X, t.Y)
+	t.globalAngle = pA + t.Angle
+	//m1.Translate(t.X, t.Y)
 	m1.Rotate(t.Angle)
 	t.M = m1
 	t.lastTick = tick
