@@ -10,8 +10,11 @@ import (
 	"github.com/hajimehoshi/ebiten"
 )
 
-// EbitenScreen = ebiten_screen
+// EbitenScreen = "ebiten_screen"
 const EbitenScreen = "ebiten_screen"
+
+// EngineKey = "engine"
+const EngineKey = "engine"
 
 // Engine is what controls the ECS of groove.
 type Engine struct {
@@ -86,6 +89,10 @@ func NewEngine(v *NewEngineInput) *Engine {
 		defaultWorld: dw,
 		options:      v.Options(),
 	}
+	dw.Set(EngineKey, e)
+	// start default components and systems
+	startDefaultComponents(e)
+	startDefaultSystems(e)
 
 	return e
 }
@@ -102,6 +109,7 @@ func (e *Engine) AddWorld(w *ecs.World, priority int) {
 		priority: priority,
 		world:    w,
 	})
+	w.Set(EngineKey, e)
 	// sort by priority
 	sort.Sort(sortedWorldContainer(e.worlds))
 }
