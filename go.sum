@@ -1,5 +1,7 @@
 github.com/gabstv/ecs v1.0.3 h1:xNjwnsWbZJARRAdK3q92lsQU/Nr5yx9nnxTB2qWeHvM=
 github.com/gabstv/ecs v1.0.3/go.mod h1:Qc07SPqvkvQ90oXv2/+pT4FY9mI/P5B8h+jeIHABojU=
+github.com/gabstv/ecs v1.1.0 h1:WcR0p6+v/N0quKxcO+ENhVvBX36gNWvPNfP6bF8DHA4=
+github.com/gabstv/ecs v1.1.0/go.mod h1:Qc07SPqvkvQ90oXv2/+pT4FY9mI/P5B8h+jeIHABojU=
 github.com/go-gl/gl v0.0.0-20180407155706-68e253793080 h1:pNxZva3052YM+z2p1aP08FgaTE2NzrRJZ5BHJCmKLzE=
 github.com/go-gl/gl v0.0.0-20180407155706-68e253793080/go.mod h1:482civXOzJJCPzJ4ZOX/pwvXBWSnzD4OKMdH4ClKGbk=
 github.com/go-gl/glfw v0.0.0-20181008143348-547915429f42 h1:1RndEY7xnarV63RI5JfPW5oL/fCZdnSo8rf4ogPLw5E=

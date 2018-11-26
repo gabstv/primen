@@ -60,7 +60,7 @@ func SpriteComponent(w *ecs.World) *ecs.Component {
 	if c == nil {
 		var err error
 		c, err = w.NewComponent(ecs.NewComponentInput{
-			Name: "groove.graphics.Sprite",
+			Name: "groove.gcs.Sprite",
 			ValidateDataFn: func(data interface{}) bool {
 				_, ok := data.(*Sprite)
 				return ok
@@ -90,7 +90,7 @@ func SpriteSystem(w *ecs.World) *ecs.System {
 }
 
 // SpriteSystemExec is the main function of the SpriteSystem
-func SpriteSystemExec(dt float64, v *ecs.View) {
+func SpriteSystemExec(dt float64, v *ecs.View, s *ecs.System) {
 	world := v.World()
 	matches := v.Matches()
 	spritecomp := spriteWC.Get(world)
