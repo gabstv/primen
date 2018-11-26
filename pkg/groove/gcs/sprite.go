@@ -1,4 +1,4 @@
-package graphics
+package gcs
 
 import (
 	"image"
@@ -32,9 +32,11 @@ func init() {
 
 // Sprite is the data of a sprite component.
 type Sprite struct {
-	X     float64
-	Y     float64
-	Angle float64
+	X      float64
+	Y      float64
+	Angle  float64
+	ScaleX float64
+	ScaleY float64
 	// Bounds for drawing subimage
 	Bounds image.Rectangle
 
@@ -112,9 +114,13 @@ func SpriteSystemExec(dt float64, v *ecs.View) {
 		if sprite.lastBounds != sprite.Bounds {
 			sprite.lastBounds = sprite.Bounds
 			sprite.lastSubImage = sprite.Image.SubImage(sprite.lastBounds).(*ebiten.Image)
+			w, h := sprite.lastSubImage.Size()
+			sprite.imageWidth = float64(w)
+			sprite.imageHeight = float64(h)
 		}
 		opt.GeoM.Reset()
 		opt.GeoM.Translate(-sprite.imageWidth/2, -sprite.imageHeight/2)
+		opt.GeoM.Scale(sprite.ScaleX, sprite.ScaleY)
 		opt.GeoM.Rotate(sprite.Angle)
 		opt.GeoM.Translate(sprite.imageWidth/2, sprite.imageHeight/2)
 		opt.GeoM.Translate(sprite.X, sprite.Y)

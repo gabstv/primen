@@ -1,13 +1,13 @@
 package main
 
 import (
-	"github.com/gabstv/ecs"
 	"math"
 	_ "image/png"
 	"image"
-
+	
+	"github.com/gabstv/ecs"
 	"github.com/gabstv/groove/pkg/groove"
-	"github.com/gabstv/groove/pkg/groove/graphics"
+	"github.com/gabstv/groove/pkg/groove/gcs"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
@@ -24,27 +24,31 @@ func main() {
 	
 	//go func(){
 		dw := engine.Default()
-		sc := graphics.SpriteComponent(dw)
+		sc := gcs.SpriteComponent(dw)
 		e := dw.NewEntity()
-		dw.AddComponentToEntity(e, sc, &graphics.Sprite{
+		dw.AddComponentToEntity(e, sc, &gcs.Sprite{
 			Image: ebimg,
 			X: 64,
 			Y: 64,
 			Angle: math.Pi/2,
+			ScaleX: 1,
+			ScaleY: 1,
 			Bounds: image.Rect(0,0,16,16),
 		})
 		e2 := dw.NewEntity()
-		dw.AddComponentToEntity(e2, sc, &graphics.Sprite{
+		dw.AddComponentToEntity(e2, sc, &gcs.Sprite{
 			Image: ebimg,
 			X: 128,
 			Y: 64,
 			Angle: math.Pi/4,
+			ScaleX: 2,
+			ScaleY: 2,
 			Bounds: image.Rect(16,16,32,32),
 		})
 		dw.NewSystem(0, func(dt float64, v *ecs.View){
 			matches := v.Matches()
 			for _, m := range matches {
-				sprite := m.Components[sc].(*graphics.Sprite)
+				sprite := m.Components[sc].(*gcs.Sprite)
 				sprite.Angle = sprite.Angle + (math.Pi * dt)
 			}
 		}, sc)
