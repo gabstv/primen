@@ -64,7 +64,7 @@ type moveCompData struct {
 	YSum   float64
 }
 
-func initEngineSystemExec(dt float64, view *ecs.View) {
+func initEngineSystemExec(dt float64, view *ecs.View, sys *ecs.System) {
 	img := engine.Get(groove.EbitenScreen).(*ebiten.Image)
 	for _, v := range view.Matches() {
 		data := v.Components[hellocomp].(*initEngineData)
@@ -72,7 +72,7 @@ func initEngineSystemExec(dt float64, view *ecs.View) {
 	}
 }
 
-func moveSysExec(dt float64, view *ecs.View) {
+func moveSysExec(dt float64, view *ecs.View, sys *ecs.System) {
 	for _, v := range view.Matches() {
 		iedata := v.Components[hellocomp].(*initEngineData)
 		movedata := v.Components[movecomp].(*moveCompData)

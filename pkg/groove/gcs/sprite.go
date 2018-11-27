@@ -15,12 +15,10 @@ const (
 )
 
 var (
-	spriteWC *common.WorldComponents
+	spriteWC = &common.WorldComponents{}
 )
 
 func init() {
-	spriteWC = &common.WorldComponents{}
-	//
 	groove.DefaultComp(func(e *groove.Engine, w *ecs.World) {
 		SpriteComponent(w)
 	})

@@ -31,12 +31,29 @@ func TestHierarchy(t *testing.T) {
 	en1 := w.NewEntity()
 	w.AddComponentToEntity(en1, comp, tr1)
 	w.Run(1 / 60)
-	x := tr1.globalX // tr1.M.Element(0, 2)
-	y := tr1.globalY // tr1.M.Element(1, 2)
-	if x != 100 {
-		t.Errorf("x != %v (%v) %v", 100, x, tr1.M.String())
+	xy := tr1.M.Project(ZV) // tr1.M.Element(0, 2)
+	if xy.X != 100 {
+		t.Errorf("x != %v (%v)", 100, xy.X)
 	}
-	if y != 210 {
-		t.Errorf("y != %v (%v)", 210, y)
+	if xy.Y != 210 {
+		t.Errorf("y != %v (%v)", 210, xy.Y)
+	}
+}
+
+func TestMatrices(t *testing.T) {
+	mA := IM
+	mA = mA.Rotated(ZV, math.Pi)
+	mB := IM
+	mB = mB.Moved(V(0.5, 0))
+	mC := mA.Chained(mB)
+	if mC[0] != -1 {
+		t.FailNow()
+	}
+	v2 := mC.Project(V(-1, 1))
+	if v2.X != 1.5 {
+		t.Fatalf("v2.X != 1.5 (%v)", v2.X)
+	}
+	if v2.Y != -1 {
+		t.Fatalf("v2.Y != -1 (%v)", v2.Y)
 	}
 }

@@ -4,26 +4,26 @@ import (
 	"github.com/gabstv/ecs"
 	"github.com/gabstv/groove/pkg/groove"
 	"github.com/gabstv/groove/pkg/groove/common"
-	"github.com/hajimehoshi/ebiten"
 )
 
 const (
-	TransformPriority int = 0
+	TransformPriority       int = 0
+	TransformSpritePriority int = -6
 )
 
 var (
-	transformWC *common.WorldComponents
+	transformWC = &common.WorldComponents{}
 )
 
 func init() {
-	transformWC = &common.WorldComponents{}
-	//
 	groove.DefaultComp(func(e *groove.Engine, w *ecs.World) {
 		TransformComponent(w)
 	})
-	//groove.DefaultSys(func(e *groove.Engine, w *ecs.World) {
-	//	TransformSystem(w)
-	//})
+	groove.DefaultSys(func(e *groove.Engine, w *ecs.World) {
+		TransformSystem(w)
+		TransformSpriteSystem(w)
+	})
+	println("transforminit end")
 }
 
 // Transform is a hierarchy based matrix
@@ -34,12 +34,10 @@ type Transform struct {
 	Angle  float64
 
 	// calculated transform matrix
-	M ebiten.GeoM
+	M Matrix
 
 	// priv
 	lastTick    uint64
-	globalX     float64
-	globalY     float64
 	globalAngle float64
 }
 
@@ -76,6 +74,14 @@ func TransformSystem(w *ecs.World) *ecs.System {
 	return sys
 }
 
+// TransformSpriteSystem creates the transform sprite system
+func TransformSpriteSystem(w *ecs.World) *ecs.System {
+	sys := w.NewSystem(TransformSpritePriority, TransformSpriteSystemExec, transformWC.Get(w), spriteWC.Get(w))
+	sys.AddTag(groove.WorldTagUpdate)
+	println("TransformSpriteSystem")
+	return sys
+}
+
 // TransformSystemExec is the main function of the TransformSystem
 func TransformSystemExec(dt float64, v *ecs.View, s *ecs.System) {
 	tick := s.Get("tick").(uint64)
@@ -92,39 +98,42 @@ func TransformSystemExec(dt float64, v *ecs.View, s *ecs.System) {
 	}
 }
 
+// TransformSystemExec is the main function of the TransformSpriteSystem
+func TransformSpriteSystemExec(dt float64, v *ecs.View, s *ecs.System) {
+	matches := v.Matches()
+	world := v.World()
+	transformcomp := transformWC.Get(world)
+	spritecomp := spriteWC.Get(world)
+	for _, m := range matches {
+		t := m.Components[transformcomp].(*Transform)
+		// transform is already resolved because the TransformSystem executed first
+		s := m.Components[spritecomp].(*Sprite)
+		vvec := t.M.Project(ZV)
+		s.X = vvec.X
+		s.Y = vvec.Y
+		s.Angle = t.globalAngle
+	}
+}
+
 func resolveTransform(t *Transform, tick uint64) {
 	if t.Parent != nil && t.Parent.lastTick != tick {
 		resolveTransform(t.Parent, tick)
 	}
-	var pX float64
-	var pY float64
-	var pA float64
-	//var m0 ebiten.GeoM
+	m0 := IM
+	pA := float64(0)
 	if t.Parent != nil {
-		//	m0 = t.Parent.M
-		pX = t.Parent.globalX
-		pY = t.Parent.globalY
-	}
-	//TODO: fix
-	m1 := t.M
-	m1.Reset()
-	t.globalX = 0
-	t.globalY = 0
-	t.globalAngle = 0
-
-	if pX != 0 || pY != 0 {
-		m1.Translate(pX, pY)
+		m0 = t.Parent.M
+		pA = t.globalAngle
 	}
 
-	if pA != 0 {
-		m1.Rotate(pA)
+	m1 := m0.Chained(IM)
+	if t.X != 0 || t.Y != 0 {
+		m1 = m1.Moved(V(t.X, t.Y))
 	}
-
-	//m1.Concat(m0)
-	t.globalX, t.globalY = m1.Apply(t.X, t.Y)
+	if t.Angle != 0 {
+		m1 = m1.Rotated(ZV, t.Angle)
+	}
 	t.globalAngle = pA + t.Angle
-	//m1.Translate(t.X, t.Y)
-	m1.Rotate(t.Angle)
 	t.M = m1
 	t.lastTick = tick
 }
