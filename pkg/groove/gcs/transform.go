@@ -119,21 +119,14 @@ func resolveTransform(t *Transform, tick uint64) {
 	if t.Parent != nil && t.Parent.lastTick != tick {
 		resolveTransform(t.Parent, tick)
 	}
-	m0 := IM
-	pA := float64(0)
+	parentAngle := float64(0)
+	localAngle := t.Angle
+	parentMatrix := IM
 	if t.Parent != nil {
-		m0 = t.Parent.M
-		pA = t.globalAngle
+		parentAngle = t.Parent.globalAngle
+		parentMatrix = t.Parent.M
 	}
-
-	m1 := m0.Chained(IM)
-	if t.X != 0 || t.Y != 0 {
-		m1 = m1.Moved(V(t.X, t.Y))
-	}
-	if t.Angle != 0 {
-		m1 = m1.Rotated(ZV, t.Angle)
-	}
-	t.globalAngle = pA + t.Angle
-	t.M = m1
+	t.M = IM.Rotated(ZV, localAngle).Moved(V(t.X, t.Y)).Chained(parentMatrix)
+	t.globalAngle = parentAngle + localAngle
 	t.lastTick = tick
 }

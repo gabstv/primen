@@ -37,8 +37,8 @@ func main() {
 	ss.Set("tc", tc)
 	e := dw.NewEntity()
 	t99 := &gcs.Transform{
-		X: 320/2,
-		Y: 240/2,
+		X: 0,
+		Y: 0,
 	}
 	dw.AddComponentToEntity(e, tc, t99)
 	dw.AddComponentToEntity(e, spinnercomp, &spinner{
@@ -47,7 +47,7 @@ func main() {
 	// add children
 	for i := 0; i < 10; i++ {
 		e2 := dw.NewEntity()
-		mm := gcs.IM.Moved(gcs.V(10,0)).Rotated(gcs.ZV, (math.Pi*2)/float64(10-i)).Project(gcs.ZV)
+		mm := gcs.IM.Moved(gcs.V(30,0)).Rotated(gcs.ZV, (math.Pi*2)*(float64(i)/10)).Project(gcs.ZV)
 		println(mm.String())
 		dw.AddComponentToEntity(e2, tc, &gcs.Transform{
 			X: mm.X,
@@ -68,9 +68,30 @@ func spinnersys(dt float64, view *ecs.View, sys *ecs.System) {
 	sc := sys.Get("spinnercomp").(*ecs.Component)
 	tc := sys.Get("tc").(*ecs.Component)
 	//
+	xs := float64(0)
+	if ebiten.IsKeyPressed(ebiten.KeyRight) {
+		xs = 50
+	} else if ebiten.IsKeyPressed(ebiten.KeyLeft) {
+		xs = -50
+	}
+	ys := float64(0)
+	if ebiten.IsKeyPressed(ebiten.KeyUp) {
+		ys = -50
+	} else if ebiten.IsKeyPressed(ebiten.KeyDown) {
+		ys = 50
+	}
+	rs := float64(0)
+	if ebiten.IsKeyPressed(ebiten.KeyX) {
+		rs = 1
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyZ) {
+		rs = -1
+	}
 	for _, v := range view.Matches() {
 		spin := v.Components[sc].(*spinner)
 		tr := v.Components[tc].(*gcs.Transform)
-		tr.Angle += spin.Speed*dt
+		tr.Angle += spin.Speed*dt*rs
+		tr.X += xs * dt
+		tr.Y += ys * dt
 	}
 }
