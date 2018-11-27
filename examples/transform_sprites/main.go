@@ -47,14 +47,15 @@ func main() {
 	// add children
 	for i := 0; i < 10; i++ {
 		e2 := dw.NewEntity()
-		mm := gcs.IM.Moved(gcs.V(40,0)).Rotated(gcs.ZV, (math.Pi*2)/float64(10-i)).Project(gcs.ZV)
+		mm := gcs.IM.Moved(gcs.V(10,0)).Rotated(gcs.ZV, (math.Pi*2)/float64(10-i)).Project(gcs.ZV)
+		println(mm.String())
 		dw.AddComponentToEntity(e2, tc, &gcs.Transform{
 			X: mm.X,
 			Y: mm.Y,
 			Parent: t99,
 		})
 		dw.AddComponentToEntity(e2, sc, &gcs.Sprite{
-			Bounds: image.Rect(16,16,16,16),
+			Bounds: image.Rect(0,0,16,16),
 			Image: ebimg,
 			ScaleX: 1,
 			ScaleY:1,
@@ -70,6 +71,6 @@ func spinnersys(dt float64, view *ecs.View, sys *ecs.System) {
 	for _, v := range view.Matches() {
 		spin := v.Components[sc].(*spinner)
 		tr := v.Components[tc].(*gcs.Transform)
-		tr.Angle += spin.Speed/dt
+		tr.Angle += spin.Speed*dt
 	}
 }
