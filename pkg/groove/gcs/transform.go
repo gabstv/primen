@@ -32,13 +32,25 @@ type Transform struct {
 	X      float64
 	Y      float64
 	Angle  float64
+	ScaleX float64
+	ScaleY float64
 
 	// calculated transform matrix
 	M Matrix
 
 	// priv
-	lastTick    uint64
-	globalAngle float64
+	lastTick     uint64
+	globalAngle  float64
+	globalScaleX float64
+	globalScaleY float64
+}
+
+// NewTransform returns a new transform with ScaleX = 1 and ScaleY = 1
+func NewTransform() *Transform {
+	return &Transform{
+		ScaleX: 1,
+		ScaleY: 1,
+	}
 }
 
 // TransformComponent will get the registered transform component of the world.
@@ -112,6 +124,9 @@ func TransformSpriteSystemExec(dt float64, v *ecs.View, s *ecs.System) {
 		s.X = vvec.X
 		s.Y = vvec.Y
 		s.Angle = t.globalAngle
+		s.ScaleX = t.globalScaleX
+		s.ScaleY = t.globalScaleY
+		//TODO: convert pixel matrix to ebiten matrix (and use it for scale/skew)
 	}
 }
 
@@ -120,13 +135,19 @@ func resolveTransform(t *Transform, tick uint64) {
 		resolveTransform(t.Parent, tick)
 	}
 	parentAngle := float64(0)
+	parentScaleX := float64(1)
+	parentScaleY := float64(1)
 	localAngle := t.Angle
 	parentMatrix := IM
 	if t.Parent != nil {
 		parentAngle = t.Parent.globalAngle
+		parentScaleX = t.Parent.globalScaleX
+		parentScaleY = t.Parent.globalScaleY
 		parentMatrix = t.Parent.M
 	}
-	t.M = IM.Rotated(ZV, localAngle).Moved(V(t.X, t.Y)).Chained(parentMatrix)
+	t.M = IM.ScaledXY(ZV, V(t.ScaleX, t.ScaleY)).Rotated(ZV, localAngle).Moved(V(t.X, t.Y)).Chained(parentMatrix)
 	t.globalAngle = parentAngle + localAngle
+	t.globalScaleX = parentScaleX * t.ScaleX
+	t.globalScaleY = parentScaleY * t.ScaleY
 	t.lastTick = tick
 }

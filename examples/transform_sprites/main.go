@@ -50,10 +50,13 @@ func main() {
 	ss := dw.NewSystem(1, spinnersys, tc, spinnercomp)
 	ss.Set("spinnercomp", spinnercomp)
 	ss.Set("tc", tc)
+	ss.Set("scaleadd", float64(0))
 	e := dw.NewEntity()
 	t99 := &gcs.Transform{
 		X: 320/2,
 		Y: 240/2,
+		ScaleX: 0.5,
+		ScaleY: 0.7,
 	}
 	dw.AddComponentToEntity(e, tc, t99)
 	dw.AddComponentToEntity(e, spinnercomp, &spinner{
@@ -68,6 +71,8 @@ func main() {
 			X: mm.X,
 			Y: mm.Y,
 			Parent: t99,
+			ScaleX: 1,
+			ScaleY: 1,
 		})
 		ri := randomsprites[rand.Intn(4)]
 		dw.AddComponentToEntity(e2, sc, &gcs.Sprite{
@@ -95,6 +100,8 @@ func main() {
 func spinnersys(dt float64, view *ecs.View, sys *ecs.System) {
 	sc := sys.Get("spinnercomp").(*ecs.Component)
 	tc := sys.Get("tc").(*ecs.Component)
+	scaleadd := sys.Get("scaleadd").(float64) + dt
+	sys.Set("scaleadd", scaleadd)
 	//
 	xs := float64(0)
 	if ebiten.IsKeyPressed(ebiten.KeyRight) {
@@ -124,5 +131,6 @@ func spinnersys(dt float64, view *ecs.View, sys *ecs.System) {
 		tr.Angle += spin.Speed*dt*rs
 		tr.X += xs * dt
 		tr.Y += ys * dt
+		tr.ScaleY = 0.7 + math.Cos(scaleadd)/4
 	}
 }
