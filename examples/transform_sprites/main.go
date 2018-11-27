@@ -1,6 +1,9 @@
 package main
 
 import (
+	"time"
+	"fmt"
+	"math/rand"
 	"math"
 	_ "image/png"
 	"image"
@@ -11,6 +14,18 @@ import (
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
+
+var randomsprites [][]int
+
+func init() {
+	rand.Seed(time.Now().Unix())
+	randomsprites = [][]int{
+		[]int{0,0,16,16},
+		[]int{0,16,16,32},
+		[]int{16,0,32,16},
+		[]int{16,16,32,32},
+	}
+}
 
 type spinner struct{
 	Speed float64
@@ -37,12 +52,12 @@ func main() {
 	ss.Set("tc", tc)
 	e := dw.NewEntity()
 	t99 := &gcs.Transform{
-		X: 0,
-		Y: 0,
+		X: 320/2,
+		Y: 240/2,
 	}
 	dw.AddComponentToEntity(e, tc, t99)
 	dw.AddComponentToEntity(e, spinnercomp, &spinner{
-		Speed: 1,
+		Speed: 3,
 	})
 	// add children
 	for i := 0; i < 10; i++ {
@@ -54,13 +69,26 @@ func main() {
 			Y: mm.Y,
 			Parent: t99,
 		})
+		ri := randomsprites[rand.Intn(4)]
 		dw.AddComponentToEntity(e2, sc, &gcs.Sprite{
-			Bounds: image.Rect(0,0,16,16),
+			Bounds: image.Rect(ri[0],ri[1],ri[2],ri[3]),
 			Image: ebimg,
 			ScaleX: 1,
 			ScaleY:1,
 		})
 	}
+
+	// debug system
+	ddrawsys := dw.NewSystem(-100, func(dt float64, view *ecs.View, sys *ecs.System){
+		fps := ebiten.CurrentFPS()
+		img := engine.Get(groove.EbitenScreen).(*ebiten.Image)
+		ebitenutil.DebugPrintAt(img, fmt.Sprintf("%.2f fps", fps), 0, 0)
+		ebitenutil.DebugPrintAt(img, fmt.Sprintf("x = %.2f; y = %.2f;", t99.X, t99.Y), 0, 12)
+		ebitenutil.DebugPrintAt(img, "arrows = move; x, z = rotate", 0, 24)
+
+	}, spinnercomp)
+	ddrawsys.AddTag(groove.WorldTagDraw)
+
 	engine.Run()
 }
 
@@ -86,6 +114,9 @@ func spinnersys(dt float64, view *ecs.View, sys *ecs.System) {
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyZ) {
 		rs = -1
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyShift) {
+		rs *= 0.25
 	}
 	for _, v := range view.Matches() {
 		spin := v.Components[sc].(*spinner)
