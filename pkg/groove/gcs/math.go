@@ -425,3 +425,16 @@ func (m Matrix) Unproject(u Vec) Vec {
 	u.X, u.Y = (u.X-m[4])/d, (u.Y-m[5])/d
 	return Vec{u.X*m[3] - u.Y*m[1], u.Y*m[0] - u.X*m[2]}
 }
+
+// end of pure pixel classes
+
+// nonzeroval will return the first non zero value.
+// It will return 0 if all input values are 0
+func nonzeroval(vals ...float64) float64 {
+	for _, v := range vals {
+		if v != 0 {
+			return v
+		}
+	}
+	return 0
+}
