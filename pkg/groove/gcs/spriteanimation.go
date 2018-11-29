@@ -12,8 +12,8 @@ import (
 type AnimClipMode byte
 
 const (
-	AnimClamp SprAnimClipMode = 1
-	AnimLoop  SprAnimClipMode = 2
+	AnimClamp AnimClipMode = 1
+	AnimLoop  AnimClipMode = 2
 )
 
 const (
@@ -60,7 +60,7 @@ type SpriteAnimationClip struct {
 // SpriteAnimationComponent will get the registered sprite anim component of the world.
 // If a component is not present, it will create a new component
 // using world.NewComponent
-func SpriteComponent(w *ecs.World) *ecs.Component {
+func SpriteAnimationComponent(w *ecs.World) *ecs.Component {
 	c := spriteanimationWC.Get(w)
 	if c == nil {
 		var err error
@@ -99,9 +99,7 @@ func SpriteAnimationSystemExec(dt float64, v *ecs.View, s *ecs.System) {
 	world := v.World()
 	matches := v.Matches()
 	spriteanimcomp := spriteanimationWC.Get(world)
-	defaultopts := world.Get(DefaultImageOptions).(*ebiten.DrawImageOptions)
-	engine := world.Get(groove.EngineKey).(*groove.Engine)
-	ebitenScreen := engine.Get(groove.EbitenScreen).(*ebiten.Image)
+	//engine := world.Get(groove.EngineKey).(*groove.Engine)
 	for _, m := range matches {
 		spranim := m.Components[spriteanimcomp].(*SpriteAnimation)
 		if !spranim.Enabled || !spranim.Play {
