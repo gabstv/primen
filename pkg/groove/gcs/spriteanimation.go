@@ -50,7 +50,7 @@ func init() {
 
 type SpriteAnimation struct {
 	Enabled     bool
-	Play        bool
+	Playing     bool
 	ActiveClip  int
 	ActiveFrame int
 	Clips       []SpriteAnimationClip
@@ -61,8 +61,17 @@ type SpriteAnimation struct {
 	// caches
 	lastClip int
 	//lastClipsLen int
-	lastPlay bool
-	clipMap  map[string]int
+	lastPlaying       bool
+	clipMap           map[string]int
+	clipMapLen        int
+	nextAnimationName string
+	nextAnimationSet  bool
+}
+
+// PlayClip sets the animation to play a clip by name
+func (a *SpriteAnimation) PlayClip(name string) {
+	a.nextAnimationName = name
+	a.nextAnimationSet = true
 }
 
 type SpriteAnimationClip struct {
@@ -117,45 +126,79 @@ func SpriteAnimationSystemExec(dt float64, v *ecs.View, s *ecs.System) {
 	//engine := world.Get(groove.EngineKey).(*groove.Engine)
 	for _, m := range matches {
 		spranim := m.Components[spriteanimcomp].(*SpriteAnimation)
-		if !spranim.Enabled || !spranim.Play {
-			if !spranim.Play && spranim.lastPlay {
-				spranim.lastPlay = false
+		if !spranim.Enabled || !spranim.Playing {
+			if !spranim.Playing && spranim.lastPlaying {
+				spranim.lastPlaying = false
 			}
 			continue
 		}
-		clip := spranim.Clips[spranim.ActiveClip]
-		localfps := nonzeroval(clip.Fps, spranim.Fps, globalfps)
-		localdt := (dt * localfps) / globalfps
-		if !spranim.lastPlay {
-			// the animation was stopped on the last iteration
-			if spranim.lastClip == spranim.ActiveClip {
-				// since it is the same clip, this can be affected by
-				// the clip AnimClipMode
-				//TODO: handle AnimClipMode behavior
-			}
+		spriteAnimResolveClipMap(spranim)
+		spriteAnimResolvePlayClip(spranim)
+		spriteAnimResolvePlayback(globalfps, dt, spranim)
+	}
+}
+
+func spriteAnimResolvePlayClip(spranim *SpriteAnimation) {
+	if !spranim.nextAnimationSet {
+		return
+	}
+	spranim.nextAnimationSet = false
+	index, ok := spranim.clipMap[spranim.nextAnimationName]
+	spranim.nextAnimationName = ""
+	if !ok {
+		return
+	}
+	spranim.T = 0
+	spranim.Playing = true
+	spranim.ActiveFrame = 0
+	spranim.ActiveClip = index
+}
+
+func spriteAnimResolveClipMap(spranim *SpriteAnimation) {
+	if spranim.clipMapLen == len(spranim.Clips) {
+		return
+	}
+	// rebuild cache
+	spranim.clipMap = make(map[string]int)
+	for k, v := range spranim.Clips {
+		spranim.clipMap[v.Name] = k
+	}
+	spranim.clipMapLen = len(spranim.Clips)
+}
+
+func spriteAnimResolvePlayback(globalfps, dt float64, spranim *SpriteAnimation) {
+	clip := spranim.Clips[spranim.ActiveClip]
+	localfps := nonzeroval(clip.Fps, spranim.Fps, globalfps)
+	localdt := (dt * localfps) / globalfps
+	if !spranim.lastPlaying {
+		// the animation was stopped on the last iteration
+		if spranim.lastClip == spranim.ActiveClip {
+			// since it is the same clip, this can be affected by
+			// the clip AnimClipMode
+			//TODO: handle AnimClipMode behavior
 		}
-		spranim.lastClip = spranim.ActiveClip
-		spranim.lastPlay = true
-		spranim.T += localdt * localfps
-		if spranim.T >= 1 {
-			// next frame
-			nextframe := spranim.ActiveFrame + 1
-			//spranim.T -= 1
-			if nextframe >= len(clip.Frames) {
-				// animation ended
-				switch clip.ClipMode {
-				case AnimOnce:
-					spranim.T = 0
-					spranim.Play = false
-				case AnimLoop:
-					spranim.T = Clamp(spranim.T-1, 0, 1)
-					spranim.ActiveFrame = 0
-					//TODO: other clip modes
-				}
-			} else {
+	}
+	spranim.lastClip = spranim.ActiveClip
+	spranim.lastPlaying = true
+	spranim.T += localdt * localfps
+	if spranim.T >= 1 {
+		// next frame
+		nextframe := spranim.ActiveFrame + 1
+		//spranim.T -= 1
+		if nextframe >= len(clip.Frames) {
+			// animation ended
+			switch clip.ClipMode {
+			case AnimOnce:
+				spranim.T = 0
+				spranim.Playing = false
+			case AnimLoop:
 				spranim.T = Clamp(spranim.T-1, 0, 1)
-				spranim.ActiveFrame = nextframe
+				spranim.ActiveFrame = 0
+				//TODO: other clip modes
 			}
+		} else {
+			spranim.T = Clamp(spranim.T-1, 0, 1)
+			spranim.ActiveFrame = nextframe
 		}
 	}
 }
