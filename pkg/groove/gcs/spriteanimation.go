@@ -127,7 +127,6 @@ func SpriteAnimationSystemExec(dt float64, v *ecs.View, s *ecs.System) {
 	matches := v.Matches()
 	spriteanimcomp := spriteanimationWC.Get(world)
 	globalfps := nonzeroval(ebiten.CurrentFPS(), 60)
-	//engine := world.Get(groove.EngineKey).(*groove.Engine)
 	for _, m := range matches {
 		spranim := m.Components[spriteanimcomp].(*SpriteAnimation)
 		if !spranim.Enabled || !spranim.Playing {
@@ -197,7 +196,6 @@ func spriteAnimResolvePlayback(globalfps, dt float64, spranim *SpriteAnimation) 
 		if spranim.reversed {
 			nextframe = spranim.ActiveFrame - 1
 		}
-		//spranim.T -= 1
 		if nextframe >= len(clip.Frames) {
 			// animation ended
 			switch clip.ClipMode {
@@ -238,8 +236,6 @@ func SpriteAnimationLinkSystemExec(dt float64, v *ecs.View, s *ecs.System) {
 	matches := v.Matches()
 	spriteanimcomp := spriteanimationWC.Get(world)
 	spritecomp := spriteWC.Get(world)
-	//globalfps := ebiten.CurrentFPS()
-	//engine := world.Get(groove.EngineKey).(*groove.Engine)
 	for _, m := range matches {
 		spranim := m.Components[spriteanimcomp].(*SpriteAnimation)
 		spr := m.Components[spritecomp].(*Sprite)

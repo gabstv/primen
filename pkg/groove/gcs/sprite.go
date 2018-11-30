@@ -10,7 +10,9 @@ import (
 )
 
 const (
-	SpritePriority      int    = -10
+	// SpritePriority - default -10
+	SpritePriority int = -10
+	// DefaultImageOptions key passed to the default world (&ebiten.DrawImageOptions{})
 	DefaultImageOptions string = "default_image_options"
 )
 

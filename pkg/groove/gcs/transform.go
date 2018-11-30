@@ -7,7 +7,9 @@ import (
 )
 
 const (
-	TransformPriority       int = 0
+	// TransformPriority - default 0
+	TransformPriority int = 0
+	// TransformSpritePriority - default -6 (execs after positioning the transforms)
 	TransformSpritePriority int = -6
 )
 
@@ -103,14 +105,13 @@ func TransformSystemExec(dt float64, v *ecs.View, s *ecs.System) {
 	world := v.World()
 	matches := v.Matches()
 	transformcomp := transformWC.Get(world)
-	//engine := world.Get(groove.EngineKey).(*groove.Engine)
 	for _, m := range matches {
 		t := m.Components[transformcomp].(*Transform)
 		resolveTransform(t, tick)
 	}
 }
 
-// TransformSystemExec is the main function of the TransformSpriteSystem
+// TransformSpriteSystemExec is the main function of the TransformSpriteSystem
 func TransformSpriteSystemExec(dt float64, v *ecs.View, s *ecs.System) {
 	matches := v.Matches()
 	world := v.World()
