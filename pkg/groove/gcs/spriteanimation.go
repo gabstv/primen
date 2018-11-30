@@ -20,17 +20,19 @@ const (
 	AnimLoop AnimClipMode = 1
 	// AnimPingPong - When time reaches the end of the animation clip, time will ping pong back between beginning
 	// and end.
-	AnimPingPong AnimClipMode = 2 //TODO: implement ping pong
+	AnimPingPong AnimClipMode = 2
 	// AnimClampForever - Plays back the animation. When it reaches the end, it will keep playing the last frame
 	// and never stop playing.
 	//
-	// When playing backwards it will reach the first frame and will keep playing that. This is useful for additive
-	// animations, which should never be stopped when they reach the maximum.
-	AnimClampForever AnimClipMode = 3 //TODO: implement AnimClampForever
+	// When playing backwards it will reach the first frame and will keep playing that. This is useful for code
+	// that uses the Playing bool to avoid activating said trigger.
+	AnimClampForever AnimClipMode = 3
 )
 
 const (
-	SpriteAnimationPriority     int = -6
+	// SpriteAnimationPriority - default -6
+	SpriteAnimationPriority int = -6
+	// SpriteAnimationLinkPriority - default -5
 	SpriteAnimationLinkPriority int = -5
 )
 
@@ -48,6 +50,7 @@ func init() {
 	})
 }
 
+// SpriteAnimation holds the data of a sprite animation (and clips)
 type SpriteAnimation struct {
 	Enabled     bool
 	Playing     bool
@@ -59,13 +62,13 @@ type SpriteAnimation struct {
 	Fps float64
 
 	// caches
-	lastClip int
-	//lastClipsLen int
+	lastClip          int
 	lastPlaying       bool
 	clipMap           map[string]int
 	clipMapLen        int
 	nextAnimationName string
 	nextAnimationSet  bool
+	reversed          bool
 }
 
 // PlayClip sets the animation to play a clip by name
@@ -74,6 +77,7 @@ func (a *SpriteAnimation) PlayClip(name string) {
 	a.nextAnimationSet = true
 }
 
+// SpriteAnimationClip is an animation clip, like a character walk cycle.
 type SpriteAnimationClip struct {
 	// The name of an animation is not allowed to be changed during runtime
 	// but since this is part of a component (and components shouldn't have logic),
@@ -152,6 +156,7 @@ func spriteAnimResolvePlayClip(spranim *SpriteAnimation) {
 	spranim.Playing = true
 	spranim.ActiveFrame = 0
 	spranim.ActiveClip = index
+	spranim.reversed = false
 }
 
 func spriteAnimResolveClipMap(spranim *SpriteAnimation) {
@@ -176,7 +181,12 @@ func spriteAnimResolvePlayback(globalfps, dt float64, spranim *SpriteAnimation) 
 			// since it is the same clip, this can be affected by
 			// the clip AnimClipMode
 			//TODO: handle AnimClipMode behavior
+			//TODO: maybe triggers
 		}
+	}
+	if spranim.lastClip != spranim.ActiveClip {
+		// reset the reversed state
+		spranim.reversed = false
 	}
 	spranim.lastClip = spranim.ActiveClip
 	spranim.lastPlaying = true
@@ -184,6 +194,9 @@ func spriteAnimResolvePlayback(globalfps, dt float64, spranim *SpriteAnimation) 
 	if spranim.T >= 1 {
 		// next frame
 		nextframe := spranim.ActiveFrame + 1
+		if spranim.reversed {
+			nextframe = spranim.ActiveFrame - 1
+		}
 		//spranim.T -= 1
 		if nextframe >= len(clip.Frames) {
 			// animation ended
@@ -194,8 +207,17 @@ func spriteAnimResolvePlayback(globalfps, dt float64, spranim *SpriteAnimation) 
 			case AnimLoop:
 				spranim.T = Clamp(spranim.T-1, 0, 1)
 				spranim.ActiveFrame = 0
-				//TODO: other clip modes
+			case AnimPingPong:
+				spranim.T = Clamp(spranim.T-1, 0, 1)
+				spranim.reversed = true
+			case AnimClampForever:
+				// the last frame will keep on playing
+				spranim.T = Clamp(spranim.T-1, 0, 1)
 			}
+		} else if nextframe < 0 {
+			// the animation is reversed and reached the beginning
+			spranim.T = Clamp(spranim.T-1, 0, 1)
+			spranim.reversed = false
 		} else {
 			spranim.T = Clamp(spranim.T-1, 0, 1)
 			spranim.ActiveFrame = nextframe

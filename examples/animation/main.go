@@ -3,6 +3,7 @@ package main
 // https://www.kenney.nl/assets/platformer-characters-1
 
 import (
+	"math"
 	_ "image/png"
 	"image"
 	"fmt"
@@ -16,6 +17,7 @@ import (
 
 func main() {
 	ebimg, _, _ := ebitenutil.NewImageFromFile("zombie_kenney.png", ebiten.FilterDefault)
+	ppimg, _, _ := ebitenutil.NewImageFromFile("ping_pong.png", ebiten.FilterDefault)
 
 	engine := groove.NewEngine(&groove.NewEngineInput{
 		Title: "Basic Animation",
@@ -27,8 +29,22 @@ func main() {
 	dw := engine.Default()
 	sc := gcs.SpriteComponent(dw)
 	ac := gcs.SpriteAnimationComponent(dw)
+	createCharacter(dw, sc, ac, ebimg)
+	createPingPonger(dw, sc, ac, ppimg)
+
+	s0 := dw.NewSystem(0, func(dt float64, v *ecs.View, s *ecs.System){
+		fps := ebiten.CurrentFPS()
+		img := engine.Get(groove.EbitenScreen).(*ebiten.Image)
+		ebitenutil.DebugPrintAt(img, fmt.Sprintf("%.2f fps", fps), 0, 0)
+	})
+	s0.AddTag(groove.WorldTagDraw)
+	
+	engine.Run()
+}
+
+func createCharacter(dw *ecs.World, spriteComp *ecs.Component, animComp *ecs.Component, ebimg *ebiten.Image){
 	e := dw.NewEntity()
-	dw.AddComponentToEntity(e, sc, &gcs.Sprite{
+	dw.AddComponentToEntity(e, spriteComp, &gcs.Sprite{
 		Image: ebimg,
 		X: 300,
 		Y: 200,
@@ -37,9 +53,9 @@ func main() {
 		ScaleY: 1,
 		Bounds: image.Rect(0,0,80,110),
 	})
-	dw.AddComponentToEntity(e, ac, &gcs.SpriteAnimation{
+	dw.AddComponentToEntity(e, animComp, &gcs.SpriteAnimation{
 		Enabled: true,
-		Play :true,
+		Playing :true,
 		Clips: []gcs.SpriteAnimationClip{
 			gcs.SpriteAnimationClip{
 				Name: "default",
@@ -55,13 +71,34 @@ func main() {
 		},
 		Fps: 24,
 	})
+}
 
-	s0 := dw.NewSystem(0, func(dt float64, v *ecs.View, s *ecs.System){
-		fps := ebiten.CurrentFPS()
-		img := engine.Get(groove.EbitenScreen).(*ebiten.Image)
-		ebitenutil.DebugPrintAt(img, fmt.Sprintf("%.2f fps", fps), 0, 0)
+func createPingPonger(dw *ecs.World, spriteComp *ecs.Component, animComp *ecs.Component, ebimg *ebiten.Image){
+	e := dw.NewEntity()
+	dw.AddComponentToEntity(e, spriteComp, &gcs.Sprite{
+		Image: ebimg,
+		X: 370,
+		Y: 180,
+		Angle: math.Pi / 4,
+		ScaleX: 1,
+		ScaleY: 1,
+		Bounds: image.Rect(0,0,8,32),
 	})
-	s0.AddTag(groove.WorldTagDraw)
-	
-	engine.Run()
+	dw.AddComponentToEntity(e, animComp, &gcs.SpriteAnimation{
+		Enabled: true,
+		Playing :true,
+		Clips: []gcs.SpriteAnimationClip{
+			gcs.SpriteAnimationClip{
+				Name: "default",
+				Frames: []image.Rectangle{
+					image.Rect(8*0,0,8*1,32),
+					image.Rect(8*1,0,8*2,32),
+					image.Rect(8*2,0,8*3,32),
+					image.Rect(8*3,0,8*4,32),
+				},
+				ClipMode: gcs.AnimPingPong,
+			},
+		},
+		Fps: 24,
+	})
 }
