@@ -69,5 +69,7 @@ func TestNewArchetype(t *testing.T) {
 	ed2 := c1.Data(e2).(*compAData)
 
 	assert.Equal(t, 11, ed1.X)
+	assert.Equal(t, 20, ed1.Y)
+	assert.Equal(t, 10, ed2.X)
 	assert.Equal(t, 21, ed2.Y)
 }
