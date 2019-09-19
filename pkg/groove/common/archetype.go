@@ -31,24 +31,32 @@ func NewArchetype(world *ecs.World, comps ...*ecs.Component) *Archetype {
 }
 
 // NewEntity adds a new entity with the component data to the world
+//
+// The best way to create an archetype entity is to ensure that the
+// component data follows the same order that the components were
+// created in NewArchetype
 func (a *Archetype) NewEntity(compdata ...interface{}) ecs.Entity {
 	entity := a.World.NewEntity()
-	cvmap := make(map[*ecs.Component]bool)
+	compds := clonecompslc(a.Components)
 	for _, cdata := range compdata {
-		for _, c := range a.Components {
-			if cvmap[c] {
-				continue
-			}
+		for i, c := range compds {
 			if c.Validate(cdata) {
 				if err := a.World.AddComponentToEntity(entity, c, cdata); err != nil {
 					// this should never happen
 					panic(err)
 				}
-				cvmap[c] = true
+				compds = append(compds[:i], compds[i+1:]...)
 				break
 			}
 		}
 	}
-	cvmap = nil
 	return entity
+}
+
+func clonecompslc(v []*ecs.Component) []*ecs.Component {
+	x := make([]*ecs.Component, len(v), len(v))
+	for i, vv := range v {
+		x[i] = vv
+	}
+	return x
 }
