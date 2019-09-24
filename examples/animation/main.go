@@ -10,7 +10,6 @@ import (
 	
 	"github.com/gabstv/ecs"
 	"github.com/gabstv/groove/pkg/groove"
-	"github.com/gabstv/groove/pkg/groove/gcs"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
@@ -27,8 +26,8 @@ func main() {
 	})
 	
 	dw := engine.Default()
-	sc := gcs.SpriteComponent(dw)
-	ac := gcs.SpriteAnimationComponent(dw)
+	sc := groove.SpriteComponent(dw)
+	ac := groove.SpriteAnimationComponent(dw)
 	createCharacter(dw, sc, ac, ebimg)
 	createPingPonger(dw, sc, ac, ppimg)
 
@@ -44,7 +43,7 @@ func main() {
 
 func createCharacter(dw *ecs.World, spriteComp *ecs.Component, animComp *ecs.Component, ebimg *ebiten.Image){
 	e := dw.NewEntity()
-	dw.AddComponentToEntity(e, spriteComp, &gcs.Sprite{
+	dw.AddComponentToEntity(e, spriteComp, &groove.Sprite{
 		Image: ebimg,
 		X: 300,
 		Y: 200,
@@ -53,11 +52,11 @@ func createCharacter(dw *ecs.World, spriteComp *ecs.Component, animComp *ecs.Com
 		ScaleY: 1,
 		Bounds: image.Rect(0,0,80,110),
 	})
-	dw.AddComponentToEntity(e, animComp, &gcs.SpriteAnimation{
+	dw.AddComponentToEntity(e, animComp, &groove.SpriteAnimation{
 		Enabled: true,
 		Playing :true,
-		Clips: []gcs.SpriteAnimationClip{
-			gcs.SpriteAnimationClip{
+		Clips: []groove.SpriteAnimationClip{
+			groove.SpriteAnimationClip{
 				Name: "default",
 				Frames: []image.Rectangle{
 					image.Rect(0,0,80,110), // 0
@@ -66,7 +65,7 @@ func createCharacter(dw *ecs.World, spriteComp *ecs.Component, animComp *ecs.Com
 					image.Rect(80*3,0,80*4,110), // 3
 					image.Rect(0,0,80,110), // 0
 				},
-				ClipMode: gcs.AnimLoop,
+				ClipMode: groove.AnimLoop,
 			},
 		},
 		Fps: 24,
@@ -75,7 +74,7 @@ func createCharacter(dw *ecs.World, spriteComp *ecs.Component, animComp *ecs.Com
 
 func createPingPonger(dw *ecs.World, spriteComp *ecs.Component, animComp *ecs.Component, ebimg *ebiten.Image){
 	e := dw.NewEntity()
-	dw.AddComponentToEntity(e, spriteComp, &gcs.Sprite{
+	dw.AddComponentToEntity(e, spriteComp, &groove.Sprite{
 		Image: ebimg,
 		X: 370,
 		Y: 180,
@@ -84,11 +83,11 @@ func createPingPonger(dw *ecs.World, spriteComp *ecs.Component, animComp *ecs.Co
 		ScaleY: 1,
 		Bounds: image.Rect(0,0,8,32),
 	})
-	dw.AddComponentToEntity(e, animComp, &gcs.SpriteAnimation{
+	dw.AddComponentToEntity(e, animComp, &groove.SpriteAnimation{
 		Enabled: true,
 		Playing :true,
-		Clips: []gcs.SpriteAnimationClip{
-			gcs.SpriteAnimationClip{
+		Clips: []groove.SpriteAnimationClip{
+			groove.SpriteAnimationClip{
 				Name: "default",
 				Frames: []image.Rectangle{
 					image.Rect(8*0,0,8*1,32),
@@ -96,7 +95,7 @@ func createPingPonger(dw *ecs.World, spriteComp *ecs.Component, animComp *ecs.Co
 					image.Rect(8*2,0,8*3,32),
 					image.Rect(8*3,0,8*4,32),
 				},
-				ClipMode: gcs.AnimPingPong,
+				ClipMode: groove.AnimPingPong,
 			},
 		},
 		Fps: 24,

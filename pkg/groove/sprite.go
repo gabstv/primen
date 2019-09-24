@@ -1,10 +1,9 @@
-package gcs
+package groove
 
 import (
 	"image"
 
 	"github.com/gabstv/ecs"
-	"github.com/gabstv/groove/pkg/groove"
 	"github.com/gabstv/groove/pkg/groove/common"
 	"github.com/hajimehoshi/ebiten"
 )
@@ -21,10 +20,10 @@ var (
 )
 
 func init() {
-	groove.DefaultComp(func(e *groove.Engine, w *ecs.World) {
+	DefaultComp(func(e *Engine, w *ecs.World) {
 		SpriteComponent(w)
 	})
-	groove.DefaultSys(func(e *groove.Engine, w *ecs.World) {
+	DefaultSys(func(e *Engine, w *ecs.World) {
 		SpriteSystem(w)
 	})
 	println("graphicsinit end")
@@ -60,7 +59,7 @@ func SpriteComponent(w *ecs.World) *ecs.Component {
 	if c == nil {
 		var err error
 		c, err = w.NewComponent(ecs.NewComponentInput{
-			Name: "groove.gcs.Sprite",
+			Name: "groove.Sprite",
 			ValidateDataFn: func(data interface{}) bool {
 				_, ok := data.(*Sprite)
 				return ok
@@ -85,7 +84,7 @@ func SpriteSystem(w *ecs.World) *ecs.System {
 		opt := &ebiten.DrawImageOptions{}
 		w.Set(DefaultImageOptions, opt)
 	}
-	sys.AddTag(groove.WorldTagDraw)
+	sys.AddTag(WorldTagDraw)
 	return sys
 }
 
@@ -95,8 +94,8 @@ func SpriteSystemExec(dt float64, v *ecs.View, s *ecs.System) {
 	matches := v.Matches()
 	spritecomp := spriteWC.Get(world)
 	defaultopts := world.Get(DefaultImageOptions).(*ebiten.DrawImageOptions)
-	engine := world.Get(groove.EngineKey).(*groove.Engine)
-	ebitenScreen := engine.Get(groove.EbitenScreen).(*ebiten.Image)
+	engine := world.Get(EngineKey).(*Engine)
+	ebitenScreen := engine.Get(EbitenScreen).(*ebiten.Image)
 	for _, m := range matches {
 		sprite := m.Components[spritecomp].(*Sprite)
 		opt := sprite.Options

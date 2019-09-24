@@ -1,8 +1,7 @@
-package gcs
+package groove
 
 import (
 	"github.com/gabstv/ecs"
-	"github.com/gabstv/groove/pkg/groove"
 	"github.com/gabstv/groove/pkg/groove/common"
 )
 
@@ -18,10 +17,10 @@ var (
 )
 
 func init() {
-	groove.DefaultComp(func(e *groove.Engine, w *ecs.World) {
+	DefaultComp(func(e *Engine, w *ecs.World) {
 		TransformComponent(w)
 	})
-	groove.DefaultSys(func(e *groove.Engine, w *ecs.World) {
+	DefaultSys(func(e *Engine, w *ecs.World) {
 		TransformSystem(w)
 		TransformSpriteSystem(w)
 	})
@@ -63,7 +62,7 @@ func TransformComponent(w *ecs.World) *ecs.Component {
 	if c == nil {
 		var err error
 		c, err = w.NewComponent(ecs.NewComponentInput{
-			Name: "groove.gcs.Transform",
+			Name: "groove.Transform",
 			ValidateDataFn: func(data interface{}) bool {
 				_, ok := data.(*Transform)
 				return ok
@@ -83,7 +82,7 @@ func TransformComponent(w *ecs.World) *ecs.Component {
 // TransformSystem creates the transform system
 func TransformSystem(w *ecs.World) *ecs.System {
 	sys := w.NewSystem(TransformPriority, TransformSystemExec, transformWC.Get(w))
-	sys.AddTag(groove.WorldTagUpdate)
+	sys.AddTag(WorldTagUpdate)
 	sys.Set("tick", uint64(0))
 	return sys
 }
@@ -91,7 +90,7 @@ func TransformSystem(w *ecs.World) *ecs.System {
 // TransformSpriteSystem creates the transform sprite system
 func TransformSpriteSystem(w *ecs.World) *ecs.System {
 	sys := w.NewSystem(TransformSpritePriority, TransformSpriteSystemExec, transformWC.Get(w), spriteWC.Get(w))
-	sys.AddTag(groove.WorldTagUpdate)
+	sys.AddTag(WorldTagUpdate)
 	println("TransformSpriteSystem")
 	return sys
 }

@@ -1,10 +1,9 @@
-package gcs
+package groove
 
 import (
 	"image"
 
 	"github.com/gabstv/ecs"
-	"github.com/gabstv/groove/pkg/groove"
 	"github.com/gabstv/groove/pkg/groove/common"
 	"github.com/hajimehoshi/ebiten"
 )
@@ -41,10 +40,10 @@ var (
 )
 
 func init() {
-	groove.DefaultComp(func(e *groove.Engine, w *ecs.World) {
+	DefaultComp(func(e *Engine, w *ecs.World) {
 		SpriteAnimationComponent(w)
 	})
-	groove.DefaultSys(func(e *groove.Engine, w *ecs.World) {
+	DefaultSys(func(e *Engine, w *ecs.World) {
 		SpriteAnimationSystem(w)
 		SpriteAnimationLinkSystem(w)
 	})
@@ -96,7 +95,7 @@ func SpriteAnimationComponent(w *ecs.World) *ecs.Component {
 	if c == nil {
 		var err error
 		c, err = w.NewComponent(ecs.NewComponentInput{
-			Name: "groove.gcs.SpriteAnimation",
+			Name: "groove.SpriteAnimation",
 			ValidateDataFn: func(data interface{}) bool {
 				_, ok := data.(*SpriteAnimation)
 				return ok
@@ -117,7 +116,7 @@ func SpriteAnimationComponent(w *ecs.World) *ecs.Component {
 // SpriteAnimationSystem creates the sprite system
 func SpriteAnimationSystem(w *ecs.World) *ecs.System {
 	sys := w.NewSystem(SpriteAnimationPriority, SpriteAnimationSystemExec, spriteanimationWC.Get(w))
-	sys.AddTag(groove.WorldTagUpdate)
+	sys.AddTag(WorldTagUpdate)
 	return sys
 }
 
@@ -226,7 +225,7 @@ func spriteAnimResolvePlayback(globalfps, dt float64, spranim *SpriteAnimation) 
 // SpriteAnimationLinkSystem creates the sprite system
 func SpriteAnimationLinkSystem(w *ecs.World) *ecs.System {
 	sys := w.NewSystem(SpriteAnimationLinkPriority, SpriteAnimationLinkSystemExec, spriteanimationWC.Get(w), spriteWC.Get(w))
-	sys.AddTag(groove.WorldTagDraw)
+	sys.AddTag(WorldTagDraw)
 	return sys
 }
 

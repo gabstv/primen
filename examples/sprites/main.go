@@ -7,7 +7,6 @@ import (
 	
 	"github.com/gabstv/ecs"
 	"github.com/gabstv/groove/pkg/groove"
-	"github.com/gabstv/groove/pkg/groove/gcs"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
@@ -24,9 +23,9 @@ func main() {
 	
 	//go func(){
 		dw := engine.Default()
-		sc := gcs.SpriteComponent(dw)
+		sc := groove.SpriteComponent(dw)
 		e := dw.NewEntity()
-		dw.AddComponentToEntity(e, sc, &gcs.Sprite{
+		dw.AddComponentToEntity(e, sc, &groove.Sprite{
 			Image: ebimg,
 			X: 64,
 			Y: 64,
@@ -36,7 +35,7 @@ func main() {
 			Bounds: image.Rect(0,0,16,16),
 		})
 		e2 := dw.NewEntity()
-		dw.AddComponentToEntity(e2, sc, &gcs.Sprite{
+		dw.AddComponentToEntity(e2, sc, &groove.Sprite{
 			Image: ebimg,
 			X: 128,
 			Y: 64,
@@ -48,7 +47,7 @@ func main() {
 		dw.NewSystem(0, func(dt float64, v *ecs.View, s *ecs.System){
 			matches := v.Matches()
 			for _, m := range matches {
-				sprite := m.Components[sc].(*gcs.Sprite)
+				sprite := m.Components[sc].(*groove.Sprite)
 				sprite.Angle = sprite.Angle + (math.Pi * dt * 0.0125)
 			}
 		}, sc)

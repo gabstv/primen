@@ -10,7 +10,6 @@ import (
 	
 	"github.com/gabstv/ecs"
 	"github.com/gabstv/groove/pkg/groove"
-	"github.com/gabstv/groove/pkg/groove/gcs"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
@@ -42,8 +41,8 @@ func main() {
 	})
 	
 	dw := engine.Default()
-	sc := gcs.SpriteComponent(dw)
-	tc := gcs.TransformComponent(dw)
+	sc := groove.SpriteComponent(dw)
+	tc := groove.TransformComponent(dw)
 	spinnercomp, _ := dw.NewComponent(ecs.NewComponentInput{
 		Name: "spinner",
 	})
@@ -52,7 +51,7 @@ func main() {
 	ss.Set("tc", tc)
 	ss.Set("scaleadd", float64(0))
 	e := dw.NewEntity()
-	t99 := &gcs.Transform{
+	t99 := &groove.Transform{
 		X: 320/2,
 		Y: 240/2,
 		ScaleX: 0.5,
@@ -65,9 +64,9 @@ func main() {
 	// add children
 	for i := 0; i < 10; i++ {
 		e2 := dw.NewEntity()
-		mm := gcs.IM.Moved(gcs.V(30,0)).Rotated(gcs.ZV, (math.Pi*2)*(float64(i)/10)).Project(gcs.ZV)
+		mm := groove.IM.Moved(groove.V(30,0)).Rotated(groove.ZV, (math.Pi*2)*(float64(i)/10)).Project(groove.ZV)
 		println(mm.String())
-		dw.AddComponentToEntity(e2, tc, &gcs.Transform{
+		dw.AddComponentToEntity(e2, tc, &groove.Transform{
 			X: mm.X,
 			Y: mm.Y,
 			Parent: t99,
@@ -75,7 +74,7 @@ func main() {
 			ScaleY: 1,
 		})
 		ri := randomsprites[rand.Intn(4)]
-		dw.AddComponentToEntity(e2, sc, &gcs.Sprite{
+		dw.AddComponentToEntity(e2, sc, &groove.Sprite{
 			Bounds: image.Rect(ri[0],ri[1],ri[2],ri[3]),
 			Image: ebimg,
 			ScaleX: 1,
@@ -127,7 +126,7 @@ func spinnersys(dt float64, view *ecs.View, sys *ecs.System) {
 	}
 	for _, v := range view.Matches() {
 		spin := v.Components[sc].(*spinner)
-		tr := v.Components[tc].(*gcs.Transform)
+		tr := v.Components[tc].(*groove.Transform)
 		tr.Angle += spin.Speed*dt*rs
 		tr.X += xs * dt
 		tr.Y += ys * dt
