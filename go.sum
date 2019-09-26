@@ -1,7 +1,7 @@
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/gabstv/ecs v1.1.2 h1:ry+wpYVnpn/jcQrnNsldbutv7c1g03n96c8IcGBm4rc=
-github.com/gabstv/ecs v1.1.2/go.mod h1:nKDQcBVrDeWjMFD6bi1qxoHhBLCgbo690VexQY07hvE=
+github.com/gabstv/ecs v1.1.4 h1:b3YDAOiJV2mB3MibefE+J66QHPx53UKu7zsiBI7UeFg=
+github.com/gabstv/ecs v1.1.4/go.mod h1:nKDQcBVrDeWjMFD6bi1qxoHhBLCgbo690VexQY07hvE=
 github.com/go-gl/glfw v0.0.0-20181213070059-819e8ce5125f h1:7MsFMbSn8Lcw0blK4+NEOf8DuHoOBDhJsHz04yh13pM=
 github.com/go-gl/glfw v0.0.0-20181213070059-819e8ce5125f/go.mod h1:vR7hzQXu2zJy9AVAgeJqvqgH9Q5CA+iKCZ2gyEVpxRU=
 github.com/gofrs/flock v0.7.0 h1:pGFUjl501gafK9HBt1VGL1KCOd/YhIooID+xgyJCf3g=

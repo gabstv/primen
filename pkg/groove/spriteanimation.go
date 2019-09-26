@@ -224,7 +224,7 @@ func spriteAnimResolvePlayback(globalfps, dt float64, spranim *SpriteAnimation) 
 
 // SpriteAnimationLinkSystem creates the sprite system
 func SpriteAnimationLinkSystem(w *ecs.World) *ecs.System {
-	sys := w.NewSystem(SpriteAnimationLinkPriority, SpriteAnimationLinkSystemExec, spriteanimationWC.Get(w), spriteWC.Get(w))
+	sys := w.NewSystem(SpriteAnimationLinkPriority, SpriteAnimationLinkSystemExec, spriteanimationWC.Get(w), w.Component(spriteComponentName))
 	sys.AddTag(WorldTagDraw)
 	return sys
 }
@@ -234,7 +234,7 @@ func SpriteAnimationLinkSystemExec(dt float64, v *ecs.View, s *ecs.System) {
 	world := v.World()
 	matches := v.Matches()
 	spriteanimcomp := spriteanimationWC.Get(world)
-	spritecomp := spriteWC.Get(world)
+	spritecomp := world.Component(spriteComponentName)
 	for _, m := range matches {
 		spranim := m.Components[spriteanimcomp].(*SpriteAnimation)
 		spr := m.Components[spritecomp].(*Sprite)

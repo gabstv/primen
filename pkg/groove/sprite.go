@@ -4,8 +4,11 @@ import (
 	"image"
 
 	"github.com/gabstv/ecs"
-	"github.com/gabstv/groove/pkg/groove/common"
 	"github.com/hajimehoshi/ebiten"
+)
+
+const (
+	spriteComponentName = "groove.Sprite"
 )
 
 const (
@@ -13,10 +16,6 @@ const (
 	SpritePriority int = -10
 	// DefaultImageOptions key passed to the default world (&ebiten.DrawImageOptions{})
 	DefaultImageOptions string = "default_image_options"
-)
-
-var (
-	spriteWC = &common.WorldComponents{}
 )
 
 func init() {
@@ -55,11 +54,11 @@ type Sprite struct {
 // If a component is not present, it will create a new component
 // using world.NewComponent
 func SpriteComponent(w *ecs.World) *ecs.Component {
-	c := spriteWC.Get(w)
+	c := w.Component(spriteComponentName)
 	if c == nil {
 		var err error
 		c, err = w.NewComponent(ecs.NewComponentInput{
-			Name: "groove.Sprite",
+			Name: spriteComponentName,
 			ValidateDataFn: func(data interface{}) bool {
 				_, ok := data.(*Sprite)
 				return ok
@@ -72,14 +71,13 @@ func SpriteComponent(w *ecs.World) *ecs.Component {
 		if err != nil {
 			panic(err)
 		}
-		spriteWC.Set(w, c)
 	}
 	return c
 }
 
 // SpriteSystem creates the sprite system
 func SpriteSystem(w *ecs.World) *ecs.System {
-	sys := w.NewSystem(SpritePriority, SpriteSystemExec, spriteWC.Get(w))
+	sys := w.NewSystem(SpritePriority, SpriteSystemExec, w.Component(spriteComponentName))
 	if w.Get(DefaultImageOptions) == nil {
 		opt := &ebiten.DrawImageOptions{}
 		w.Set(DefaultImageOptions, opt)
@@ -92,7 +90,7 @@ func SpriteSystem(w *ecs.World) *ecs.System {
 func SpriteSystemExec(dt float64, v *ecs.View, s *ecs.System) {
 	world := v.World()
 	matches := v.Matches()
-	spritecomp := spriteWC.Get(world)
+	spritecomp := world.Component(spriteComponentName)
 	defaultopts := world.Get(DefaultImageOptions).(*ebiten.DrawImageOptions)
 	engine := world.Get(EngineKey).(*Engine)
 	ebitenScreen := engine.Get(EbitenScreen).(*ebiten.Image)

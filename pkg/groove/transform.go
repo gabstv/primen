@@ -89,7 +89,7 @@ func TransformSystem(w *ecs.World) *ecs.System {
 
 // TransformSpriteSystem creates the transform sprite system
 func TransformSpriteSystem(w *ecs.World) *ecs.System {
-	sys := w.NewSystem(TransformSpritePriority, TransformSpriteSystemExec, transformWC.Get(w), spriteWC.Get(w))
+	sys := w.NewSystem(TransformSpritePriority, TransformSpriteSystemExec, transformWC.Get(w), w.Component(spriteComponentName))
 	sys.AddTag(WorldTagUpdate)
 	println("TransformSpriteSystem")
 	return sys
@@ -115,7 +115,7 @@ func TransformSpriteSystemExec(dt float64, v *ecs.View, s *ecs.System) {
 	matches := v.Matches()
 	world := v.World()
 	transformcomp := transformWC.Get(world)
-	spritecomp := spriteWC.Get(world)
+	spritecomp := world.Component(spriteComponentName)
 	for _, m := range matches {
 		t := m.Components[transformcomp].(*Transform)
 		// transform is already resolved because the TransformSystem executed first
