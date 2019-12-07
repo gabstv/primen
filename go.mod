@@ -5,3 +5,5 @@ require (
 	github.com/hajimehoshi/ebiten v1.9.3
 	github.com/stretchr/testify v1.4.0
 )
+
+go 1.13
