@@ -3,12 +3,15 @@ github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/gabstv/ecs v1.1.4 h1:b3YDAOiJV2mB3MibefE+J66QHPx53UKu7zsiBI7UeFg=
 github.com/gabstv/ecs v1.1.4/go.mod h1:nKDQcBVrDeWjMFD6bi1qxoHhBLCgbo690VexQY07hvE=
+github.com/gabstv/ecs v1.2.0 h1:bwcRQ34naylhCoYCZ7iy8hR5j/f1dcOvdTxAbumNXbQ=
+github.com/gabstv/ecs v1.2.0/go.mod h1:nKDQcBVrDeWjMFD6bi1qxoHhBLCgbo690VexQY07hvE=
 github.com/go-gl/glfw v0.0.0-20181213070059-819e8ce5125f h1:7MsFMbSn8Lcw0blK4+NEOf8DuHoOBDhJsHz04yh13pM=
 github.com/go-gl/glfw v0.0.0-20181213070059-819e8ce5125f/go.mod h1:vR7hzQXu2zJy9AVAgeJqvqgH9Q5CA+iKCZ2gyEVpxRU=
 github.com/go-gl/glfw v0.0.0-20190409004039-e6da0acd62b1 h1:QbL/5oDUmRBzO9/Z7Seo6zf912W/a6Sr4Eu0G/3Jho0=
 github.com/go-gl/glfw v0.0.0-20190409004039-e6da0acd62b1/go.mod h1:vR7hzQXu2zJy9AVAgeJqvqgH9Q5CA+iKCZ2gyEVpxRU=
 github.com/gofrs/flock v0.7.0 h1:pGFUjl501gafK9HBt1VGL1KCOd/YhIooID+xgyJCf3g=
 github.com/gofrs/flock v0.7.0/go.mod h1:F1TvTiK9OcQqauNUHlbJvyl9Qa1QvF/gOUDKA14jxHU=
+github.com/gofrs/flock v0.7.1 h1:DP+LD/t0njgoPBvT5MJLeliUIVQR03hiKR6vezdwHlc=
 github.com/gofrs/flock v0.7.1/go.mod h1:F1TvTiK9OcQqauNUHlbJvyl9Qa1QvF/gOUDKA14jxHU=
 github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0/go.mod h1:E/TSTwGwJL78qG/PmXZO1EjYhfJinVAhrmmHX6Z8B9k=
 github.com/gopherjs/gopherjs v0.0.0-20180628210949-0892b62f0d9f/go.mod h1:wJfORRmW1u3UXTncJ5qlYoELFm8eSnnEO6hX4iZ3EWY=

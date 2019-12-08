@@ -5,9 +5,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gabstv/ecs"
 	"github.com/gabstv/troupe/pkg/troupe/common"
 	"github.com/hajimehoshi/ebiten"
+	"github.com/troupe/pkg/troupe/ecs"
 )
 
 // EbitenScreen = "ebiten_screen"
@@ -23,6 +23,7 @@ type Engine struct {
 	worlds       []worldContainer
 	defaultWorld *ecs.World
 	dmap         common.Dict
+	screen       *ebiten.Image
 	options      EngineOptions
 }
 
@@ -153,6 +154,7 @@ func (e *Engine) Run() error {
 
 func (e *Engine) loop(screen *ebiten.Image) error {
 	e.dmap.Set(EbitenScreen, screen)
+	e.screen = screen
 	e.lock.Lock()
 	now := time.Now()
 	ld := now.Sub(e.lt).Seconds()
