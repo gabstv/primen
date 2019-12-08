@@ -41,7 +41,7 @@ func TestNewArchetype(t *testing.T) {
 		for _, v := range m {
 			da := v.Components[c1].(*compAData)
 			db := v.Components[c2].(*compBData)
-			if db.Name == "Groove" {
+			if db.Name == "Troupe" {
 				da.X++
 			} else {
 				da.Y++
@@ -55,7 +55,7 @@ func TestNewArchetype(t *testing.T) {
 		X: 10,
 		Y: 20,
 	}, &compBData{
-		Name: "Groove",
+		Name: "Troupe",
 	})
 	e2 := arche1.NewEntity(&compAData{
 		X: 10,

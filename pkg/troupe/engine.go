@@ -61,7 +61,7 @@ func NewEngine(v *NewEngineInput) *Engine {
 			Width:  800,
 			Height: 600,
 			Scale:  1,
-			Title:  "Groove",
+			Title:  "Troupe",
 		}
 	} else {
 		if v.Scale < 1 {
