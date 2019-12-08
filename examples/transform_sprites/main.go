@@ -9,7 +9,7 @@ import (
 	"image"
 	
 	"github.com/gabstv/ecs"
-	"github.com/gabstv/groove/pkg/groove"
+	"github.com/gabstv/troupe/pkg/troupe"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
@@ -33,7 +33,7 @@ type spinner struct{
 func main() {
 	ebimg, _, _ := ebitenutil.NewImageFromFile("img.png", ebiten.FilterDefault)
 
-	engine := groove.NewEngine(&groove.NewEngineInput{
+	engine := troupe.NewEngine(&troupe.NewEngineInput{
 		Title: "Basic Transform With Sprites",
 		Width: 320,
 		Height: 240,
@@ -41,8 +41,8 @@ func main() {
 	})
 	
 	dw := engine.Default()
-	sc := groove.SpriteComponent(dw)
-	tc := groove.TransformComponent(dw)
+	sc := troupe.SpriteComponent(dw)
+	tc := troupe.TransformComponent(dw)
 	spinnercomp, _ := dw.NewComponent(ecs.NewComponentInput{
 		Name: "spinner",
 	})
@@ -51,7 +51,7 @@ func main() {
 	ss.Set("tc", tc)
 	ss.Set("scaleadd", float64(0))
 	e := dw.NewEntity()
-	t99 := &groove.Transform{
+	t99 := &troupe.Transform{
 		X: 320/2,
 		Y: 240/2,
 		ScaleX: 0.5,
@@ -64,9 +64,9 @@ func main() {
 	// add children
 	for i := 0; i < 10; i++ {
 		e2 := dw.NewEntity()
-		mm := groove.IM.Moved(groove.V(30,0)).Rotated(groove.ZV, (math.Pi*2)*(float64(i)/10)).Project(groove.ZV)
+		mm := troupe.IM.Moved(troupe.V(30,0)).Rotated(troupe.ZV, (math.Pi*2)*(float64(i)/10)).Project(troupe.ZV)
 		println(mm.String())
-		dw.AddComponentToEntity(e2, tc, &groove.Transform{
+		dw.AddComponentToEntity(e2, tc, &troupe.Transform{
 			X: mm.X,
 			Y: mm.Y,
 			Parent: t99,
@@ -74,7 +74,7 @@ func main() {
 			ScaleY: 1,
 		})
 		ri := randomsprites[rand.Intn(4)]
-		dw.AddComponentToEntity(e2, sc, &groove.Sprite{
+		dw.AddComponentToEntity(e2, sc, &troupe.Sprite{
 			Bounds: image.Rect(ri[0],ri[1],ri[2],ri[3]),
 			Image: ebimg,
 			ScaleX: 1,
@@ -85,13 +85,13 @@ func main() {
 	// debug system
 	ddrawsys := dw.NewSystem(-100, func(dt float64, view *ecs.View, sys *ecs.System){
 		fps := ebiten.CurrentFPS()
-		img := engine.Get(groove.EbitenScreen).(*ebiten.Image)
+		img := engine.Get(troupe.EbitenScreen).(*ebiten.Image)
 		ebitenutil.DebugPrintAt(img, fmt.Sprintf("%.2f fps", fps), 0, 0)
 		ebitenutil.DebugPrintAt(img, fmt.Sprintf("x = %.2f; y = %.2f;", t99.X, t99.Y), 0, 12)
 		ebitenutil.DebugPrintAt(img, "arrows = move; x, z = rotate", 0, 24)
 
 	}, spinnercomp)
-	ddrawsys.AddTag(groove.WorldTagDraw)
+	ddrawsys.AddTag(troupe.WorldTagDraw)
 
 	engine.Run()
 }
@@ -126,7 +126,7 @@ func spinnersys(dt float64, view *ecs.View, sys *ecs.System) {
 	}
 	for _, v := range view.Matches() {
 		spin := v.Components[sc].(*spinner)
-		tr := v.Components[tc].(*groove.Transform)
+		tr := v.Components[tc].(*troupe.Transform)
 		tr.Angle += spin.Speed*dt*rs
 		tr.X += xs * dt
 		tr.Y += ys * dt

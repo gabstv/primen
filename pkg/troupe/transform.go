@@ -1,8 +1,8 @@
-package groove
+package troupe
 
 import (
 	"github.com/gabstv/ecs"
-	"github.com/gabstv/groove/pkg/groove/common"
+	"github.com/gabstv/troupe/pkg/troupe/common"
 )
 
 const (
@@ -62,7 +62,7 @@ func TransformComponent(w *ecs.World) *ecs.Component {
 	if c == nil {
 		var err error
 		c, err = w.NewComponent(ecs.NewComponentInput{
-			Name: "groove.Transform",
+			Name: "troupe.Transform",
 			ValidateDataFn: func(data interface{}) bool {
 				_, ok := data.(*Transform)
 				return ok

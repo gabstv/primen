@@ -1,4 +1,4 @@
-package groove
+package troupe
 
 import (
 	"sort"
@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/gabstv/ecs"
-	"github.com/gabstv/groove/pkg/groove/common"
+	"github.com/gabstv/troupe/pkg/troupe/common"
 	"github.com/hajimehoshi/ebiten"
 )
 
@@ -16,7 +16,7 @@ const EbitenScreen = "ebiten_screen"
 // EngineKey = "engine"
 const EngineKey = "engine"
 
-// Engine is what controls the ECS of groove.
+// Engine is what controls the ECS of troupe.
 type Engine struct {
 	lock         sync.Mutex
 	lt           time.Time

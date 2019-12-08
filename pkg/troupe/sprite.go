@@ -1,4 +1,4 @@
-package groove
+package troupe
 
 import (
 	"image"
@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	spriteComponentName = "groove.Sprite"
+	spriteComponentName = "troupe.Sprite"
 )
 
 const (

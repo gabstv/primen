@@ -1,4 +1,4 @@
-package groove
+package troupe
 
 import (
 	"github.com/gabstv/ecs"

@@ -2,19 +2,19 @@ package main
 
 import (
 	"github.com/gabstv/ecs"
-	"github.com/gabstv/groove/pkg/groove"
+	"github.com/gabstv/troupe/pkg/troupe"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
 
-var engine *groove.Engine
+var engine *troupe.Engine
 var hellocomp *ecs.Component
 var movecomp *ecs.Component
 
 const SPEED float64 = 120
 
 func main() {
-	engine = groove.NewEngine(&groove.NewEngineInput{
+	engine = troupe.NewEngine(&troupe.NewEngineInput{
 		Width:  320,
 		Height: 240,
 		Scale:  2,
@@ -36,9 +36,9 @@ func main() {
 		panic(err)
 	}
 	sys0 := world.NewSystem(0, initEngineSystemExec, hellocomp)
-	sys0.AddTag(groove.WorldTagDraw)
+	sys0.AddTag(troupe.WorldTagDraw)
 	sys1 := world.NewSystem(1, moveSysExec, movecomp, hellocomp)
-	sys1.AddTag(groove.WorldTagUpdate)
+	sys1.AddTag(troupe.WorldTagUpdate)
 	entity0 := world.NewEntity()
 	world.AddComponentToEntity(entity0, hellocomp, &initEngineData{"Hello,", 30, 40})
 	entity1 := world.NewEntity()
@@ -65,7 +65,7 @@ type moveCompData struct {
 }
 
 func initEngineSystemExec(dt float64, view *ecs.View, sys *ecs.System) {
-	img := engine.Get(groove.EbitenScreen).(*ebiten.Image)
+	img := engine.Get(troupe.EbitenScreen).(*ebiten.Image)
 	for _, v := range view.Matches() {
 		data := v.Components[hellocomp].(*initEngineData)
 		ebitenutil.DebugPrintAt(img, data.Text, data.X, data.Y)

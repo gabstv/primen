@@ -1,10 +1,10 @@
-package groove
+package troupe
 
 import (
 	"image"
 
 	"github.com/gabstv/ecs"
-	"github.com/gabstv/groove/pkg/groove/common"
+	"github.com/gabstv/troupe/pkg/troupe/common"
 	"github.com/hajimehoshi/ebiten"
 )
 
@@ -95,7 +95,7 @@ func SpriteAnimationComponent(w *ecs.World) *ecs.Component {
 	if c == nil {
 		var err error
 		c, err = w.NewComponent(ecs.NewComponentInput{
-			Name: "groove.SpriteAnimation",
+			Name: "troupe.SpriteAnimation",
 			ValidateDataFn: func(data interface{}) bool {
 				_, ok := data.(*SpriteAnimation)
 				return ok
