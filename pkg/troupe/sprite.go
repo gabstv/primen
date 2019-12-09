@@ -34,16 +34,18 @@ type Sprite struct {
 	Angle  float64
 	ScaleX float64
 	ScaleY float64
-	// Bounds for drawing subimage
-	Bounds image.Rectangle
+
+	Bounds image.Rectangle // Bounds for drawing subimage
 
 	Options *ebiten.DrawImageOptions
 	Image   *ebiten.Image
-	// lastImage exists to keep track of the public Image field, if it
+
+	DrawDisabled bool // if true, the SpriteSystem will not draw this
+
+	lastImage *ebiten.Image // lastImage exists to keep track of the public Image field, if it
 	// changes, the imageWidth and ImageHeight needs to be recalculated.
-	lastImage   *ebiten.Image
-	imageWidth  float64
-	imageHeight float64
+	imageWidth  float64 // last calculated image width
+	imageHeight float64 // last calculated image height
 
 	lastBounds   image.Rectangle
 	lastSubImage *ebiten.Image
@@ -120,6 +122,9 @@ func SpriteSystemExec(ctx Context, screen *ebiten.Image) {
 		opt.GeoM.Rotate(sprite.Angle)
 		opt.GeoM.Translate(sprite.imageWidth/2, sprite.imageHeight/2)
 		opt.GeoM.Translate(sprite.X, sprite.Y)
+		if sprite.DrawDisabled {
+			continue
+		}
 		if sprite.lastSubImage != nil {
 			screen.DrawImage(sprite.lastSubImage, opt)
 		} else {
