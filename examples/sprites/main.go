@@ -5,7 +5,7 @@ import (
 	_ "image/png"
 	"image"
 	
-	"github.com/gabstv/ecs"
+	"github.com/gabstv/troupe/pkg/troupe/ecs"
 	"github.com/gabstv/troupe/pkg/troupe"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
@@ -44,8 +44,9 @@ func main() {
 			ScaleY: 2,
 			Bounds: image.Rect(16,16,32,32),
 		})
-		dw.NewSystem(0, func(dt float64, v *ecs.View, s *ecs.System){
-			matches := v.Matches()
+		dw.NewSystem(0, func(ctx ecs.Context, screen *ebiten.Image){
+			matches := ctx.System().View().Matches()
+			dt := ctx.DT()
 			for _, m := range matches {
 				sprite := m.Components[sc].(*troupe.Sprite)
 				sprite.Angle = sprite.Angle + (math.Pi * dt * 0.0125)

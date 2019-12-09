@@ -10,9 +10,6 @@ import (
 	"github.com/hajimehoshi/ebiten"
 )
 
-// EbitenScreen = "ebiten_screen"
-const EbitenScreen = "ebiten_screen"
-
 // EngineKey = "engine"
 const EngineKey = "engine"
 
@@ -153,7 +150,6 @@ func (e *Engine) Run() error {
 }
 
 func (e *Engine) loop(screen *ebiten.Image) error {
-	e.dmap.Set(EbitenScreen, screen)
 	e.screen = screen
 	e.lock.Lock()
 	now := time.Now()

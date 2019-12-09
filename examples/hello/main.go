@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/gabstv/ecs"
 	"github.com/gabstv/troupe/pkg/troupe"
+	"github.com/gabstv/troupe/pkg/troupe/ecs"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
@@ -64,16 +64,16 @@ type moveCompData struct {
 	YSum   float64
 }
 
-func initEngineSystemExec(dt float64, view *ecs.View, sys *ecs.System) {
-	img := engine.Get(troupe.EbitenScreen).(*ebiten.Image)
-	for _, v := range view.Matches() {
+func initEngineSystemExec(ctx ecs.Context, screen *ebiten.Image) {
+	for _, v := range ctx.System().View().Matches() {
 		data := v.Components[hellocomp].(*initEngineData)
-		ebitenutil.DebugPrintAt(img, data.Text, data.X, data.Y)
+		ebitenutil.DebugPrintAt(screen, data.Text, data.X, data.Y)
 	}
 }
 
-func moveSysExec(dt float64, view *ecs.View, sys *ecs.System) {
-	for _, v := range view.Matches() {
+func moveSysExec(ctx ecs.Context, screen *ebiten.Image) {
+	dt := ctx.DT()
+	for _, v := range ctx.System().View().Matches() {
 		iedata := v.Components[hellocomp].(*initEngineData)
 		movedata := v.Components[movecomp].(*moveCompData)
 		movedata.XSum += dt * movedata.XSpeed
