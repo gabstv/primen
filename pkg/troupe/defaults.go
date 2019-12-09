@@ -3,7 +3,7 @@ package troupe
 import (
 	"sync"
 
-	"github.com/gabstv/ecs"
+	"github.com/gabstv/troupe/pkg/troupe/ecs"
 )
 
 // DefaultStarter is the function used to start a component or a system

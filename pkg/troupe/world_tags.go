@@ -1,7 +1,7 @@
 package troupe
 
 import (
-	"github.com/gabstv/ecs"
+	"github.com/gabstv/troupe/pkg/troupe/ecs"
 )
 
 // WorldTag is a tag used to filter systems of a world

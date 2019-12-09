@@ -3,8 +3,8 @@ package troupe
 import (
 	"image"
 
-	"github.com/gabstv/ecs"
 	"github.com/gabstv/troupe/pkg/troupe/common"
+	"github.com/gabstv/troupe/pkg/troupe/ecs"
 	"github.com/hajimehoshi/ebiten"
 )
 
@@ -90,7 +90,7 @@ type SpriteAnimationClip struct {
 // SpriteAnimationComponent will get the registered sprite anim component of the world.
 // If a component is not present, it will create a new component
 // using world.NewComponent
-func SpriteAnimationComponent(w *ecs.World) *ecs.Component {
+func SpriteAnimationComponent(w ecs.Worlder) *ecs.Component {
 	c := spriteanimationWC.Get(w)
 	if c == nil {
 		var err error
@@ -100,7 +100,7 @@ func SpriteAnimationComponent(w *ecs.World) *ecs.Component {
 				_, ok := data.(*SpriteAnimation)
 				return ok
 			},
-			DestructorFn: func(_ *ecs.World, entity ecs.Entity, data interface{}) {
+			DestructorFn: func(_ ecs.Worlder, entity ecs.Entity, data interface{}) {
 				sd := data.(*SpriteAnimation)
 				sd.Clips = nil
 			},
@@ -121,7 +121,10 @@ func SpriteAnimationSystem(w *ecs.World) *ecs.System {
 }
 
 // SpriteAnimationSystemExec is the main function of the SpriteSystem
-func SpriteAnimationSystemExec(dt float64, v *ecs.View, s *ecs.System) {
+func SpriteAnimationSystemExec(ctx ecs.Context, screen *ebiten.Image) {
+	//dt float64, v *ecs.View, s *ecs.System
+	dt := ctx.DT()
+	v := ctx.System().View()
 	world := v.World()
 	matches := v.Matches()
 	spriteanimcomp := spriteanimationWC.Get(world)
@@ -230,8 +233,9 @@ func SpriteAnimationLinkSystem(w *ecs.World) *ecs.System {
 }
 
 // SpriteAnimationLinkSystemExec is what glues the animation and sprite together
-func SpriteAnimationLinkSystemExec(dt float64, v *ecs.View, s *ecs.System) {
-	world := v.World()
+func SpriteAnimationLinkSystemExec(ctx ecs.Context, screen *ebiten.Image) {
+	v := ctx.System().View()
+	world := ctx.World()
 	matches := v.Matches()
 	spriteanimcomp := spriteanimationWC.Get(world)
 	spritecomp := world.Component(spriteComponentName)

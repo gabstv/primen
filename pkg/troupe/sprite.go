@@ -3,7 +3,7 @@ package troupe
 import (
 	"image"
 
-	"github.com/gabstv/ecs"
+	"github.com/gabstv/troupe/pkg/troupe/ecs"
 	"github.com/hajimehoshi/ebiten"
 )
 
@@ -63,7 +63,7 @@ func SpriteComponent(w *ecs.World) *ecs.Component {
 				_, ok := data.(*Sprite)
 				return ok
 			},
-			DestructorFn: func(_ *ecs.World, entity ecs.Entity, data interface{}) {
+			DestructorFn: func(_ ecs.Worlder, entity ecs.Entity, data interface{}) {
 				sd := data.(*Sprite)
 				sd.Options = nil
 			},
@@ -87,13 +87,13 @@ func SpriteSystem(w *ecs.World) *ecs.System {
 }
 
 // SpriteSystemExec is the main function of the SpriteSystem
-func SpriteSystemExec(dt float64, v *ecs.View, s *ecs.System) {
+func SpriteSystemExec(ctx ecs.Context, screen *ebiten.Image) {
+	// dt float64, v *ecs.View, s *ecs.System
+	v := ctx.System().View()
 	world := v.World()
 	matches := v.Matches()
 	spritecomp := world.Component(spriteComponentName)
 	defaultopts := world.Get(DefaultImageOptions).(*ebiten.DrawImageOptions)
-	engine := world.Get(EngineKey).(*Engine)
-	ebitenScreen := engine.Get(EbitenScreen).(*ebiten.Image)
 	for _, m := range matches {
 		sprite := m.Components[spritecomp].(*Sprite)
 		opt := sprite.Options
@@ -122,9 +122,9 @@ func SpriteSystemExec(dt float64, v *ecs.View, s *ecs.System) {
 		opt.GeoM.Translate(sprite.imageWidth/2, sprite.imageHeight/2)
 		opt.GeoM.Translate(sprite.X, sprite.Y)
 		if sprite.lastSubImage != nil {
-			ebitenScreen.DrawImage(sprite.lastSubImage, opt)
+			screen.DrawImage(sprite.lastSubImage, opt)
 		} else {
-			ebitenScreen.DrawImage(sprite.Image, opt)
+			screen.DrawImage(sprite.Image, opt)
 		}
 	}
 }

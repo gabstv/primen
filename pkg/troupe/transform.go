@@ -1,8 +1,9 @@
 package troupe
 
 import (
-	"github.com/gabstv/ecs"
 	"github.com/gabstv/troupe/pkg/troupe/common"
+	"github.com/gabstv/troupe/pkg/troupe/ecs"
+	"github.com/hajimehoshi/ebiten"
 )
 
 const (
@@ -57,7 +58,7 @@ func NewTransform() *Transform {
 // TransformComponent will get the registered transform component of the world.
 // If a component is not present, it will create a new component
 // using world.NewComponent
-func TransformComponent(w *ecs.World) *ecs.Component {
+func TransformComponent(w ecs.Worlder) *ecs.Component {
 	c := transformWC.Get(w)
 	if c == nil {
 		var err error
@@ -67,7 +68,7 @@ func TransformComponent(w *ecs.World) *ecs.Component {
 				_, ok := data.(*Transform)
 				return ok
 			},
-			DestructorFn: func(_ *ecs.World, entity ecs.Entity, data interface{}) {
+			DestructorFn: func(_ ecs.Worlder, entity ecs.Entity, data interface{}) {
 				//sd := data.(*Transform)
 			},
 		})
@@ -96,7 +97,10 @@ func TransformSpriteSystem(w *ecs.World) *ecs.System {
 }
 
 // TransformSystemExec is the main function of the TransformSystem
-func TransformSystemExec(dt float64, v *ecs.View, s *ecs.System) {
+func TransformSystemExec(ctx ecs.Context, screen *ebiten.Image) {
+	// dt float64, v *ecs.View, s *ecs.System
+	s := ctx.System()
+	v := s.View()
 	tick := s.Get("tick").(uint64)
 	tick++
 	s.Set("tick", tick)
@@ -111,7 +115,9 @@ func TransformSystemExec(dt float64, v *ecs.View, s *ecs.System) {
 }
 
 // TransformSpriteSystemExec is the main function of the TransformSpriteSystem
-func TransformSpriteSystemExec(dt float64, v *ecs.View, s *ecs.System) {
+func TransformSpriteSystemExec(ctx ecs.Context, screen *ebiten.Image) {
+	// dt float64, v *ecs.View, s *ecs.System
+	v := ctx.System().View()
 	matches := v.Matches()
 	world := v.World()
 	transformcomp := transformWC.Get(world)

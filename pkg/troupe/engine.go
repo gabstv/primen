@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/gabstv/troupe/pkg/troupe/common"
+	"github.com/gabstv/troupe/pkg/troupe/ecs"
 	"github.com/hajimehoshi/ebiten"
-	"github.com/troupe/pkg/troupe/ecs"
 )
 
 // EbitenScreen = "ebiten_screen"
@@ -164,7 +164,7 @@ func (e *Engine) loop(screen *ebiten.Image) error {
 	e.lock.Unlock()
 
 	for _, w := range worlds {
-		w.world.RunWithoutTag(WorldTagDraw, ld)
+		w.world.RunWithoutTag(WorldTagDraw, screen, ld)
 	}
 
 	if ebiten.IsDrawingSkipped() {
@@ -172,7 +172,7 @@ func (e *Engine) loop(screen *ebiten.Image) error {
 	}
 
 	for _, w := range worlds {
-		w.world.RunWithTag(WorldTagDraw, ld)
+		w.world.RunWithTag(WorldTagDraw, screen, ld)
 	}
 
 	return nil

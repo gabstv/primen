@@ -13,6 +13,7 @@ type Component = ecs.Component
 type View = ecs.View
 type Entity = ecs.Entity
 type NewComponentInput = ecs.NewComponentInput
+type Worlder = ecs.Worlder
 
 type World struct {
 	*ecs.World
