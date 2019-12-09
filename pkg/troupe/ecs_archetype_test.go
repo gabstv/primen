@@ -16,7 +16,7 @@ type compBData struct {
 }
 
 func TestNewArchetype(t *testing.T) {
-	w := NewWorld()
+	w := NewWorld(nil)
 
 	c1, err := w.NewComponent(NewComponentInput{
 		Name: "COMP_A",

@@ -8,9 +8,6 @@ import (
 	"github.com/hajimehoshi/ebiten"
 )
 
-// EngineKey = "engine"
-const EngineKey = "engine"
-
 // Engine is what controls the ECS of troupe.
 type Engine struct {
 	lock         sync.Mutex
@@ -18,7 +15,6 @@ type Engine struct {
 	worlds       []worldContainer
 	defaultWorld *World
 	dmap         Dict
-	screen       *ebiten.Image
 	options      EngineOptions
 }
 
@@ -70,22 +66,23 @@ func NewEngine(v *NewEngineInput) *Engine {
 			v.Height = 240
 		}
 	}
-
-	// create the default world
-	dw := NewWorld()
 	// assign the default systems and controllers
 
 	e := &Engine{
-		worlds: []worldContainer{
-			worldContainer{
-				priority: 0,
-				world:    dw,
-			},
-		},
-		defaultWorld: dw,
-		options:      v.Options(),
+		options: v.Options(),
 	}
-	dw.Set(EngineKey, e)
+
+	// create the default world
+	dw := NewWorld(e)
+
+	e.worlds = []worldContainer{
+		worldContainer{
+			priority: 0,
+			world:    dw,
+		},
+	}
+	e.defaultWorld = dw
+
 	// start default components and systems
 	startDefaultComponents(e)
 	startDefaultSystems(e)
@@ -105,7 +102,6 @@ func (e *Engine) AddWorld(w *World, priority int) {
 		priority: priority,
 		world:    w,
 	})
-	w.Set(EngineKey, e)
 	// sort by priority
 	sort.Sort(sortedWorldContainer(e.worlds))
 }
@@ -148,7 +144,6 @@ func (e *Engine) Run() error {
 }
 
 func (e *Engine) loop(screen *ebiten.Image) error {
-	e.screen = screen
 	e.lock.Lock()
 	now := time.Now()
 	ld := now.Sub(e.lt).Seconds()

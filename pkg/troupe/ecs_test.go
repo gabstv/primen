@@ -13,7 +13,7 @@ type c0data struct {
 
 func TestECS(t *testing.T) {
 	s0 := 0.0
-	w := NewWorld()
+	w := NewWorld(nil)
 	c0, _ := w.NewComponent(NewComponentInput{
 		Name: "test",
 	})
