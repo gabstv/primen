@@ -1,8 +1,6 @@
 package troupe
 
 import (
-	"github.com/gabstv/troupe/pkg/troupe/common"
-	"github.com/gabstv/troupe/pkg/troupe/ecs"
 	"github.com/hajimehoshi/ebiten"
 )
 
@@ -14,14 +12,14 @@ const (
 )
 
 var (
-	transformWC = &common.WorldComponents{}
+	transformWC = &WorldComponents{}
 )
 
 func init() {
-	DefaultComp(func(e *Engine, w *ecs.World) {
+	DefaultComp(func(e *Engine, w *World) {
 		TransformComponent(w)
 	})
-	DefaultSys(func(e *Engine, w *ecs.World) {
+	DefaultSys(func(e *Engine, w *World) {
 		TransformSystem(w)
 		TransformSpriteSystem(w)
 	})
@@ -58,17 +56,17 @@ func NewTransform() *Transform {
 // TransformComponent will get the registered transform component of the world.
 // If a component is not present, it will create a new component
 // using world.NewComponent
-func TransformComponent(w ecs.Worlder) *ecs.Component {
+func TransformComponent(w *World) *Component {
 	c := transformWC.Get(w)
 	if c == nil {
 		var err error
-		c, err = w.NewComponent(ecs.NewComponentInput{
+		c, err = w.NewComponent(NewComponentInput{
 			Name: "troupe.Transform",
 			ValidateDataFn: func(data interface{}) bool {
 				_, ok := data.(*Transform)
 				return ok
 			},
-			DestructorFn: func(_ ecs.Worlder, entity ecs.Entity, data interface{}) {
+			DestructorFn: func(_ Worlder, entity Entity, data interface{}) {
 				//sd := data.(*Transform)
 			},
 		})
@@ -81,7 +79,7 @@ func TransformComponent(w ecs.Worlder) *ecs.Component {
 }
 
 // TransformSystem creates the transform system
-func TransformSystem(w *ecs.World) *ecs.System {
+func TransformSystem(w *World) *System {
 	sys := w.NewSystem(TransformPriority, TransformSystemExec, transformWC.Get(w))
 	sys.AddTag(WorldTagUpdate)
 	sys.Set("tick", uint64(0))
@@ -89,7 +87,7 @@ func TransformSystem(w *ecs.World) *ecs.System {
 }
 
 // TransformSpriteSystem creates the transform sprite system
-func TransformSpriteSystem(w *ecs.World) *ecs.System {
+func TransformSpriteSystem(w *World) *System {
 	sys := w.NewSystem(TransformSpritePriority, TransformSpriteSystemExec, transformWC.Get(w), w.Component(spriteComponentName))
 	sys.AddTag(WorldTagUpdate)
 	println("TransformSpriteSystem")
@@ -97,7 +95,7 @@ func TransformSpriteSystem(w *ecs.World) *ecs.System {
 }
 
 // TransformSystemExec is the main function of the TransformSystem
-func TransformSystemExec(ctx ecs.Context, screen *ebiten.Image) {
+func TransformSystemExec(ctx Context, screen *ebiten.Image) {
 	// dt float64, v *ecs.View, s *ecs.System
 	s := ctx.System()
 	v := s.View()
@@ -115,7 +113,7 @@ func TransformSystemExec(ctx ecs.Context, screen *ebiten.Image) {
 }
 
 // TransformSpriteSystemExec is the main function of the TransformSpriteSystem
-func TransformSpriteSystemExec(ctx ecs.Context, screen *ebiten.Image) {
+func TransformSpriteSystemExec(ctx Context, screen *ebiten.Image) {
 	// dt float64, v *ecs.View, s *ecs.System
 	v := ctx.System().View()
 	matches := v.Matches()

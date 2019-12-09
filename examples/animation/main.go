@@ -9,7 +9,6 @@ import (
 	"math"
 
 	"github.com/gabstv/troupe/pkg/troupe"
-	"github.com/gabstv/troupe/pkg/troupe/ecs"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
@@ -31,7 +30,7 @@ func main() {
 	createCharacter(dw, sc, ac, ebimg)
 	createPingPonger(dw, sc, ac, ppimg)
 
-	s0 := dw.NewSystem(0, func(ctx ecs.Context, screen *ebiten.Image) {
+	s0 := dw.NewSystem(0, func(ctx troupe.Context, screen *ebiten.Image) {
 		fps := ebiten.CurrentFPS()
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%.2f fps", fps), 0, 0)
 	})
@@ -40,7 +39,7 @@ func main() {
 	engine.Run()
 }
 
-func createCharacter(dw *ecs.World, spriteComp *ecs.Component, animComp *ecs.Component, ebimg *ebiten.Image) {
+func createCharacter(dw *troupe.World, spriteComp *troupe.Component, animComp *troupe.Component, ebimg *ebiten.Image) {
 	e := dw.NewEntity()
 	dw.AddComponentToEntity(e, spriteComp, &troupe.Sprite{
 		Image:  ebimg,
@@ -71,7 +70,7 @@ func createCharacter(dw *ecs.World, spriteComp *ecs.Component, animComp *ecs.Com
 	})
 }
 
-func createPingPonger(dw *ecs.World, spriteComp *ecs.Component, animComp *ecs.Component, ebimg *ebiten.Image) {
+func createPingPonger(dw *troupe.World, spriteComp *troupe.Component, animComp *troupe.Component, ebimg *ebiten.Image) {
 	e := dw.NewEntity()
 	dw.AddComponentToEntity(e, spriteComp, &troupe.Sprite{
 		Image:  ebimg,

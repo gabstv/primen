@@ -5,8 +5,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gabstv/troupe/pkg/troupe/common"
-	"github.com/gabstv/troupe/pkg/troupe/ecs"
 	"github.com/hajimehoshi/ebiten"
 )
 
@@ -18,8 +16,8 @@ type Engine struct {
 	lock         sync.Mutex
 	lt           time.Time
 	worlds       []worldContainer
-	defaultWorld *ecs.World
-	dmap         common.Dict
+	defaultWorld *World
+	dmap         Dict
 	screen       *ebiten.Image
 	options      EngineOptions
 }
@@ -74,7 +72,7 @@ func NewEngine(v *NewEngineInput) *Engine {
 	}
 
 	// create the default world
-	dw := ecs.NewWorld()
+	dw := NewWorld()
 	// assign the default systems and controllers
 
 	e := &Engine{
@@ -97,7 +95,7 @@ func NewEngine(v *NewEngineInput) *Engine {
 
 // AddWorld adds a world to the engine.
 // The priority is used to sort world execution, from hight to low.
-func (e *Engine) AddWorld(w *ecs.World, priority int) {
+func (e *Engine) AddWorld(w *World, priority int) {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 	if e.worlds == nil {
@@ -112,8 +110,8 @@ func (e *Engine) AddWorld(w *ecs.World, priority int) {
 	sort.Sort(sortedWorldContainer(e.worlds))
 }
 
-// RemoveWorld removes a *ecs.World
-func (e *Engine) RemoveWorld(w *ecs.World) bool {
+// RemoveWorld removes a *World
+func (e *Engine) RemoveWorld(w *World) bool {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 	wi := -1
@@ -136,7 +134,7 @@ func (e *Engine) RemoveWorld(w *ecs.World) bool {
 }
 
 // Default world
-func (e *Engine) Default() *ecs.World {
+func (e *Engine) Default() *World {
 	return e.defaultWorld
 }
 

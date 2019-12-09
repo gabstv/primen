@@ -2,14 +2,13 @@ package main
 
 import (
 	"github.com/gabstv/troupe/pkg/troupe"
-	"github.com/gabstv/troupe/pkg/troupe/ecs"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
 
 var engine *troupe.Engine
-var hellocomp *ecs.Component
-var movecomp *ecs.Component
+var hellocomp *troupe.Component
+var movecomp *troupe.Component
 
 const SPEED float64 = 120
 
@@ -22,14 +21,14 @@ func main() {
 	})
 	// add components and systems
 	world := engine.Default()
-	comp, err := world.NewComponent(ecs.NewComponentInput{
+	comp, err := world.NewComponent(troupe.NewComponentInput{
 		Name: "hello",
 	})
 	if err != nil {
 		panic(err)
 	}
 	hellocomp = comp
-	movecomp, err = world.NewComponent(ecs.NewComponentInput{
+	movecomp, err = world.NewComponent(troupe.NewComponentInput{
 		Name: "move",
 	})
 	if err != nil {
@@ -64,14 +63,14 @@ type moveCompData struct {
 	YSum   float64
 }
 
-func initEngineSystemExec(ctx ecs.Context, screen *ebiten.Image) {
+func initEngineSystemExec(ctx troupe.Context, screen *ebiten.Image) {
 	for _, v := range ctx.System().View().Matches() {
 		data := v.Components[hellocomp].(*initEngineData)
 		ebitenutil.DebugPrintAt(screen, data.Text, data.X, data.Y)
 	}
 }
 
-func moveSysExec(ctx ecs.Context, screen *ebiten.Image) {
+func moveSysExec(ctx troupe.Context, screen *ebiten.Image) {
 	dt := ctx.DT()
 	for _, v := range ctx.System().View().Matches() {
 		iedata := v.Components[hellocomp].(*initEngineData)

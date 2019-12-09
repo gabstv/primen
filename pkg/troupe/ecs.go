@@ -1,4 +1,4 @@
-package ecs
+package troupe
 
 import (
 	"time"

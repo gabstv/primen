@@ -5,7 +5,6 @@ import (
 	_ "image/png"
 	"image"
 	
-	"github.com/gabstv/troupe/pkg/troupe/ecs"
 	"github.com/gabstv/troupe/pkg/troupe"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
@@ -44,7 +43,7 @@ func main() {
 			ScaleY: 2,
 			Bounds: image.Rect(16,16,32,32),
 		})
-		dw.NewSystem(0, func(ctx ecs.Context, screen *ebiten.Image){
+		dw.NewSystem(0, func(ctx troupe.Context, screen *ebiten.Image){
 			matches := ctx.System().View().Matches()
 			dt := ctx.DT()
 			for _, m := range matches {

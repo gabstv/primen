@@ -3,7 +3,6 @@ package troupe
 import (
 	"image"
 
-	"github.com/gabstv/troupe/pkg/troupe/ecs"
 	"github.com/hajimehoshi/ebiten"
 )
 
@@ -19,10 +18,10 @@ const (
 )
 
 func init() {
-	DefaultComp(func(e *Engine, w *ecs.World) {
+	DefaultComp(func(e *Engine, w *World) {
 		SpriteComponent(w)
 	})
-	DefaultSys(func(e *Engine, w *ecs.World) {
+	DefaultSys(func(e *Engine, w *World) {
 		SpriteSystem(w)
 	})
 	println("graphicsinit end")
@@ -53,17 +52,17 @@ type Sprite struct {
 // SpriteComponent will get the registered sprite component of the world.
 // If a component is not present, it will create a new component
 // using world.NewComponent
-func SpriteComponent(w *ecs.World) *ecs.Component {
+func SpriteComponent(w *World) *Component {
 	c := w.Component(spriteComponentName)
 	if c == nil {
 		var err error
-		c, err = w.NewComponent(ecs.NewComponentInput{
+		c, err = w.NewComponent(NewComponentInput{
 			Name: spriteComponentName,
 			ValidateDataFn: func(data interface{}) bool {
 				_, ok := data.(*Sprite)
 				return ok
 			},
-			DestructorFn: func(_ ecs.Worlder, entity ecs.Entity, data interface{}) {
+			DestructorFn: func(_ Worlder, entity Entity, data interface{}) {
 				sd := data.(*Sprite)
 				sd.Options = nil
 			},
@@ -76,7 +75,7 @@ func SpriteComponent(w *ecs.World) *ecs.Component {
 }
 
 // SpriteSystem creates the sprite system
-func SpriteSystem(w *ecs.World) *ecs.System {
+func SpriteSystem(w *World) *System {
 	sys := w.NewSystem(SpritePriority, SpriteSystemExec, w.Component(spriteComponentName))
 	if w.Get(DefaultImageOptions) == nil {
 		opt := &ebiten.DrawImageOptions{}
@@ -87,7 +86,7 @@ func SpriteSystem(w *ecs.World) *ecs.System {
 }
 
 // SpriteSystemExec is the main function of the SpriteSystem
-func SpriteSystemExec(ctx ecs.Context, screen *ebiten.Image) {
+func SpriteSystemExec(ctx Context, screen *ebiten.Image) {
 	// dt float64, v *ecs.View, s *ecs.System
 	v := ctx.System().View()
 	world := v.World()

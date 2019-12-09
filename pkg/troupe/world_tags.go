@@ -1,9 +1,5 @@
 package troupe
 
-import (
-	"github.com/gabstv/troupe/pkg/troupe/ecs"
-)
-
 // WorldTag is a tag used to filter systems of a world
 type WorldTag = string
 
@@ -18,7 +14,7 @@ const (
 )
 
 type worldContainer struct {
-	world    *ecs.World
+	world    *World
 	priority int
 }
 

@@ -2,12 +2,10 @@ package troupe
 
 import (
 	"sync"
-
-	"github.com/gabstv/troupe/pkg/troupe/ecs"
 )
 
 // DefaultStarter is the function used to start a component or a system
-type DefaultStarter func(e *Engine, w *ecs.World)
+type DefaultStarter func(e *Engine, w *World)
 
 var (
 	defaultCompStarters []DefaultStarter

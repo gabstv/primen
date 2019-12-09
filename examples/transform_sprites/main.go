@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/gabstv/troupe/pkg/troupe"
-	"github.com/gabstv/troupe/pkg/troupe/ecs"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
@@ -43,7 +42,7 @@ func main() {
 	dw := engine.Default()
 	sc := troupe.SpriteComponent(dw)
 	tc := troupe.TransformComponent(dw)
-	spinnercomp, _ := dw.NewComponent(ecs.NewComponentInput{
+	spinnercomp, _ := dw.NewComponent(troupe.NewComponentInput{
 		Name: "spinner",
 	})
 	ss := dw.NewSystem(1, spinnersys, tc, spinnercomp)
@@ -83,7 +82,7 @@ func main() {
 	}
 
 	// debug system
-	ddrawsys := dw.NewSystem(-100, func(ctx ecs.Context, screen *ebiten.Image) {
+	ddrawsys := dw.NewSystem(-100, func(ctx troupe.Context, screen *ebiten.Image) {
 		fps := ebiten.CurrentFPS()
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%.2f fps", fps), 0, 0)
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("x = %.2f; y = %.2f;", t99.X, t99.Y), 0, 12)
@@ -95,12 +94,12 @@ func main() {
 	engine.Run()
 }
 
-func spinnersys(ctx ecs.Context, screen *ebiten.Image) {
+func spinnersys(ctx troupe.Context, screen *ebiten.Image) {
 	sys := ctx.System()
 	dt := ctx.DT()
 	view := sys.View()
-	sc := sys.Get("spinnercomp").(*ecs.Component)
-	tc := sys.Get("tc").(*ecs.Component)
+	sc := sys.Get("spinnercomp").(*troupe.Component)
+	tc := sys.Get("tc").(*troupe.Component)
 	scaleadd := sys.Get("scaleadd").(float64) + dt
 	sys.Set("scaleadd", scaleadd)
 	//

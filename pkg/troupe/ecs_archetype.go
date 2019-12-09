@@ -1,4 +1,4 @@
-package ecs
+package troupe
 
 // Archetype is a recipe to create entities with a preset of components.
 type Archetype struct {
