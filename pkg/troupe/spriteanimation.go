@@ -33,10 +33,6 @@ const (
 	SpriteAnimationLinkPriority int = -5
 )
 
-var (
-	spriteanimationWC = &WorldComponents{}
-)
-
 func init() {
 	DefaultComp(func(e *Engine, w *World) {
 		SpriteAnimationComponent(w)
@@ -89,7 +85,7 @@ type SpriteAnimationClip struct {
 // If a component is not present, it will create a new component
 // using world.NewComponent
 func SpriteAnimationComponent(w Worlder) *Component {
-	c := spriteanimationWC.Get(w)
+	c := w.Component("troupe.SpriteAnimation")
 	if c == nil {
 		var err error
 		c, err = w.NewComponent(NewComponentInput{
@@ -106,14 +102,13 @@ func SpriteAnimationComponent(w Worlder) *Component {
 		if err != nil {
 			panic(err)
 		}
-		spriteanimationWC.Set(w, c)
 	}
 	return c
 }
 
 // SpriteAnimationSystem creates the sprite system
 func SpriteAnimationSystem(w *World) *System {
-	sys := w.NewSystem(SpriteAnimationPriority, SpriteAnimationSystemExec, spriteanimationWC.Get(w))
+	sys := w.NewSystem(SpriteAnimationPriority, SpriteAnimationSystemExec, SpriteAnimationComponent(w))
 	sys.AddTag(WorldTagUpdate)
 	return sys
 }
@@ -123,9 +118,8 @@ func SpriteAnimationSystemExec(ctx Context, screen *ebiten.Image) {
 	//dt float64, v *ecs.View, s *ecs.System
 	dt := ctx.DT()
 	v := ctx.System().View()
-	world := v.World()
 	matches := v.Matches()
-	spriteanimcomp := spriteanimationWC.Get(world)
+	spriteanimcomp := SpriteAnimationComponent(ctx.World())
 	globalfps := nonzeroval(ebiten.CurrentFPS(), 60)
 	for _, m := range matches {
 		spranim := m.Components[spriteanimcomp].(*SpriteAnimation)
@@ -225,7 +219,7 @@ func spriteAnimResolvePlayback(globalfps, dt float64, spranim *SpriteAnimation) 
 
 // SpriteAnimationLinkSystem creates the sprite system
 func SpriteAnimationLinkSystem(w *World) *System {
-	sys := w.NewSystem(SpriteAnimationLinkPriority, SpriteAnimationLinkSystemExec, spriteanimationWC.Get(w), w.Component(spriteComponentName))
+	sys := w.NewSystem(SpriteAnimationLinkPriority, SpriteAnimationLinkSystemExec, SpriteAnimationComponent(w), SpriteComponent(w))
 	sys.AddTag(WorldTagDraw)
 	return sys
 }
@@ -235,7 +229,7 @@ func SpriteAnimationLinkSystemExec(ctx Context, screen *ebiten.Image) {
 	v := ctx.System().View()
 	world := ctx.World()
 	matches := v.Matches()
-	spriteanimcomp := spriteanimationWC.Get(world)
+	spriteanimcomp := SpriteAnimationComponent(ctx.World())
 	spritecomp := world.Component(spriteComponentName)
 	for _, m := range matches {
 		spranim := m.Components[spriteanimcomp].(*SpriteAnimation)

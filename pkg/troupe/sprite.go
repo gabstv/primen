@@ -54,7 +54,7 @@ type Sprite struct {
 // SpriteComponent will get the registered sprite component of the world.
 // If a component is not present, it will create a new component
 // using world.NewComponent
-func SpriteComponent(w *World) *Component {
+func SpriteComponent(w Worlder) *Component {
 	c := w.Component(spriteComponentName)
 	if c == nil {
 		var err error

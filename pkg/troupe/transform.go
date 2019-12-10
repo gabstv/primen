@@ -11,10 +11,6 @@ const (
 	TransformSpritePriority int = -6
 )
 
-var (
-	transformWC = &WorldComponents{}
-)
-
 func init() {
 	DefaultComp(func(e *Engine, w *World) {
 		TransformComponent(w)
@@ -56,8 +52,8 @@ func NewTransform() *Transform {
 // TransformComponent will get the registered transform component of the world.
 // If a component is not present, it will create a new component
 // using world.NewComponent
-func TransformComponent(w *World) *Component {
-	c := transformWC.Get(w)
+func TransformComponent(w Worlder) *Component {
+	c := w.Component("troupe.Transform")
 	if c == nil {
 		var err error
 		c, err = w.NewComponent(NewComponentInput{
@@ -73,14 +69,13 @@ func TransformComponent(w *World) *Component {
 		if err != nil {
 			panic(err)
 		}
-		transformWC.Set(w, c)
 	}
 	return c
 }
 
 // TransformSystem creates the transform system
 func TransformSystem(w *World) *System {
-	sys := w.NewSystem(TransformPriority, TransformSystemExec, transformWC.Get(w))
+	sys := w.NewSystem(TransformPriority, TransformSystemExec, TransformComponent(w))
 	sys.AddTag(WorldTagUpdate)
 	sys.Set("tick", uint64(0))
 	return sys
@@ -88,7 +83,7 @@ func TransformSystem(w *World) *System {
 
 // TransformSpriteSystem creates the transform sprite system
 func TransformSpriteSystem(w *World) *System {
-	sys := w.NewSystem(TransformSpritePriority, TransformSpriteSystemExec, transformWC.Get(w), w.Component(spriteComponentName))
+	sys := w.NewSystem(TransformSpritePriority, TransformSpriteSystemExec, TransformComponent(w), SpriteComponent(w))
 	sys.AddTag(WorldTagUpdate)
 	println("TransformSpriteSystem")
 	return sys
@@ -103,9 +98,8 @@ func TransformSystemExec(ctx Context, screen *ebiten.Image) {
 	tick++
 	s.Set("tick", tick)
 	//
-	world := v.World()
 	matches := v.Matches()
-	transformcomp := transformWC.Get(world)
+	transformcomp := TransformComponent(ctx.World())
 	for _, m := range matches {
 		t := m.Components[transformcomp].(*Transform)
 		resolveTransform(t, tick)
@@ -117,9 +111,8 @@ func TransformSpriteSystemExec(ctx Context, screen *ebiten.Image) {
 	// dt float64, v *ecs.View, s *ecs.System
 	v := ctx.System().View()
 	matches := v.Matches()
-	world := v.World()
-	transformcomp := transformWC.Get(world)
-	spritecomp := world.Component(spriteComponentName)
+	transformcomp := TransformComponent(ctx.World())
+	spritecomp := SpriteComponent(ctx.World())
 	for _, m := range matches {
 		t := m.Components[transformcomp].(*Transform)
 		// transform is already resolved because the TransformSystem executed first
