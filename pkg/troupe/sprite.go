@@ -124,15 +124,15 @@ func SpriteSystemExec(ctx Context, screen *ebiten.Image) {
 			sprite.imageWidth = float64(w)
 			sprite.imageHeight = float64(h)
 		}
+		if sprite.DrawDisabled {
+			continue
+		}
 		opt.GeoM.Reset()
 		opt.GeoM.Translate(-sprite.imageWidth/2, -sprite.imageHeight/2)
 		opt.GeoM.Scale(sprite.ScaleX, sprite.ScaleY)
 		opt.GeoM.Rotate(sprite.Angle)
 		opt.GeoM.Translate(sprite.imageWidth/2, sprite.imageHeight/2)
 		opt.GeoM.Translate(sprite.X, sprite.Y)
-		if sprite.DrawDisabled {
-			continue
-		}
 		if sprite.lastSubImage != nil {
 			screen.DrawImage(sprite.lastSubImage, opt)
 		} else {
