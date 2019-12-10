@@ -26,6 +26,12 @@ type NewComponentInput = ecs.NewComponentInput
 // Worlder -> ecs.Worlder
 type Worlder = ecs.Worlder
 
+// Dicter -> ecs.Dicter
+type Dicter = ecs.Dicter
+
+// WorldDicter -> ecs.WorldDicter
+type WorldDicter = ecs.WorldDicter
+
 type World struct {
 	*ecs.World
 }
@@ -69,7 +75,7 @@ func (w *World) NewComponent(input NewComponentInput) (*Component, error) {
 // NewWorld creates a new world
 func NewWorld(e *Engine) *World {
 	w := &World{
-		World: ecs.NewWorldWithCtx(func(c0 context.Context, dt float64, sys *System, w Worlder) ecs.Context {
+		World: ecs.NewWorldWithCtx(func(c0 context.Context, dt float64, sys *System, w WorldDicter) ecs.Context {
 			return ctxt{
 				c:          c0,
 				dt:         dt,
@@ -78,6 +84,7 @@ func NewWorld(e *Engine) *World {
 				engine:     e,
 				fps:        ebiten.CurrentFPS(),
 				drwskipped: ebiten.IsDrawingSkipped(),
+				imopt:      w.Get(DefaultImageOptions).(*ebiten.DrawImageOptions),
 			}
 		}),
 	}

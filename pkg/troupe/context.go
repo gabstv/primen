@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gabstv/ecs"
+	"github.com/hajimehoshi/ebiten"
 )
 
 type Context interface {
@@ -12,6 +13,7 @@ type Context interface {
 	Engine() *Engine
 	CurrentFPS() float64
 	IsDrawingSkipped() bool
+	DefaultDrawImageOptions() *ebiten.DrawImageOptions
 }
 
 type ctxt struct {
@@ -22,6 +24,7 @@ type ctxt struct {
 	engine     *Engine
 	fps        float64
 	drwskipped bool
+	imopt      *ebiten.DrawImageOptions
 }
 
 func (c ctxt) Deadline() (deadline time.Time, ok bool) {
@@ -62,4 +65,8 @@ func (c ctxt) CurrentFPS() float64 {
 
 func (c ctxt) IsDrawingSkipped() bool {
 	return c.drwskipped
+}
+
+func (c ctxt) DefaultDrawImageOptions() *ebiten.DrawImageOptions {
+	return c.imopt
 }
