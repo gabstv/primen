@@ -51,6 +51,14 @@ type Sprite struct {
 	lastSubImage *ebiten.Image
 }
 
+// GetPrecomputedImage returns the last precomputed image
+func (s *Sprite) GetPrecomputedImage() *ebiten.Image {
+	if s.lastSubImage != nil {
+		return s.lastSubImage
+	}
+	return s.lastImage
+}
+
 // SpriteComponent will get the registered sprite component of the world.
 // If a component is not present, it will create a new component
 // using world.NewComponent
