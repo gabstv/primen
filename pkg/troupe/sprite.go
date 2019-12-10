@@ -60,8 +60,8 @@ func (s *Sprite) GetPrecomputedImage() *ebiten.Image {
 }
 
 // GetPrecomputedImageDim returns the last precomputed image dimmensions
-func (s *Sprite) GetPrecomputedImageDim() (width, height float64, bounds image.Rectangle) {
-	return s.imageWidth, s.imageHeight, s.lastBounds
+func (s *Sprite) GetPrecomputedImageDim() (width, height float64) {
+	return s.imageWidth, s.imageHeight
 }
 
 // SpriteComponent will get the registered sprite component of the world.
