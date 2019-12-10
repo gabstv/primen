@@ -24,3 +24,12 @@ func CloneAnyDrawImageOptions(a ...*ebiten.DrawImageOptions) ebiten.DrawImageOpt
 	}
 	return ebiten.DrawImageOptions{}
 }
+
+func AnyDrawImageOptions(a ...*ebiten.DrawImageOptions) *ebiten.DrawImageOptions {
+	for _, v := range a {
+		if v != nil {
+			return v
+		}
+	}
+	return &ebiten.DrawImageOptions{}
+}
