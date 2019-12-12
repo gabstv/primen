@@ -79,7 +79,7 @@ func SpriteComponent(w Worlder) *Component {
 				_, ok := data.(*Sprite)
 				return ok
 			},
-			DestructorFn: func(_ Worlder, entity Entity, data interface{}) {
+			DestructorFn: func(_ WorldDicter, entity Entity, data interface{}) {
 				sd := data.(*Sprite)
 				sd.Options = nil
 			},

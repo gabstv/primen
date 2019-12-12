@@ -62,7 +62,7 @@ func TransformComponent(w Worlder) *Component {
 				_, ok := data.(*Transform)
 				return ok
 			},
-			DestructorFn: func(_ Worlder, entity Entity, data interface{}) {
+			DestructorFn: func(_ WorldDicter, entity Entity, data interface{}) {
 				//sd := data.(*Transform)
 			},
 		})
