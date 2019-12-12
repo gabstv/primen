@@ -29,11 +29,13 @@ func init() {
 
 // Sprite is the data of a sprite component.
 type Sprite struct {
-	X      float64
-	Y      float64
-	Angle  float64
-	ScaleX float64
-	ScaleY float64
+	X       float64
+	Y       float64
+	Angle   float64
+	ScaleX  float64
+	ScaleY  float64
+	OriginX float64
+	OriginY float64
 
 	Bounds image.Rectangle // Bounds for drawing subimage
 
@@ -108,6 +110,7 @@ func SpriteSystemExec(ctx Context, screen *ebiten.Image) {
 	matches := v.Matches()
 	spritecomp := world.Component(spriteComponentName)
 	defaultopts := world.Get(DefaultImageOptions).(*ebiten.DrawImageOptions)
+	hw, hh := 0.0, 0.0
 	for _, m := range matches {
 		sprite := m.Components[spritecomp].(*Sprite)
 		opt := sprite.Options
@@ -132,11 +135,12 @@ func SpriteSystemExec(ctx Context, screen *ebiten.Image) {
 		if sprite.DrawDisabled {
 			continue
 		}
+		hw, hh = sprite.imageWidth/2, sprite.imageHeight/2
 		opt.GeoM.Reset()
-		opt.GeoM.Translate(-sprite.imageWidth/2, -sprite.imageHeight/2)
+		opt.GeoM.Translate((-hw + sprite.OriginX*sprite.imageWidth), -hh+sprite.OriginY*sprite.imageHeight)
 		opt.GeoM.Scale(sprite.ScaleX, sprite.ScaleY)
 		opt.GeoM.Rotate(sprite.Angle)
-		opt.GeoM.Translate(sprite.imageWidth/2, sprite.imageHeight/2)
+		opt.GeoM.Translate(hw, hh)
 		opt.GeoM.Translate(sprite.X, sprite.Y)
 		if sprite.lastSubImage != nil {
 			screen.DrawImage(sprite.lastSubImage, opt)
