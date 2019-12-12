@@ -137,7 +137,7 @@ func SpriteSystemExec(ctx Context, screen *ebiten.Image) {
 		}
 		hw, hh = sprite.imageWidth/2, sprite.imageHeight/2
 		opt.GeoM.Reset()
-		opt.GeoM.Translate((-hw + sprite.OriginX*sprite.imageWidth), -hh+sprite.OriginY*sprite.imageHeight)
+		opt.GeoM.Translate(-hw+sprite.OriginX*sprite.imageWidth*-1, -hh+sprite.OriginY*sprite.imageHeight*-1)
 		opt.GeoM.Scale(sprite.ScaleX, sprite.ScaleY)
 		opt.GeoM.Rotate(sprite.Angle)
 		opt.GeoM.Translate(hw, hh)
