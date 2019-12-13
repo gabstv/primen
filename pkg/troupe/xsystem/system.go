@@ -11,7 +11,8 @@ func SkipFrames(n int) troupe.SystemMiddleware {
 			vi := ctx.System().Get("SkipFrames")
 			if vi == nil {
 				ctx.System().Set("SkipFrames", 0)
-				vi = ctx.System().Get("SkipFrames")
+				next(ctx, screen)
+				return
 			}
 			v := vi.(int)
 			ctx.System().Set("SkipFrames", v+1)
