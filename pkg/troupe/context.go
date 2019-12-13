@@ -11,7 +11,8 @@ import (
 type Context interface {
 	ecs.Context
 	Engine() *Engine
-	CurrentFPS() float64
+	FPS() float64
+	Frame() int64
 	IsDrawingSkipped() bool
 	DefaultDrawImageOptions() *ebiten.DrawImageOptions
 }
@@ -23,6 +24,7 @@ type ctxt struct {
 	world      Worlder
 	engine     *Engine
 	fps        float64
+	frame      int64
 	drwskipped bool
 	imopt      *ebiten.DrawImageOptions
 }
@@ -59,8 +61,12 @@ func (c ctxt) Engine() *Engine {
 	return c.engine
 }
 
-func (c ctxt) CurrentFPS() float64 {
+func (c ctxt) FPS() float64 {
 	return c.fps
+}
+
+func (c ctxt) Frame() int64 {
+	return c.frame
 }
 
 func (c ctxt) IsDrawingSkipped() bool {

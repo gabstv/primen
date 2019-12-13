@@ -83,6 +83,7 @@ func NewWorld(e *Engine) *World {
 				world:      w,
 				engine:     e,
 				fps:        ebiten.CurrentFPS(),
+				frame:      e.frame,
 				drwskipped: ebiten.IsDrawingSkipped(),
 				imopt:      w.Get(DefaultImageOptions).(*ebiten.DrawImageOptions),
 			}
