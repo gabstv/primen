@@ -57,6 +57,9 @@ func (w *World) RunWithoutTag(tag string, screen *ebiten.Image, delta float64) (
 // SystemFn is the loop function of a system
 type SystemFn func(ctx Context, screen *ebiten.Image)
 
+// SystemMiddleware is a system middleware
+type SystemMiddleware func(next SystemFn) SystemFn
+
 // NewSystem creates a new system
 func (w *World) NewSystem(priority int, fn SystemFn, comps ...*Component) *System {
 	fn2 := func(ctx ecs.Context) {
@@ -90,4 +93,22 @@ func NewWorld(e *Engine) *World {
 		}),
 	}
 	return w
+}
+
+// SysWrapFn wraps middlewares into SystemFn
+func SysWrapFn(fn SystemFn, mid ...SystemMiddleware) SystemFn {
+	return func(ctx Context, screen *ebiten.Image) {
+		for _, m := range mid {
+			lfn := fn
+			fn = m(fn)
+			if fn == nil {
+				lfn(ctx, screen)
+				return
+			}
+		}
+		if fn == nil {
+			return
+		}
+		fn(ctx, screen)
+	}
 }
