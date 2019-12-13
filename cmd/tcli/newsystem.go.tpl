@@ -27,7 +27,7 @@ func {{.Tags.Component}}Component(w troupe.WorldDicter) *troupe.Component {
 				_, ok := data.(*{{.Tags.Component}})
                 return ok
 			},
-			DestructorFn: func(_ troupe.Worlder, entity troupe.Entity, data interface{}) {
+			DestructorFn: func(_ troupe.WorldDicter, entity troupe.Entity, data interface{}) {
 				//TODO: fill
 			},
 		})
