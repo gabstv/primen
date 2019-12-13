@@ -16,6 +16,7 @@ import (
 type Engine struct {
 	lock         sync.Mutex
 	lt           time.Time
+	frame        int64
 	worlds       []worldContainer
 	defaultWorld *World
 	dmap         Dict
@@ -165,6 +166,7 @@ func (e *Engine) loop(screen *ebiten.Image) error {
 	e.lt = now
 	e.dmap.Set(TagDelta, ld)
 	worlds := e.worlds
+	e.frame++
 	e.lock.Unlock()
 
 	for _, w := range worlds {
