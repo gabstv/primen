@@ -75,7 +75,10 @@ func TransformComponent(w Worlder) *Component {
 
 // TransformSystem creates the transform system
 func TransformSystem(w *World) *System {
-	sys := w.NewSystem(TransformPriority, TransformSystemExec, TransformComponent(w))
+	if sys := w.System("troupe.TransformSystem"); sys != nil {
+		return sys
+	}
+	sys := w.NewSystem("troupe.TransformSystem", TransformPriority, TransformSystemExec, TransformComponent(w))
 	sys.AddTag(WorldTagUpdate)
 	sys.Set("tick", uint64(0))
 	return sys
@@ -83,7 +86,10 @@ func TransformSystem(w *World) *System {
 
 // TransformSpriteSystem creates the transform sprite system
 func TransformSpriteSystem(w *World) *System {
-	sys := w.NewSystem(TransformSpritePriority, TransformSpriteSystemExec, TransformComponent(w), SpriteComponent(w))
+	if sys := w.System("troupe.TransformSpriteSystem"); sys != nil {
+		return sys
+	}
+	sys := w.NewSystem("troupe.TransformSpriteSystem", TransformSpritePriority, TransformSpriteSystemExec, TransformComponent(w), SpriteComponent(w))
 	sys.AddTag(WorldTagUpdate)
 	println("TransformSpriteSystem")
 	return sys

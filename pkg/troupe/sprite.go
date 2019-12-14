@@ -93,7 +93,10 @@ func SpriteComponent(w Worlder) *Component {
 
 // SpriteSystem creates the sprite system
 func SpriteSystem(w *World) *System {
-	sys := w.NewSystem(SpritePriority, SpriteSystemExec, w.Component(spriteComponentName))
+	if sys := w.System("troupe.SpriteSystem"); sys != nil {
+		return sys
+	}
+	sys := w.NewSystem("troupe.SpriteSystem", SpritePriority, SpriteSystemExec, w.Component(spriteComponentName))
 	if w.Get(DefaultImageOptions) == nil {
 		opt := &ebiten.DrawImageOptions{}
 		w.Set(DefaultImageOptions, opt)

@@ -34,9 +34,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	sys0 := world.NewSystem(0, initEngineSystemExec, hellocomp)
+	sys0 := world.NewSystem("", 0, initEngineSystemExec, hellocomp)
 	sys0.AddTag(troupe.WorldTagDraw)
-	sys1 := world.NewSystem(1, moveSysExec, movecomp, hellocomp)
+	sys1 := world.NewSystem("", 1, moveSysExec, movecomp, hellocomp)
 	sys1.AddTag(troupe.WorldTagUpdate)
 	entity0 := world.NewEntity()
 	world.AddComponentToEntity(entity0, hellocomp, &initEngineData{"Hello,", 30, 40})

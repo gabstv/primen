@@ -16,7 +16,7 @@ type compBData struct {
 }
 
 func TestNewArchetype(t *testing.T) {
-	w := NewWorld(nil)
+	w := NewWorld(&Engine{})
 
 	c1, err := w.NewComponent(NewComponentInput{
 		Name: "COMP_A",
@@ -36,7 +36,7 @@ func TestNewArchetype(t *testing.T) {
 	assert.NoError(t, err)
 	arche1 := NewArchetype(w, c1, c2)
 
-	w.NewSystem(1, func(ctx Context, screen *ebiten.Image) {
+	w.NewSystem("", 1, func(ctx Context, screen *ebiten.Image) {
 		m := ctx.System().View().Matches()
 		for _, v := range m {
 			da := v.Components[c1].(*compAData)

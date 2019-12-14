@@ -108,7 +108,10 @@ func SpriteAnimationComponent(w Worlder) *Component {
 
 // SpriteAnimationSystem creates the sprite system
 func SpriteAnimationSystem(w *World) *System {
-	sys := w.NewSystem(SpriteAnimationPriority, SpriteAnimationSystemExec, SpriteAnimationComponent(w))
+	if sys := w.System("troupe.SpriteAnimationSystem"); sys != nil {
+		return sys
+	}
+	sys := w.NewSystem("troupe.SpriteAnimationSystem", SpriteAnimationPriority, SpriteAnimationSystemExec, SpriteAnimationComponent(w))
 	sys.AddTag(WorldTagUpdate)
 	return sys
 }
@@ -219,7 +222,10 @@ func spriteAnimResolvePlayback(globalfps, dt float64, spranim *SpriteAnimation) 
 
 // SpriteAnimationLinkSystem creates the sprite system
 func SpriteAnimationLinkSystem(w *World) *System {
-	sys := w.NewSystem(SpriteAnimationLinkPriority, SpriteAnimationLinkSystemExec, SpriteAnimationComponent(w), SpriteComponent(w))
+	if sys := w.System("troupe.SpriteAnimationLinkSystem"); sys != nil {
+		return sys
+	}
+	sys := w.NewSystem("troupe.SpriteAnimationLinkSystem", SpriteAnimationLinkPriority, SpriteAnimationLinkSystemExec, SpriteAnimationComponent(w), SpriteComponent(w))
 	sys.AddTag(WorldTagDraw)
 	return sys
 }

@@ -61,13 +61,13 @@ type SystemFn func(ctx Context, screen *ebiten.Image)
 type SystemMiddleware func(next SystemFn) SystemFn
 
 // NewSystem creates a new system
-func (w *World) NewSystem(priority int, fn SystemFn, comps ...*Component) *System {
+func (w *World) NewSystem(name string, priority int, fn SystemFn, comps ...*Component) *System {
 	fn2 := func(ctx ecs.Context) {
 		scr := w.Get("screen").(*ebiten.Image)
 		ctx2 := ctx.(Context)
 		fn(ctx2, scr)
 	}
-	return w.World.NewSystem(priority, fn2, comps...)
+	return w.World.NewSystem(name, priority, fn2, comps...)
 }
 
 // NewComponent creates a new component
@@ -77,6 +77,9 @@ func (w *World) NewComponent(input NewComponentInput) (*Component, error) {
 
 // NewWorld creates a new world
 func NewWorld(e *Engine) *World {
+	if e == nil {
+		panic("engine can't be nil")
+	}
 	w := &World{
 		World: ecs.NewWorldWithCtx(func(c0 context.Context, dt float64, sys *System, w WorldDicter) ecs.Context {
 			return ctxt{
@@ -92,6 +95,7 @@ func NewWorld(e *Engine) *World {
 			}
 		}),
 	}
+	w.Set(DefaultImageOptions, &ebiten.DrawImageOptions{})
 	return w
 }
 

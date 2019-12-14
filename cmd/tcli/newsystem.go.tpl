@@ -40,7 +40,10 @@ func {{.Tags.Component}}Component(w troupe.WorldDicter) *troupe.Component {
 
 // {{.Tags.Component}}System creates the {{tolower .Tags.Component}} system
 func {{.Tags.Component}}System(w *troupe.World) *troupe.System {
-	sys := w.NewSystem({{.Tags.Priority}}, {{.Tags.Component}}SystemExec, {{.Tags.Component}}Component(w))
+	if sys := w.System("{{.Tags.Package}}.{{.Tags.Component}}System"); sys != nil {
+		return sys
+	}
+	sys := w.NewSystem("{{.Tags.Package}}.{{.Tags.Component}}System", {{.Tags.Priority}}, {{.Tags.Component}}SystemExec, {{.Tags.Component}}Component(w))
 	//sys.AddTag(troupe.WorldTagDraw)
 	sys.AddTag(troupe.WorldTagUpdate)
 	return sys

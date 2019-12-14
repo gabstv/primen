@@ -13,11 +13,11 @@ type c0data struct {
 
 func TestECS(t *testing.T) {
 	s0 := 0.0
-	w := NewWorld(nil)
+	w := NewWorld(&Engine{})
 	c0, _ := w.NewComponent(NewComponentInput{
 		Name: "test",
 	})
-	w.NewSystem(0, func(ctx Context, screen *ebiten.Image) {
+	w.NewSystem("", 0, func(ctx Context, screen *ebiten.Image) {
 		matches := ctx.System().View().Matches()
 		d := matches[0].Components[c0].(*c0data)
 		s0 += d.Points * d.Scale * ctx.DT()

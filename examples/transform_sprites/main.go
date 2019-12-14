@@ -45,7 +45,7 @@ func main() {
 	spinnercomp, _ := dw.NewComponent(troupe.NewComponentInput{
 		Name: "spinner",
 	})
-	ss := dw.NewSystem(1, spinnersys, tc, spinnercomp)
+	ss := dw.NewSystem("", 1, spinnersys, tc, spinnercomp)
 	ss.Set("spinnercomp", spinnercomp)
 	ss.Set("tc", tc)
 	ss.Set("scaleadd", float64(0))
@@ -82,7 +82,7 @@ func main() {
 	}
 
 	// debug system
-	ddrawsys := dw.NewSystem(-100, func(ctx troupe.Context, screen *ebiten.Image) {
+	ddrawsys := dw.NewSystem("", -100, func(ctx troupe.Context, screen *ebiten.Image) {
 		fps := ebiten.CurrentFPS()
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%.2f fps", fps), 0, 0)
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("x = %.2f; y = %.2f;", t99.X, t99.Y), 0, 12)
