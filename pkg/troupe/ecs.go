@@ -101,18 +101,8 @@ func NewWorld(e *Engine) *World {
 
 // SysWrapFn wraps middlewares into SystemFn
 func SysWrapFn(fn SystemFn, mid ...SystemMiddleware) SystemFn {
-	return func(ctx Context, screen *ebiten.Image) {
-		for _, m := range mid {
-			lfn := fn
-			fn = m(fn)
-			if fn == nil {
-				lfn(ctx, screen)
-				return
-			}
-		}
-		if fn == nil {
-			return
-		}
-		fn(ctx, screen)
+	for _, m := range mid {
+		fn = m(fn)
 	}
+	return fn
 }

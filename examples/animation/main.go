@@ -30,7 +30,7 @@ func main() {
 	createCharacter(dw, sc, ac, ebimg)
 	createPingPonger(dw, sc, ac, ppimg)
 
-	s0 := dw.NewSystem(0, func(ctx troupe.Context, screen *ebiten.Image) {
+	s0 := dw.NewSystem("", 0, func(ctx troupe.Context, screen *ebiten.Image) {
 		fps := ebiten.CurrentFPS()
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%.2f fps", fps), 0, 0)
 	})
