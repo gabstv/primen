@@ -1,11 +1,11 @@
-package xsystem
+package systems
 
 import (
 	"github.com/gabstv/troupe/pkg/troupe"
 	"github.com/hajimehoshi/ebiten"
 )
 
-func SkipFrames(n int) troupe.SystemMiddleware {
+func MidSkipFrames(n int) troupe.SystemMiddleware {
 	return func(next troupe.SystemFn) troupe.SystemFn {
 		return func(ctx troupe.Context, screen *ebiten.Image) {
 			vi := ctx.System().Get("SkipFrames")
