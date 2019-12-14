@@ -21,7 +21,7 @@ type ctxt struct {
 	c          context.Context
 	dt         float64
 	system     *System
-	world      Worlder
+	world      WorldDicter
 	engine     *Engine
 	fps        float64
 	frame      int64
@@ -53,7 +53,7 @@ func (c ctxt) System() *System {
 	return c.system
 }
 
-func (c ctxt) World() Worlder {
+func (c ctxt) World() WorldDicter {
 	return c.world
 }
 
