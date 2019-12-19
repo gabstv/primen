@@ -60,6 +60,12 @@ func {{.Tags.Component}}SystemExec(ctx troupe.Context, screen *ebiten.Image) {
 	}
 }
 
+// {{.Tags.Component}}ECS ensures that all the required components and systems are added to the world.
+func {{.Tags.Component}}ECS(w *troupe.World) {
+	{{.Tags.Component}}Component(w)
+	{{.Tags.Component}}System(w)
+}
+
 func init() {
 	troupe.DefaultComp(func(e *troupe.Engine, w *troupe.World) {
 		{{.Tags.Component}}Component(w)
