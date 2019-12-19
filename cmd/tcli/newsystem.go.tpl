@@ -15,11 +15,11 @@ type {{.Tags.Component}} struct {
 // If a component is not present, it will create a new component
 // using world.NewComponent
 func {{.Tags.Component}}Component(w troupe.WorldDicter) *troupe.Component {
-	c := w.Component("comp_{{tolower .Tags.Package}}_{{tolower .Tags.Component}}")
+	c := w.Component("{{tolower .Tags.Package}}.{{.Tags.Component}}Component")
 	if c == nil {
 		var err error
 		c, err = w.NewComponent(troupe.NewComponentInput{
-			Name: "comp_{{tolower .Tags.Package}}_{{tolower .Tags.Component}}",
+			Name: "{{tolower .Tags.Package}}.{{.Tags.Component}}Component",
 			ValidateDataFn: func(data interface{}) bool {
                 if data == nil {
                     return false
