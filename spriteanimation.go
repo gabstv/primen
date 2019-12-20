@@ -3,8 +3,6 @@ package troupe
 import (
 	"image"
 
-	"github.com/gabstv/ecs"
-	"github.com/gabstv/troupe/pkg/troupe/common"
 	"github.com/hajimehoshi/ebiten"
 )
 
@@ -35,15 +33,11 @@ const (
 	SpriteAnimationLinkPriority int = -5
 )
 
-var (
-	spriteanimationWC = &common.WorldComponents{}
-)
-
 func init() {
-	DefaultComp(func(e *Engine, w *ecs.World) {
+	DefaultComp(func(e *Engine, w *World) {
 		SpriteAnimationComponent(w)
 	})
-	DefaultSys(func(e *Engine, w *ecs.World) {
+	DefaultSys(func(e *Engine, w *World) {
 		SpriteAnimationSystem(w)
 		SpriteAnimationLinkSystem(w)
 	})
@@ -90,17 +84,17 @@ type SpriteAnimationClip struct {
 // SpriteAnimationComponent will get the registered sprite anim component of the world.
 // If a component is not present, it will create a new component
 // using world.NewComponent
-func SpriteAnimationComponent(w *ecs.World) *ecs.Component {
-	c := spriteanimationWC.Get(w)
+func SpriteAnimationComponent(w Worlder) *Component {
+	c := w.Component("troupe.SpriteAnimation")
 	if c == nil {
 		var err error
-		c, err = w.NewComponent(ecs.NewComponentInput{
+		c, err = w.NewComponent(NewComponentInput{
 			Name: "troupe.SpriteAnimation",
 			ValidateDataFn: func(data interface{}) bool {
 				_, ok := data.(*SpriteAnimation)
 				return ok
 			},
-			DestructorFn: func(_ *ecs.World, entity ecs.Entity, data interface{}) {
+			DestructorFn: func(_ WorldDicter, entity Entity, data interface{}) {
 				sd := data.(*SpriteAnimation)
 				sd.Clips = nil
 			},
@@ -108,23 +102,27 @@ func SpriteAnimationComponent(w *ecs.World) *ecs.Component {
 		if err != nil {
 			panic(err)
 		}
-		spriteanimationWC.Set(w, c)
 	}
 	return c
 }
 
 // SpriteAnimationSystem creates the sprite system
-func SpriteAnimationSystem(w *ecs.World) *ecs.System {
-	sys := w.NewSystem(SpriteAnimationPriority, SpriteAnimationSystemExec, spriteanimationWC.Get(w))
+func SpriteAnimationSystem(w *World) *System {
+	if sys := w.System("troupe.SpriteAnimationSystem"); sys != nil {
+		return sys
+	}
+	sys := w.NewSystem("troupe.SpriteAnimationSystem", SpriteAnimationPriority, SpriteAnimationSystemExec, SpriteAnimationComponent(w))
 	sys.AddTag(WorldTagUpdate)
 	return sys
 }
 
 // SpriteAnimationSystemExec is the main function of the SpriteSystem
-func SpriteAnimationSystemExec(dt float64, v *ecs.View, s *ecs.System) {
-	world := v.World()
+func SpriteAnimationSystemExec(ctx Context, screen *ebiten.Image) {
+	//dt float64, v *ecs.View, s *ecs.System
+	dt := ctx.DT()
+	v := ctx.System().View()
 	matches := v.Matches()
-	spriteanimcomp := spriteanimationWC.Get(world)
+	spriteanimcomp := SpriteAnimationComponent(ctx.World())
 	globalfps := nonzeroval(ebiten.CurrentFPS(), 60)
 	for _, m := range matches {
 		spranim := m.Components[spriteanimcomp].(*SpriteAnimation)
@@ -223,17 +221,21 @@ func spriteAnimResolvePlayback(globalfps, dt float64, spranim *SpriteAnimation) 
 }
 
 // SpriteAnimationLinkSystem creates the sprite system
-func SpriteAnimationLinkSystem(w *ecs.World) *ecs.System {
-	sys := w.NewSystem(SpriteAnimationLinkPriority, SpriteAnimationLinkSystemExec, spriteanimationWC.Get(w), w.Component(spriteComponentName))
+func SpriteAnimationLinkSystem(w *World) *System {
+	if sys := w.System("troupe.SpriteAnimationLinkSystem"); sys != nil {
+		return sys
+	}
+	sys := w.NewSystem("troupe.SpriteAnimationLinkSystem", SpriteAnimationLinkPriority, SpriteAnimationLinkSystemExec, SpriteAnimationComponent(w), SpriteComponent(w))
 	sys.AddTag(WorldTagDraw)
 	return sys
 }
 
 // SpriteAnimationLinkSystemExec is what glues the animation and sprite together
-func SpriteAnimationLinkSystemExec(dt float64, v *ecs.View, s *ecs.System) {
-	world := v.World()
+func SpriteAnimationLinkSystemExec(ctx Context, screen *ebiten.Image) {
+	v := ctx.System().View()
+	world := ctx.World()
 	matches := v.Matches()
-	spriteanimcomp := spriteanimationWC.Get(world)
+	spriteanimcomp := SpriteAnimationComponent(ctx.World())
 	spritecomp := world.Component(spriteComponentName)
 	for _, m := range matches {
 		spranim := m.Components[spriteanimcomp].(*SpriteAnimation)

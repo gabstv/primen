@@ -1,15 +1,14 @@
 package main
 
 import (
-	"github.com/gabstv/ecs"
-	"github.com/gabstv/troupe/pkg/troupe"
+	"github.com/gabstv/troupe"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
 
 var engine *troupe.Engine
-var hellocomp *ecs.Component
-var movecomp *ecs.Component
+var hellocomp *troupe.Component
+var movecomp *troupe.Component
 
 const SPEED float64 = 120
 
@@ -22,22 +21,22 @@ func main() {
 	})
 	// add components and systems
 	world := engine.Default()
-	comp, err := world.NewComponent(ecs.NewComponentInput{
+	comp, err := world.NewComponent(troupe.NewComponentInput{
 		Name: "hello",
 	})
 	if err != nil {
 		panic(err)
 	}
 	hellocomp = comp
-	movecomp, err = world.NewComponent(ecs.NewComponentInput{
+	movecomp, err = world.NewComponent(troupe.NewComponentInput{
 		Name: "move",
 	})
 	if err != nil {
 		panic(err)
 	}
-	sys0 := world.NewSystem(0, initEngineSystemExec, hellocomp)
+	sys0 := world.NewSystem("", 0, initEngineSystemExec, hellocomp)
 	sys0.AddTag(troupe.WorldTagDraw)
-	sys1 := world.NewSystem(1, moveSysExec, movecomp, hellocomp)
+	sys1 := world.NewSystem("", 1, moveSysExec, movecomp, hellocomp)
 	sys1.AddTag(troupe.WorldTagUpdate)
 	entity0 := world.NewEntity()
 	world.AddComponentToEntity(entity0, hellocomp, &initEngineData{"Hello,", 30, 40})
@@ -64,16 +63,16 @@ type moveCompData struct {
 	YSum   float64
 }
 
-func initEngineSystemExec(dt float64, view *ecs.View, sys *ecs.System) {
-	img := engine.Get(troupe.EbitenScreen).(*ebiten.Image)
-	for _, v := range view.Matches() {
+func initEngineSystemExec(ctx troupe.Context, screen *ebiten.Image) {
+	for _, v := range ctx.System().View().Matches() {
 		data := v.Components[hellocomp].(*initEngineData)
-		ebitenutil.DebugPrintAt(img, data.Text, data.X, data.Y)
+		ebitenutil.DebugPrintAt(screen, data.Text, data.X, data.Y)
 	}
 }
 
-func moveSysExec(dt float64, view *ecs.View, sys *ecs.System) {
-	for _, v := range view.Matches() {
+func moveSysExec(ctx troupe.Context, screen *ebiten.Image) {
+	dt := ctx.DT()
+	for _, v := range ctx.System().View().Matches() {
 		iedata := v.Components[hellocomp].(*initEngineData)
 		movedata := v.Components[movecomp].(*moveCompData)
 		movedata.XSum += dt * movedata.XSpeed

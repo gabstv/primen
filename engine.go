@@ -1,29 +1,27 @@
 package troupe
 
 import (
+	"os"
+	"path"
 	"sort"
 	"sync"
 	"time"
 
-	"github.com/gabstv/ecs"
-	"github.com/gabstv/troupe/pkg/troupe/common"
+	"github.com/gabstv/troupe/fs"
+	osfs "github.com/gabstv/troupe/fs/os"
 	"github.com/hajimehoshi/ebiten"
 )
-
-// EbitenScreen = "ebiten_screen"
-const EbitenScreen = "ebiten_screen"
-
-// EngineKey = "engine"
-const EngineKey = "engine"
 
 // Engine is what controls the ECS of troupe.
 type Engine struct {
 	lock         sync.Mutex
 	lt           time.Time
+	frame        int64
 	worlds       []worldContainer
-	defaultWorld *ecs.World
-	dmap         common.Dict
+	defaultWorld *World
+	dmap         Dict
 	options      EngineOptions
+	f            fs.Filesystem
 }
 
 // NewEngineInput is the input data of NewEngine
@@ -32,6 +30,7 @@ type NewEngineInput struct {
 	Height int
 	Scale  float64
 	Title  string
+	FS     fs.Filesystem
 }
 
 // EngineOptions is used to setup Ebiten @ Engine.boot
@@ -56,12 +55,17 @@ func (i *NewEngineInput) Options() EngineOptions {
 
 // NewEngine returns a new Engine
 func NewEngine(v *NewEngineInput) *Engine {
+	fbase := ""
+	if len(os.Args) > 0 {
+		fbase = path.Dir(os.Args[0])
+	}
 	if v == nil {
 		v = &NewEngineInput{
 			Width:  800,
 			Height: 600,
 			Scale:  1,
 			Title:  "Troupe",
+			FS:     osfs.New(fbase),
 		}
 	} else {
 		if v.Scale < 1 {
@@ -73,23 +77,28 @@ func NewEngine(v *NewEngineInput) *Engine {
 		if v.Height <= 0 {
 			v.Height = 240
 		}
+		if v.FS == nil {
+			v.FS = osfs.New(fbase)
+		}
 	}
-
-	// create the default world
-	dw := ecs.NewWorld()
 	// assign the default systems and controllers
 
 	e := &Engine{
-		worlds: []worldContainer{
-			worldContainer{
-				priority: 0,
-				world:    dw,
-			},
-		},
-		defaultWorld: dw,
-		options:      v.Options(),
+		options: v.Options(),
+		f:       v.FS,
 	}
-	dw.Set(EngineKey, e)
+
+	// create the default world
+	dw := NewWorld(e)
+
+	e.worlds = []worldContainer{
+		worldContainer{
+			priority: 0,
+			world:    dw,
+		},
+	}
+	e.defaultWorld = dw
+
 	// start default components and systems
 	startDefaultComponents(e)
 	startDefaultSystems(e)
@@ -99,7 +108,7 @@ func NewEngine(v *NewEngineInput) *Engine {
 
 // AddWorld adds a world to the engine.
 // The priority is used to sort world execution, from hight to low.
-func (e *Engine) AddWorld(w *ecs.World, priority int) {
+func (e *Engine) AddWorld(w *World, priority int) {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 	if e.worlds == nil {
@@ -109,13 +118,12 @@ func (e *Engine) AddWorld(w *ecs.World, priority int) {
 		priority: priority,
 		world:    w,
 	})
-	w.Set(EngineKey, e)
 	// sort by priority
 	sort.Sort(sortedWorldContainer(e.worlds))
 }
 
-// RemoveWorld removes a *ecs.World
-func (e *Engine) RemoveWorld(w *ecs.World) bool {
+// RemoveWorld removes a *World
+func (e *Engine) RemoveWorld(w *World) bool {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 	wi := -1
@@ -138,7 +146,7 @@ func (e *Engine) RemoveWorld(w *ecs.World) bool {
 }
 
 // Default world
-func (e *Engine) Default() *ecs.World {
+func (e *Engine) Default() *World {
 	return e.defaultWorld
 }
 
@@ -152,17 +160,17 @@ func (e *Engine) Run() error {
 }
 
 func (e *Engine) loop(screen *ebiten.Image) error {
-	e.dmap.Set(EbitenScreen, screen)
 	e.lock.Lock()
 	now := time.Now()
 	ld := now.Sub(e.lt).Seconds()
 	e.lt = now
 	e.dmap.Set(TagDelta, ld)
 	worlds := e.worlds
+	e.frame++
 	e.lock.Unlock()
 
 	for _, w := range worlds {
-		w.world.RunWithoutTag(WorldTagDraw, ld)
+		w.world.RunWithoutTag(WorldTagDraw, screen, ld)
 	}
 
 	if ebiten.IsDrawingSkipped() {
@@ -170,7 +178,7 @@ func (e *Engine) loop(screen *ebiten.Image) error {
 	}
 
 	for _, w := range worlds {
-		w.world.RunWithTag(WorldTagDraw, ld)
+		w.world.RunWithTag(WorldTagDraw, screen, ld)
 	}
 
 	return nil
@@ -184,4 +192,9 @@ func (e *Engine) Get(key string) interface{} {
 // Set an item to the global map
 func (e *Engine) Set(key string, value interface{}) {
 	e.dmap.Set(key, value)
+}
+
+// FS returns the filesystem
+func (e *Engine) FS() fs.Filesystem {
+	return e.f
 }

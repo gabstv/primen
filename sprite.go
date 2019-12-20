@@ -3,7 +3,6 @@ package troupe
 import (
 	"image"
 
-	"github.com/gabstv/ecs"
 	"github.com/hajimehoshi/ebiten"
 )
 
@@ -19,10 +18,10 @@ const (
 )
 
 func init() {
-	DefaultComp(func(e *Engine, w *ecs.World) {
+	DefaultComp(func(e *Engine, w *World) {
 		SpriteComponent(w)
 	})
-	DefaultSys(func(e *Engine, w *ecs.World) {
+	DefaultSys(func(e *Engine, w *World) {
 		SpriteSystem(w)
 	})
 	println("graphicsinit end")
@@ -30,40 +29,57 @@ func init() {
 
 // Sprite is the data of a sprite component.
 type Sprite struct {
-	X      float64
-	Y      float64
-	Angle  float64
-	ScaleX float64
-	ScaleY float64
-	// Bounds for drawing subimage
-	Bounds image.Rectangle
+	X       float64
+	Y       float64
+	Angle   float64
+	ScaleX  float64
+	ScaleY  float64
+	OriginX float64
+	OriginY float64
+
+	Bounds image.Rectangle // Bounds for drawing subimage
 
 	Options *ebiten.DrawImageOptions
 	Image   *ebiten.Image
-	// lastImage exists to keep track of the public Image field, if it
+
+	DrawDisabled bool // if true, the SpriteSystem will not draw this
+
+	lastImage *ebiten.Image // lastImage exists to keep track of the public Image field, if it
 	// changes, the imageWidth and ImageHeight needs to be recalculated.
-	lastImage   *ebiten.Image
-	imageWidth  float64
-	imageHeight float64
+	imageWidth  float64 // last calculated image width
+	imageHeight float64 // last calculated image height
 
 	lastBounds   image.Rectangle
 	lastSubImage *ebiten.Image
 }
 
+// GetPrecomputedImage returns the last precomputed image
+func (s *Sprite) GetPrecomputedImage() *ebiten.Image {
+	if s.lastSubImage != nil {
+		return s.lastSubImage
+	}
+	return s.lastImage
+}
+
+// GetPrecomputedImageDim returns the last precomputed image dimmensions
+func (s *Sprite) GetPrecomputedImageDim() (width, height float64) {
+	return s.imageWidth, s.imageHeight
+}
+
 // SpriteComponent will get the registered sprite component of the world.
 // If a component is not present, it will create a new component
 // using world.NewComponent
-func SpriteComponent(w *ecs.World) *ecs.Component {
+func SpriteComponent(w Worlder) *Component {
 	c := w.Component(spriteComponentName)
 	if c == nil {
 		var err error
-		c, err = w.NewComponent(ecs.NewComponentInput{
+		c, err = w.NewComponent(NewComponentInput{
 			Name: spriteComponentName,
 			ValidateDataFn: func(data interface{}) bool {
 				_, ok := data.(*Sprite)
 				return ok
 			},
-			DestructorFn: func(_ *ecs.World, entity ecs.Entity, data interface{}) {
+			DestructorFn: func(_ WorldDicter, entity Entity, data interface{}) {
 				sd := data.(*Sprite)
 				sd.Options = nil
 			},
@@ -76,8 +92,11 @@ func SpriteComponent(w *ecs.World) *ecs.Component {
 }
 
 // SpriteSystem creates the sprite system
-func SpriteSystem(w *ecs.World) *ecs.System {
-	sys := w.NewSystem(SpritePriority, SpriteSystemExec, w.Component(spriteComponentName))
+func SpriteSystem(w *World) *System {
+	if sys := w.System("troupe.SpriteSystem"); sys != nil {
+		return sys
+	}
+	sys := w.NewSystem("troupe.SpriteSystem", SpritePriority, SpriteSystemExec, w.Component(spriteComponentName))
 	if w.Get(DefaultImageOptions) == nil {
 		opt := &ebiten.DrawImageOptions{}
 		w.Set(DefaultImageOptions, opt)
@@ -87,13 +106,14 @@ func SpriteSystem(w *ecs.World) *ecs.System {
 }
 
 // SpriteSystemExec is the main function of the SpriteSystem
-func SpriteSystemExec(dt float64, v *ecs.View, s *ecs.System) {
+func SpriteSystemExec(ctx Context, screen *ebiten.Image) {
+	// dt float64, v *ecs.View, s *ecs.System
+	v := ctx.System().View()
 	world := v.World()
 	matches := v.Matches()
 	spritecomp := world.Component(spriteComponentName)
 	defaultopts := world.Get(DefaultImageOptions).(*ebiten.DrawImageOptions)
-	engine := world.Get(EngineKey).(*Engine)
-	ebitenScreen := engine.Get(EbitenScreen).(*ebiten.Image)
+	hw, hh := 0.0, 0.0
 	for _, m := range matches {
 		sprite := m.Components[spritecomp].(*Sprite)
 		opt := sprite.Options
@@ -115,16 +135,20 @@ func SpriteSystemExec(dt float64, v *ecs.View, s *ecs.System) {
 			sprite.imageWidth = float64(w)
 			sprite.imageHeight = float64(h)
 		}
+		if sprite.DrawDisabled {
+			continue
+		}
+		hw, hh = sprite.imageWidth/2, sprite.imageHeight/2
 		opt.GeoM.Reset()
-		opt.GeoM.Translate(-sprite.imageWidth/2, -sprite.imageHeight/2)
+		opt.GeoM.Translate(-hw+sprite.OriginX*sprite.imageWidth*-1, -hh+sprite.OriginY*sprite.imageHeight*-1)
 		opt.GeoM.Scale(sprite.ScaleX, sprite.ScaleY)
 		opt.GeoM.Rotate(sprite.Angle)
-		opt.GeoM.Translate(sprite.imageWidth/2, sprite.imageHeight/2)
+		opt.GeoM.Translate(hw, hh)
 		opt.GeoM.Translate(sprite.X, sprite.Y)
 		if sprite.lastSubImage != nil {
-			ebitenScreen.DrawImage(sprite.lastSubImage, opt)
+			screen.DrawImage(sprite.lastSubImage, opt)
 		} else {
-			ebitenScreen.DrawImage(sprite.Image, opt)
+			screen.DrawImage(sprite.Image, opt)
 		}
 	}
 }

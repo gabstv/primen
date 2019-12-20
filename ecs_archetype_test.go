@@ -1,9 +1,9 @@
-package common
+package troupe
 
 import (
 	"testing"
 
-	"github.com/gabstv/ecs"
+	"github.com/hajimehoshi/ebiten"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,9 +16,9 @@ type compBData struct {
 }
 
 func TestNewArchetype(t *testing.T) {
-	w := ecs.NewWorld()
+	w := NewWorld(&Engine{})
 
-	c1, err := w.NewComponent(ecs.NewComponentInput{
+	c1, err := w.NewComponent(NewComponentInput{
 		Name: "COMP_A",
 		ValidateDataFn: func(data interface{}) bool {
 			_, ok := data.(*compAData)
@@ -26,7 +26,7 @@ func TestNewArchetype(t *testing.T) {
 		},
 	})
 	assert.NoError(t, err)
-	c2, err := w.NewComponent(ecs.NewComponentInput{
+	c2, err := w.NewComponent(NewComponentInput{
 		Name: "COMP_B",
 		ValidateDataFn: func(data interface{}) bool {
 			_, ok := data.(*compBData)
@@ -36,8 +36,8 @@ func TestNewArchetype(t *testing.T) {
 	assert.NoError(t, err)
 	arche1 := NewArchetype(w, c1, c2)
 
-	w.NewSystem(1, func(dt float64, view *ecs.View, s *ecs.System) {
-		m := view.Matches()
+	w.NewSystem("", 1, func(ctx Context, screen *ebiten.Image) {
+		m := ctx.System().View().Matches()
 		for _, v := range m {
 			da := v.Components[c1].(*compAData)
 			db := v.Components[c2].(*compBData)
@@ -63,7 +63,7 @@ func TestNewArchetype(t *testing.T) {
 	}, &compBData{
 		Name: "Trends",
 	})
-	w.Run(1)
+	w.Run(nil, 1)
 
 	ed1 := c1.Data(e1).(*compAData)
 	ed2 := c1.Data(e2).(*compAData)
