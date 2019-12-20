@@ -8,7 +8,7 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/gabstv/troupe/pkg/troupe"
+	"github.com/gabstv/troupe"
 )
 
 type EntitySet interface {

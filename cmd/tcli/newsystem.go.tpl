@@ -2,7 +2,7 @@
 package {{.Tags.Package}}
 
 import (
-    "github.com/gabstv/troupe/pkg/troupe"
+    "github.com/gabstv/troupe"
     "github.com/hajimehoshi/ebiten"
 )
 

@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gabstv/troupe/pkg/troupe/fs"
-	osfs "github.com/gabstv/troupe/pkg/troupe/fs/os"
+	"github.com/gabstv/troupe/fs"
+	osfs "github.com/gabstv/troupe/fs/os"
 	"github.com/hajimehoshi/ebiten"
 )
 

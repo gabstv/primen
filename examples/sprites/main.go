@@ -5,7 +5,7 @@ import (
 	_ "image/png"
 	"math"
 
-	"github.com/gabstv/troupe/pkg/troupe"
+	"github.com/gabstv/troupe"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )

@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/gabstv/troupe/pkg/troupe/fs"
+	"github.com/gabstv/troupe/fs"
 )
 
 type osfs struct {
