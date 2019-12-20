@@ -1,11 +1,13 @@
-package systems
+package smid
 
 import (
 	"github.com/gabstv/troupe"
 	"github.com/hajimehoshi/ebiten"
 )
 
-func MidSkipFrames(n int) troupe.SystemMiddleware {
+// SkipFrames is a System middleware that skips n frames and then executes the
+// next function in the system function stack
+func SkipFrames(n int) troupe.SystemMiddleware {
 	return func(next troupe.SystemFn) troupe.SystemFn {
 		return func(ctx troupe.Context, screen *ebiten.Image) {
 			vi := ctx.System().Get("SkipFrames")

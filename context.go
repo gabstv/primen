@@ -8,6 +8,7 @@ import (
 	"github.com/hajimehoshi/ebiten"
 )
 
+// Context is the context passed to every system update function.
 type Context interface {
 	ecs.Context
 	Engine() *Engine

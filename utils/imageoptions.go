@@ -1,9 +1,11 @@
-package ebix
+package utils
 
 import (
 	"github.com/hajimehoshi/ebiten"
 )
 
+// CloneDrawImageOptions copies the data inside a ebiten.DrawImageOptions
+// instance.
 func CloneDrawImageOptions(opt *ebiten.DrawImageOptions) ebiten.DrawImageOptions {
 	return ebiten.DrawImageOptions{
 		GeoM:          opt.GeoM,
@@ -16,6 +18,8 @@ func CloneDrawImageOptions(opt *ebiten.DrawImageOptions) ebiten.DrawImageOptions
 	}
 }
 
+// CloneAnyDrawImageOptions copies the data of the first non nil
+// ebiten.DrawImageOptions instance.
 func CloneAnyDrawImageOptions(a ...*ebiten.DrawImageOptions) ebiten.DrawImageOptions {
 	for _, v := range a {
 		if v != nil {
@@ -25,6 +29,7 @@ func CloneAnyDrawImageOptions(a ...*ebiten.DrawImageOptions) ebiten.DrawImageOpt
 	return ebiten.DrawImageOptions{}
 }
 
+// AnyDrawImageOptions returns the first non nil *ebiten.DrawImageOptions
 func AnyDrawImageOptions(a ...*ebiten.DrawImageOptions) *ebiten.DrawImageOptions {
 	for _, v := range a {
 		if v != nil {
