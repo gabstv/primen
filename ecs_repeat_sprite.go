@@ -4,14 +4,17 @@ import (
 	"github.com/hajimehoshi/ebiten"
 )
 
+// RepeatSpritePriority right after Sprite system runs
 const RepeatSpritePriority int = -11
 
+// RepeatSprite is the component data of a RepeatSpriteComponent
 type RepeatSprite struct {
 	RepeatX      int
 	RepeatY      int
 	DrawDisabled bool
 }
 
+// RepeatSpriteComponent returns the registered RepeatSpriteComponent for the world
 func RepeatSpriteComponent(w Worlder) *Component {
 	c := w.Component("troupe.RepeatSpriteComponent")
 	if c == nil {
@@ -34,6 +37,7 @@ func RepeatSpriteComponent(w Worlder) *Component {
 	return c
 }
 
+// RepeatSpriteSystem upserts the System to the world
 func RepeatSpriteSystem(w *World) *System {
 	if sys := w.System("x.RepeatSpriteSystem"); sys != nil {
 		return sys
@@ -48,6 +52,7 @@ func RepeatSpriteSystem(w *World) *System {
 	return sys
 }
 
+// RepeatSpriteSystemExec is the function executed every frame
 func RepeatSpriteSystemExec(ctx Context, screen *ebiten.Image) {
 	view := ctx.System().View()
 	repeatComp := RepeatSpriteComponent(ctx.World())
