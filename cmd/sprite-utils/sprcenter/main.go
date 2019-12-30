@@ -9,6 +9,7 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 	"os"
+	"path/filepath"
 
 	"github.com/gabstv/troupe/internal/spriteutils"
 	"github.com/gabstv/troupe/spr"
@@ -81,89 +82,175 @@ func run(c *cli.Context) error {
 	if err != nil {
 		return cli.NewExitError(err.Error(), 3)
 	}
+	_, sfn := filepath.Split(inputfn)
 	//
 	return ebiten.Run(ebrun(ebruninput{
 		Source: eimg,
 		Scale:  scale,
 		Def:    def,
 		Meta:   spriteutils.MayGetSpriteDef(def.Metadata),
-	}), w, h, scale, "XYZ")
+	}), w, h, scale, "SPR CENTER - "+sfn)
+}
+
+var xc = color.RGBA{
+	R: 255,
+	G: 0,
+	B: 0,
+	A: 100,
+}
+var yc = color.RGBA{
+	R: 0,
+	G: 255,
+	B: 0,
+	A: 100,
+}
+var prevc = color.RGBA{
+	R: 255,
+	G: 200,
+	B: 40,
+	A: 100,
+}
+
+type runctx struct {
+	In           ebruninput
+	Opt          *ebiten.DrawImageOptions
+	Ox           int64
+	Oy           int64
+	Oxf          float64
+	Oyf          float64
+	Xoff         float64
+	Yoff         float64
+	Offstate     byte
+	Silent       bool
+	HelpOn       bool
+	CursorX      int
+	CursorY      int
+	ScreenWidth  int
+	ScreenHeight int
+	ImageWidth   int
+	ImageHeight  int
+}
+
+func ebupdate(screen *ebiten.Image, c *runctx) {
+	ebinput(screen, c)
+}
+
+func ebinput(screen *ebiten.Image, c *runctx) {
+	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+		c.In.Meta.ExtraOriginX = c.Xoff
+		c.In.Meta.ExtraOriginY = c.Yoff
+		c.In.Meta.RawOriginX = int64(c.CursorX)
+		c.In.Meta.RawOriginY = int64(c.CursorY)
+		c.Ox = int64(c.CursorX)
+		c.Oy = int64(c.CursorY)
+		c.Oxf = float64(c.Ox) + c.In.Meta.ExtraOriginX
+		c.Oyf = float64(c.Oy) + c.In.Meta.ExtraOriginY
+	}
+	if inpututil.IsKeyJustReleased(ebiten.KeyTab) {
+		c.Offstate++
+		if c.Offstate > 2 {
+			c.Offstate = 0
+		}
+		switch c.Offstate {
+		case 0:
+			c.Xoff = 0.5
+			c.Yoff = 0.5
+		case 1:
+			c.Xoff = 1
+			c.Yoff = 1
+		case 2:
+			c.Xoff = 0
+			c.Yoff = 0
+		}
+	}
+	if inpututil.IsKeyJustReleased(ebiten.KeyH) {
+		if ebiten.IsKeyPressed(ebiten.KeyShift) {
+			c.Silent = !c.Silent
+		} else {
+			c.HelpOn = !c.HelpOn
+		}
+	}
+	if inpututil.IsKeyJustReleased(ebiten.KeyEnter) {
+		d := c.In.Def
+		d.Metadata = json.RawMessage(c.In.Meta.MustJSON())
+		d.Size = spr.Vec2{
+			X: float64(c.ImageWidth),
+			Y: float64(c.ImageHeight),
+		}
+		d.Origin = spr.Vec2{
+			X: c.Oxf,
+			Y: c.Oyf,
+		}
+		d.WriteToFile(d.Filename(), 0744)
+		os.Exit(0)
+	}
+	if inpututil.IsKeyJustReleased(ebiten.KeyEscape) || inpututil.IsKeyJustReleased(ebiten.KeyQ) {
+		os.Exit(0)
+	}
+}
+
+func ebdraw(screen *ebiten.Image, c *runctx) {
+	screen.Fill(color.Black)
+	//
+	screen.DrawImage(c.In.Source, c.Opt)
+	// current origin:
+	ebitenutil.DrawLine(screen, 0, float64(c.Oy), float64(c.ScreenWidth), float64(c.Oy), prevc)
+	ebitenutil.DrawLine(screen, float64(c.Ox), 0, float64(c.Ox), float64(c.ScreenHeight), prevc)
+	// mouse position
+	ebitenutil.DrawLine(screen, 0, float64(c.CursorY), float64(c.ScreenWidth), float64(c.CursorY), xc)
+	ebitenutil.DrawLine(screen, float64(c.CursorX), 0, float64(c.CursorX), float64(c.ScreenHeight), yc)
+	// ~ ~ ~ text
+	// mouse pos
+	if !c.Silent {
+		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Size: (%v; %v); [h]elp", c.ImageWidth, c.ImageHeight), 0, 0)
+		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Mouse: (%v; %v)", c.CursorX, c.CursorY), 0, 14)
+		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Offset: (%v; %v)", c.Xoff, c.Yoff), 0, 14*2)
+		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Origin: (%v; %v)", c.Oxf, c.Oyf), 0, 14*3)
+		if c.HelpOn {
+			ebitenutil.DebugPrintAt(screen, "[H]elp:", 0, 14*4)
+			ebitenutil.DebugPrintAt(screen, "[lmouse]: set origin;", 0, 14*5)
+			ebitenutil.DebugPrintAt(screen, "[tab]: switch px offset;", 0, 14*6)
+			ebitenutil.DebugPrintAt(screen, "[return]: save and quit", 0, 14*7)
+			ebitenutil.DebugPrintAt(screen, "[q; esc]: quit w/o saving", 0, 14*8)
+		}
+	} else {
+		if c.HelpOn {
+			ebitenutil.DebugPrintAt(screen, "[H]elp:", 0, 14*0)
+			ebitenutil.DebugPrintAt(screen, "[lmouse]: set origin;", 0, 14*1)
+			ebitenutil.DebugPrintAt(screen, "[tab]: switch px offset;", 0, 14*2)
+			ebitenutil.DebugPrintAt(screen, "[return]: save and quit", 0, 14*3)
+			ebitenutil.DebugPrintAt(screen, "[q; esc]: quit w/o saving", 0, 14*4)
+		}
+	}
 }
 
 func ebrun(input ebruninput) func(screen *ebiten.Image) error {
-	baseimg := input.Source
-	imo := ebiten.DrawImageOptions{}
-	xc := color.RGBA{
-		R: 255,
-		G: 0,
-		B: 0,
-		A: 100,
+	rctx := &runctx{
+		In:          input,
+		Opt:         &ebiten.DrawImageOptions{},
+		Ox:          input.Meta.RawOriginX,
+		Oy:          input.Meta.RawOriginY,
+		Oxf:         float64(input.Meta.RawOriginX) + input.Meta.ExtraOriginX,
+		Oyf:         float64(input.Meta.RawOriginY) + input.Meta.ExtraOriginY,
+		Xoff:        0.5,
+		Yoff:        0.5,
+		ImageWidth:  input.Source.Bounds().Dx(),
+		ImageHeight: input.Source.Bounds().Dy(),
 	}
-	yc := color.RGBA{
-		R: 0,
-		G: 255,
-		B: 0,
-		A: 100,
-	}
-	prevc := color.RGBA{
-		R: 255,
-		G: 200,
-		B: 40,
-		A: 100,
-	}
-	ox := input.Meta.RawOriginX
-	oy := input.Meta.RawOriginY
-	oxf := float64(ox) + input.Meta.ExtraOriginX
-	oyf := float64(oy) + input.Meta.ExtraOriginY
 	return func(screen *ebiten.Image) error {
 		mx, my := ebiten.CursorPosition()
 		maxx, maxy := screen.Bounds().Dx(), screen.Bounds().Dy()
+		rctx.CursorX = mx
+		rctx.CursorY = my
+		rctx.ScreenWidth = maxx
+		rctx.ScreenHeight = maxy
 		//
-		if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-			input.Meta.ExtraOriginX = 0.5
-			input.Meta.ExtraOriginY = 0.5
-			input.Meta.RawOriginX = int64(mx)
-			input.Meta.RawOriginY = int64(my)
-			ox = int64(mx)
-			oy = int64(my)
-			oxf = float64(ox) + input.Meta.ExtraOriginX
-			oyf = float64(oy) + input.Meta.ExtraOriginY
-		}
-		if inpututil.IsKeyJustReleased(ebiten.KeyEnter) {
-			d := input.Def
-			d.Metadata = json.RawMessage(input.Meta.MustJSON())
-			d.Size = spr.Vec2{
-				X: float64(maxx),
-				Y: float64(maxy),
-			}
-			d.Origin = spr.Vec2{
-				X: oxf,
-				Y: oyf,
-			}
-			d.WriteToFile(d.Filename(), 0744)
-			os.Exit(0)
-		}
-		if inpututil.IsKeyJustReleased(ebiten.KeyEscape) || inpututil.IsKeyJustReleased(ebiten.KeyQ) {
-			os.Exit(0)
-		}
+		ebupdate(screen, rctx)
 		//
 		if ebiten.IsDrawingSkipped() {
 			return nil
 		}
-		screen.Fill(color.Black)
-		//
-		screen.DrawImage(baseimg, &imo)
-		// current origin:
-		ebitenutil.DrawLine(screen, 0, float64(oy), float64(maxx), float64(oy), prevc)
-		ebitenutil.DrawLine(screen, float64(ox), 0, float64(ox), float64(maxy), prevc)
-		// mouse position
-		ebitenutil.DrawLine(screen, 0, float64(my), float64(maxx), float64(my), xc)
-		ebitenutil.DrawLine(screen, float64(mx), 0, float64(mx), float64(maxy), yc)
-		// ~ ~ ~ text
-		// mouse pos
-		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Size: (%v; %v)", maxx, maxy), 0, 0)
-		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Mouse: (%v; %v)", mx, my), 0, 14)
-		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Origin: (%v; %v)", oxf, oyf), 0, 14*2)
+		ebdraw(screen, rctx)
 		return nil
 	}
 }
