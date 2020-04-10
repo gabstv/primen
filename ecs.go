@@ -60,6 +60,9 @@ type SystemFn func(ctx Context, screen *ebiten.Image)
 // SystemMiddleware is a system middleware
 type SystemMiddleware func(next SystemFn) SystemFn
 
+// ApplySystemFn TODO doc
+type ApplySystemFn func(w *World) *System
+
 // NewSystem creates a new system
 func (w *World) NewSystem(name string, priority int, fn SystemFn, comps ...*Component) *System {
 	fn2 := func(ctx ecs.Context) {
