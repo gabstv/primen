@@ -37,13 +37,13 @@ func (cs *SpriteComponentSystem) SystemExec() SystemExecFn {
 	return SpriteSystemExec
 }
 
-func (cs *SpriteComponentSystem) Components(w *ecs.World) []*ecs.Component {
+func (cs *SpriteComponentSystem) Components(w ecs.Worlder) []*ecs.Component {
 	return []*ecs.Component{
 		spriteComponentDef(w),
 	}
 }
 
-func spriteComponentDef(w *ecs.World) *ecs.Component {
+func spriteComponentDef(w ecs.Worlder) *ecs.Component {
 	return UpsertComponent(w, ecs.NewComponentInput{
 		Name: CNSprite,
 		ValidateDataFn: func(data interface{}) bool {
@@ -60,16 +60,6 @@ func spriteComponentDef(w *ecs.World) *ecs.Component {
 func (cs *SpriteComponentSystem) SystemTags() []string {
 	return []string{"draw"}
 }
-
-// func init() {
-// 	DefaultComp(func(e *Engine, w *World) {
-// 		SpriteComponent(w)
-// 	})
-// 	DefaultSys(func(e *Engine, w *World) {
-// 		SpriteSystem(w)
-// 	})
-// 	println("graphicsinit end")
-// }
 
 // Sprite is the data of a sprite component.
 type Sprite struct {
@@ -157,4 +147,8 @@ func SpriteSystemExec(ctx Context) {
 			screen.DrawImage(sprite.Image, opt)
 		}
 	}
+}
+
+func init() {
+	RegisterComponentSystem(&SpriteComponentSystem{})
 }

@@ -54,13 +54,13 @@ func (cs *SpriteAnimationComponentSystem) SystemExec() SystemExecFn {
 	return SpriteAnimationSystemExec
 }
 
-func (cs *SpriteAnimationComponentSystem) Components(w *ecs.World) []*ecs.Component {
+func (cs *SpriteAnimationComponentSystem) Components(w ecs.Worlder) []*ecs.Component {
 	return []*ecs.Component{
 		spriteAnimationComponentDef(w),
 	}
 }
 
-func spriteAnimationComponentDef(w *ecs.World) *ecs.Component {
+func spriteAnimationComponentDef(w ecs.Worlder) *ecs.Component {
 	return UpsertComponent(w, ecs.NewComponentInput{
 		Name: CNSpriteAnimation,
 		ValidateDataFn: func(data interface{}) bool {
@@ -73,16 +73,6 @@ func spriteAnimationComponentDef(w *ecs.World) *ecs.Component {
 		},
 	})
 }
-
-// func init() {
-// 	DefaultComp(func(e *Engine, w *World) {
-// 		SpriteAnimationComponent(w)
-// 	})
-// 	DefaultSys(func(e *Engine, w *World) {
-// 		SpriteAnimationSystem(w)
-// 		SpriteAnimationLinkSystem(w)
-// 	})
-// }
 
 // SpriteAnimation holds the data of a sprite animation (and clips)
 type SpriteAnimation struct {
@@ -247,7 +237,7 @@ func (cs *SpriteAnimationLinkComponentSystem) SystemTags() []string {
 	return []string{"draw"}
 }
 
-func (cs *SpriteAnimationLinkComponentSystem) Components(w *ecs.World) []*ecs.Component {
+func (cs *SpriteAnimationLinkComponentSystem) Components(w ecs.Worlder) []*ecs.Component {
 	return []*ecs.Component{
 		spriteAnimationComponentDef(w),
 		spriteComponentDef(w),
@@ -270,4 +260,9 @@ func SpriteAnimationLinkSystemExec(ctx Context) {
 		}
 		spr.Bounds = spranim.Clips[spranim.ActiveClip].Frames[spranim.ActiveFrame]
 	}
+}
+
+func init() {
+	RegisterComponentSystem(&SpriteAnimationComponentSystem{})
+	RegisterComponentSystem(&SpriteAnimationLinkComponentSystem{})
 }

@@ -101,8 +101,7 @@ func NewEngine(v *NewEngineInput) *Engine {
 	e.defaultWorld = dw
 
 	// start default components and systems
-	startDefaultComponents(e)
-	startDefaultSystems(e)
+	startDefaults(e)
 
 	return e
 }

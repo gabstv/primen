@@ -11,7 +11,7 @@ import (
 //   Data
 // System
 
-func UpsertComponent(w *ecs.World, comp ecs.NewComponentInput) *ecs.Component {
+func UpsertComponent(w ecs.Worlder, comp ecs.NewComponentInput) *ecs.Component {
 	if c := w.Component(comp.Name); c != nil {
 		return c
 	}
@@ -47,6 +47,14 @@ func (cs *BaseComponentSystem) SystemExec() SystemExecFn {
 
 func (cs *BaseComponentSystem) SystemTags() []string {
 	return []string{"update"}
+}
+
+func SetupSystem(w *ecs.World, cs ComponentSystem) {
+	fnfn := cs.SystemExec()
+	wexec := func(ctx ecs.Context) {
+		fnfn(ctx.(Context))
+	}
+	w.NewSystem(cs.SystemName(), cs.SystemPriority(), wexec, cs.Components(w)...)
 }
 
 // func (cs *BaseComponentSystem) Components(w *ecs.World) []*ecs.Component {

@@ -26,13 +26,13 @@ func (cs *TransformComponentSystem) SystemExec() SystemExecFn {
 	return TransformSystemExec
 }
 
-func (cs *TransformComponentSystem) Components(w *ecs.World) []*ecs.Component {
+func (cs *TransformComponentSystem) Components(w ecs.Worlder) []*ecs.Component {
 	return []*ecs.Component{
 		transformComponentDef(w),
 	}
 }
 
-func transformComponentDef(w *ecs.World) *ecs.Component {
+func transformComponentDef(w ecs.Worlder) *ecs.Component {
 	return UpsertComponent(w, ecs.NewComponentInput{
 		Name: CNTransform,
 		ValidateDataFn: func(data interface{}) bool {
@@ -44,17 +44,6 @@ func transformComponentDef(w *ecs.World) *ecs.Component {
 		},
 	})
 }
-
-// func init() {
-// 	DefaultComp(func(e *Engine, w *World) {
-// 		TransformComponent(w)
-// 	})
-// 	DefaultSys(func(e *Engine, w *World) {
-// 		TransformSystem(w)
-// 		TransformSpriteSystem(w)
-// 	})
-// 	println("transforminit end")
-// }
 
 // Transform is a hierarchy based matrix
 type Transform struct {
@@ -99,7 +88,7 @@ func (cs *TransformSpriteComponentSystem) SystemExec() SystemExecFn {
 	return TransformSpriteSystemExec
 }
 
-func (cs *TransformSpriteComponentSystem) Components(w *ecs.World) []*ecs.Component {
+func (cs *TransformSpriteComponentSystem) Components(w ecs.Worlder) []*ecs.Component {
 	return []*ecs.Component{
 		transformComponentDef(w),
 		spriteComponentDef(w),
@@ -164,4 +153,9 @@ func resolveTransform(t *Transform, tick uint64) {
 	t.globalScaleX = parentScaleX * t.ScaleX
 	t.globalScaleY = parentScaleY * t.ScaleY
 	t.lastTick = tick
+}
+
+func init() {
+	RegisterComponentSystem(&TransformComponentSystem{})
+	RegisterComponentSystem(&TransformSpriteComponentSystem{})
 }

@@ -37,7 +37,7 @@ func (cs *RepeatSpriteComponentSystem) SystemTags() []string {
 	return []string{"draw"}
 }
 
-func (cs *RepeatSpriteComponentSystem) Components(w *ecs.World) []*ecs.Component {
+func (cs *RepeatSpriteComponentSystem) Components(w ecs.Worlder) []*ecs.Component {
 	return []*ecs.Component{
 		repeatSpriteComponentDef(w),
 		spriteComponentDef(w),
@@ -109,15 +109,6 @@ func RepeatSpriteArchetype(w *ecs.World) *Archetype {
 	return NewArchetype(w, w.Component(CNSprite), w.Component(CNRepeatSprite))
 }
 
-// func init() {
-// 	DefaultComp(func(e *Engine, w *World) {
-// 		RepeatSpriteComponent(w)
-// 	})
-// 	DefaultSys(func(e *Engine, w *World) {
-// 		RepeatSpriteSystem(w)
-// 	})
-// }
-
 func anyDrawImageOptions(a ...*ebiten.DrawImageOptions) *ebiten.DrawImageOptions {
 	for _, v := range a {
 		if v != nil {
@@ -125,4 +116,8 @@ func anyDrawImageOptions(a ...*ebiten.DrawImageOptions) *ebiten.DrawImageOptions
 		}
 	}
 	return &ebiten.DrawImageOptions{}
+}
+
+func init() {
+	RegisterComponentSystem(&RepeatSpriteComponentSystem{})
 }
