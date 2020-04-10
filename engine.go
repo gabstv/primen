@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gabstv/ecs"
 	"github.com/gabstv/tau/fs"
 	osfs "github.com/gabstv/tau/fs/os"
 	"github.com/hajimehoshi/ebiten"
@@ -18,7 +19,7 @@ type Engine struct {
 	lt           time.Time
 	frame        int64
 	worlds       []worldContainer
-	defaultWorld *World
+	defaultWorld *ecs.World
 	dmap         Dict
 	options      EngineOptions
 	f            fs.Filesystem
@@ -108,7 +109,7 @@ func NewEngine(v *NewEngineInput) *Engine {
 
 // AddWorld adds a world to the engine.
 // The priority is used to sort world execution, from hight to low.
-func (e *Engine) AddWorld(w *World, priority int) {
+func (e *Engine) AddWorld(w *ecs.World, priority int) {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 	if e.worlds == nil {
@@ -123,7 +124,7 @@ func (e *Engine) AddWorld(w *World, priority int) {
 }
 
 // RemoveWorld removes a *World
-func (e *Engine) RemoveWorld(w *World) bool {
+func (e *Engine) RemoveWorld(w *ecs.World) bool {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 	wi := -1
@@ -146,7 +147,7 @@ func (e *Engine) RemoveWorld(w *World) bool {
 }
 
 // Default world
-func (e *Engine) Default() *World {
+func (e *Engine) Default() *ecs.World {
 	return e.defaultWorld
 }
 
@@ -170,7 +171,8 @@ func (e *Engine) loop(screen *ebiten.Image) error {
 	e.lock.Unlock()
 
 	for _, w := range worlds {
-		w.world.RunWithoutTag(WorldTagDraw, screen, ld)
+		w.world.Set("screen", screen)
+		w.world.RunWithoutTag(WorldTagDraw, ld)
 	}
 
 	if ebiten.IsDrawingSkipped() {
@@ -178,7 +180,8 @@ func (e *Engine) loop(screen *ebiten.Image) error {
 	}
 
 	for _, w := range worlds {
-		w.world.RunWithTag(WorldTagDraw, screen, ld)
+		w.world.Set("screen", screen)
+		w.world.RunWithTag(WorldTagDraw, ld)
 	}
 
 	return nil

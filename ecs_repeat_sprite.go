@@ -1,11 +1,14 @@
 package tau
 
 import (
+	"github.com/gabstv/ecs"
 	"github.com/hajimehoshi/ebiten"
 )
 
-// RepeatSpritePriority right after Sprite system runs
-const RepeatSpritePriority int = -11
+const (
+	SNRepeatSprite string = "tau.RepeatSpriteSystem"
+	CNRepeatSprite string = "tau.RepeatSpriteComponent"
+)
 
 // RepeatSprite is the component data of a RepeatSpriteComponent
 type RepeatSprite struct {
@@ -14,49 +17,53 @@ type RepeatSprite struct {
 	DrawDisabled bool
 }
 
-// RepeatSpriteComponent returns the registered RepeatSpriteComponent for the world
-func RepeatSpriteComponent(w Worlder) *Component {
-	c := w.Component("tau.RepeatSpriteComponent")
-	if c == nil {
-		var err error
-		c, err = w.NewComponent(NewComponentInput{
-			Name: "tau.RepeatSpriteComponent",
-			ValidateDataFn: func(data interface{}) bool {
-				_, ok := data.(*RepeatSprite)
-				return ok
-			},
-			DestructorFn: func(_ WorldDicter, entity Entity, data interface{}) {
-				//sd := data.(*RepeatSprite)
-				//sd.Options = nil
-			},
-		})
-		if err != nil {
-			panic(err)
-		}
-	}
-	return c
+type RepeatSpriteComponentSystem struct {
+	BaseComponentSystem
 }
 
-// RepeatSpriteSystem upserts the System to the world
-func RepeatSpriteSystem(w *World) *System {
-	if sys := w.System("x.RepeatSpriteSystem"); sys != nil {
-		return sys
+func (cs *RepeatSpriteComponentSystem) SystemName() string {
+	return SNRepeatSprite
+}
+
+func (cs *RepeatSpriteComponentSystem) SystemPriority() int {
+	return -11
+}
+
+func (cs *RepeatSpriteComponentSystem) SystemExec() SystemExecFn {
+	return RepeatSpriteSystemExec
+}
+
+func (cs *RepeatSpriteComponentSystem) SystemTags() []string {
+	return []string{"draw"}
+}
+
+func (cs *RepeatSpriteComponentSystem) Components(w *ecs.World) []*ecs.Component {
+	return []*ecs.Component{
+		repeatSpriteComponentDef(w),
+		spriteComponentDef(w),
 	}
-	sys := w.NewSystem("x.RepeatSpriteSystem", RepeatSpritePriority, RepeatSpriteSystemExec,
-		RepeatSpriteComponent(w), SpriteComponent(w))
-	if w.Get(DefaultImageOptions) == nil {
-		opt := &ebiten.DrawImageOptions{}
-		w.Set(DefaultImageOptions, opt)
-	}
-	sys.AddTag(WorldTagDraw)
-	return sys
+}
+
+func repeatSpriteComponentDef(w *ecs.World) *ecs.Component {
+	return UpsertComponent(w, ecs.NewComponentInput{
+		Name: CNRepeatSprite,
+		ValidateDataFn: func(data interface{}) bool {
+			_, ok := data.(*RepeatSprite)
+			return ok
+		},
+		DestructorFn: func(_ ecs.WorldDicter, entity ecs.Entity, data interface{}) {
+			//sd := data.(*RepeatSprite)
+			//sd.Options = nil
+		},
+	})
 }
 
 // RepeatSpriteSystemExec is the function executed every frame
-func RepeatSpriteSystemExec(ctx Context, screen *ebiten.Image) {
+func RepeatSpriteSystemExec(ctx Context) {
+	screen := ctx.Screen()
 	view := ctx.System().View()
-	repeatComp := RepeatSpriteComponent(ctx.World())
-	spriteComp := SpriteComponent(ctx.World())
+	repeatComp := ctx.World().Component(CNRepeatSprite)
+	spriteComp := ctx.World().Component(CNSprite)
 	var opt *ebiten.DrawImageOptions
 	var w, h float64
 	var rpx, rpy float64
@@ -98,18 +105,18 @@ func RepeatSpriteSystemExec(ctx Context, screen *ebiten.Image) {
 // RepeatSpriteArchetype order:
 // SpriteComponent(w)
 // RepeatSpriteComponent(w)
-func RepeatSpriteArchetype(w *World) *Archetype {
-	return NewArchetype(w, SpriteComponent(w), RepeatSpriteComponent(w))
+func RepeatSpriteArchetype(w *ecs.World) *Archetype {
+	return NewArchetype(w, w.Component(CNSprite), w.Component(CNRepeatSprite))
 }
 
-func init() {
-	DefaultComp(func(e *Engine, w *World) {
-		RepeatSpriteComponent(w)
-	})
-	DefaultSys(func(e *Engine, w *World) {
-		RepeatSpriteSystem(w)
-	})
-}
+// func init() {
+// 	DefaultComp(func(e *Engine, w *World) {
+// 		RepeatSpriteComponent(w)
+// 	})
+// 	DefaultSys(func(e *Engine, w *World) {
+// 		RepeatSpriteSystem(w)
+// 	})
+// }
 
 func anyDrawImageOptions(a ...*ebiten.DrawImageOptions) *ebiten.DrawImageOptions {
 	for _, v := range a {

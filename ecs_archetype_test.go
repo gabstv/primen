@@ -3,7 +3,7 @@ package tau
 import (
 	"testing"
 
-	"github.com/hajimehoshi/ebiten"
+	"github.com/gabstv/ecs"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,7 +18,7 @@ type compBData struct {
 func TestNewArchetype(t *testing.T) {
 	w := NewWorld(&Engine{})
 
-	c1, err := w.NewComponent(NewComponentInput{
+	c1, err := w.NewComponent(ecs.NewComponentInput{
 		Name: "COMP_A",
 		ValidateDataFn: func(data interface{}) bool {
 			_, ok := data.(*compAData)
@@ -26,7 +26,7 @@ func TestNewArchetype(t *testing.T) {
 		},
 	})
 	assert.NoError(t, err)
-	c2, err := w.NewComponent(NewComponentInput{
+	c2, err := w.NewComponent(ecs.NewComponentInput{
 		Name: "COMP_B",
 		ValidateDataFn: func(data interface{}) bool {
 			_, ok := data.(*compBData)
@@ -36,7 +36,7 @@ func TestNewArchetype(t *testing.T) {
 	assert.NoError(t, err)
 	arche1 := NewArchetype(w, c1, c2)
 
-	w.NewSystem("", 1, func(ctx Context, screen *ebiten.Image) {
+	w.NewSystem("", 1, func(ctx ecs.Context) {
 		m := ctx.System().View().Matches()
 		for _, v := range m {
 			da := v.Components[c1].(*compAData)
@@ -63,7 +63,7 @@ func TestNewArchetype(t *testing.T) {
 	}, &compBData{
 		Name: "Trends",
 	})
-	w.Run(nil, 1)
+	w.Run(1)
 
 	ed1 := c1.Data(e1).(*compAData)
 	ed2 := c1.Data(e2).(*compAData)

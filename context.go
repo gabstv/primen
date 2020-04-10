@@ -16,13 +16,14 @@ type Context interface {
 	Frame() int64
 	IsDrawingSkipped() bool
 	DefaultDrawImageOptions() *ebiten.DrawImageOptions
+	Screen() *ebiten.Image
 }
 
 type ctxt struct {
 	c          context.Context
 	dt         float64
-	system     *System
-	world      WorldDicter
+	system     *ecs.System
+	world      ecs.WorldDicter
 	engine     *Engine
 	fps        float64
 	frame      int64
@@ -50,11 +51,11 @@ func (c ctxt) DT() float64 {
 	return c.dt
 }
 
-func (c ctxt) System() *System {
+func (c ctxt) System() *ecs.System {
 	return c.system
 }
 
-func (c ctxt) World() WorldDicter {
+func (c ctxt) World() ecs.WorldDicter {
 	return c.world
 }
 
@@ -76,4 +77,8 @@ func (c ctxt) IsDrawingSkipped() bool {
 
 func (c ctxt) DefaultDrawImageOptions() *ebiten.DrawImageOptions {
 	return c.imopt
+}
+
+func (c ctxt) Screen() *ebiten.Image {
+	return c.world.Get("screen").(*ebiten.Image)
 }

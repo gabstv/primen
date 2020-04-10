@@ -1,26 +1,60 @@
 package tau
 
 import (
-	"github.com/hajimehoshi/ebiten"
+	"github.com/gabstv/ecs"
 )
 
 const (
-	// TransformPriority - default 0
-	TransformPriority int = 0
-	// TransformSpritePriority - default -6 (execs after positioning the transforms)
-	TransformSpritePriority int = -6
+	SNTransform       = "tau.TransformSystem"
+	SNTransformSprite = "tau.TransformSpriteSystem"
+	CNTransform       = "tau.TransformComponent"
 )
 
-func init() {
-	DefaultComp(func(e *Engine, w *World) {
-		TransformComponent(w)
-	})
-	DefaultSys(func(e *Engine, w *World) {
-		TransformSystem(w)
-		TransformSpriteSystem(w)
-	})
-	println("transforminit end")
+type TransformComponentSystem struct {
+	BaseComponentSystem
 }
+
+func (cs *TransformComponentSystem) SystemName() string {
+	return SNTransform
+}
+
+func (cs *TransformComponentSystem) SystemPriority() int {
+	return 0
+}
+
+func (cs *TransformComponentSystem) SystemExec() SystemExecFn {
+	return TransformSystemExec
+}
+
+func (cs *TransformComponentSystem) Components(w *ecs.World) []*ecs.Component {
+	return []*ecs.Component{
+		transformComponentDef(w),
+	}
+}
+
+func transformComponentDef(w *ecs.World) *ecs.Component {
+	return UpsertComponent(w, ecs.NewComponentInput{
+		Name: CNTransform,
+		ValidateDataFn: func(data interface{}) bool {
+			_, ok := data.(*Transform)
+			return ok
+		},
+		DestructorFn: func(_ ecs.WorldDicter, entity ecs.Entity, data interface{}) {
+			//sd := data.(*Transform)
+		},
+	})
+}
+
+// func init() {
+// 	DefaultComp(func(e *Engine, w *World) {
+// 		TransformComponent(w)
+// 	})
+// 	DefaultSys(func(e *Engine, w *World) {
+// 		TransformSystem(w)
+// 		TransformSpriteSystem(w)
+// 	})
+// 	println("transforminit end")
+// }
 
 // Transform is a hierarchy based matrix
 type Transform struct {
@@ -49,54 +83,31 @@ func NewTransform() *Transform {
 	}
 }
 
-// TransformComponent will get the registered transform component of the world.
-// If a component is not present, it will create a new component
-// using world.NewComponent
-func TransformComponent(w Worlder) *Component {
-	c := w.Component("tau.Transform")
-	if c == nil {
-		var err error
-		c, err = w.NewComponent(NewComponentInput{
-			Name: "tau.Transform",
-			ValidateDataFn: func(data interface{}) bool {
-				_, ok := data.(*Transform)
-				return ok
-			},
-			DestructorFn: func(_ WorldDicter, entity Entity, data interface{}) {
-				//sd := data.(*Transform)
-			},
-		})
-		if err != nil {
-			panic(err)
-		}
-	}
-	return c
+type TransformSpriteComponentSystem struct {
+	BaseComponentSystem
 }
 
-// TransformSystem creates the transform system
-func TransformSystem(w *World) *System {
-	if sys := w.System("tau.TransformSystem"); sys != nil {
-		return sys
-	}
-	sys := w.NewSystem("tau.TransformSystem", TransformPriority, TransformSystemExec, TransformComponent(w))
-	sys.AddTag(WorldTagUpdate)
-	sys.Set("tick", uint64(0))
-	return sys
+func (cs *TransformSpriteComponentSystem) SystemName() string {
+	return SNTransformSprite
 }
 
-// TransformSpriteSystem creates the transform sprite system
-func TransformSpriteSystem(w *World) *System {
-	if sys := w.System("tau.TransformSpriteSystem"); sys != nil {
-		return sys
+func (cs *TransformSpriteComponentSystem) SystemPriority() int {
+	return -6
+}
+
+func (cs *TransformSpriteComponentSystem) SystemExec() SystemExecFn {
+	return TransformSpriteSystemExec
+}
+
+func (cs *TransformSpriteComponentSystem) Components(w *ecs.World) []*ecs.Component {
+	return []*ecs.Component{
+		transformComponentDef(w),
+		spriteComponentDef(w),
 	}
-	sys := w.NewSystem("tau.TransformSpriteSystem", TransformSpritePriority, TransformSpriteSystemExec, TransformComponent(w), SpriteComponent(w))
-	sys.AddTag(WorldTagUpdate)
-	println("TransformSpriteSystem")
-	return sys
 }
 
 // TransformSystemExec is the main function of the TransformSystem
-func TransformSystemExec(ctx Context, screen *ebiten.Image) {
+func TransformSystemExec(ctx Context) {
 	// dt float64, v *ecs.View, s *ecs.System
 	s := ctx.System()
 	v := s.View()
@@ -105,7 +116,7 @@ func TransformSystemExec(ctx Context, screen *ebiten.Image) {
 	s.Set("tick", tick)
 	//
 	matches := v.Matches()
-	transformcomp := TransformComponent(ctx.World())
+	transformcomp := ctx.World().Component(CNTransform)
 	for _, m := range matches {
 		t := m.Components[transformcomp].(*Transform)
 		resolveTransform(t, tick)
@@ -113,12 +124,12 @@ func TransformSystemExec(ctx Context, screen *ebiten.Image) {
 }
 
 // TransformSpriteSystemExec is the main function of the TransformSpriteSystem
-func TransformSpriteSystemExec(ctx Context, screen *ebiten.Image) {
+func TransformSpriteSystemExec(ctx Context) {
 	// dt float64, v *ecs.View, s *ecs.System
 	v := ctx.System().View()
 	matches := v.Matches()
-	transformcomp := TransformComponent(ctx.World())
-	spritecomp := SpriteComponent(ctx.World())
+	transformcomp := ctx.World().Component(CNTransform)
+	spritecomp := ctx.World().Component(CNSprite)
 	for _, m := range matches {
 		t := m.Components[transformcomp].(*Transform)
 		// transform is already resolved because the TransformSystem executed first

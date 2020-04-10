@@ -2,10 +2,12 @@ package tau
 
 import (
 	"sync"
+
+	"github.com/gabstv/ecs"
 )
 
 // DefaultStarter is the function used to start a component or a system
-type DefaultStarter func(e *Engine, w *World)
+type DefaultStarter func(e *Engine, w *ecs.World)
 
 var (
 	defaultCompStarters []DefaultStarter

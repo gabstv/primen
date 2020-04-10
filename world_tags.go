@@ -1,5 +1,7 @@
 package tau
 
+import "github.com/gabstv/ecs"
+
 // WorldTag is a tag used to filter systems of a world
 type WorldTag = string
 
@@ -14,7 +16,7 @@ const (
 )
 
 type worldContainer struct {
-	world    *World
+	world    *ecs.World
 	priority int
 }
 

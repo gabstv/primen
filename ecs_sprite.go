@@ -3,29 +3,73 @@ package tau
 import (
 	"image"
 
+	"github.com/gabstv/ecs"
 	"github.com/hajimehoshi/ebiten"
 )
 
 const (
-	spriteComponentName = "tau.Sprite"
-)
-
-const (
-	// SpritePriority - default -10
-	SpritePriority int = -10
 	// DefaultImageOptions key passed to the default world (&ebiten.DrawImageOptions{})
 	DefaultImageOptions string = "default_image_options"
 )
 
-func init() {
-	DefaultComp(func(e *Engine, w *World) {
-		SpriteComponent(w)
-	})
-	DefaultSys(func(e *Engine, w *World) {
-		SpriteSystem(w)
-	})
-	println("graphicsinit end")
+const (
+	SNSprite = "tau.SpriteSystem"
+	CNSprite = "tau.SpriteComponent"
+)
+
+var (
+	SpriteCS *SpriteComponentSystem = new(SpriteComponentSystem)
+)
+
+type SpriteComponentSystem struct {
+	BaseComponentSystem
 }
+
+func (cs *SpriteComponentSystem) SystemName() string {
+	return SNSprite
+}
+
+func (cs *SpriteComponentSystem) SystemPriority() int {
+	return -10
+}
+
+func (cs *SpriteComponentSystem) SystemExec() SystemExecFn {
+	return SpriteSystemExec
+}
+
+func (cs *SpriteComponentSystem) Components(w *ecs.World) []*ecs.Component {
+	return []*ecs.Component{
+		spriteComponentDef(w),
+	}
+}
+
+func spriteComponentDef(w *ecs.World) *ecs.Component {
+	return UpsertComponent(w, ecs.NewComponentInput{
+		Name: CNSprite,
+		ValidateDataFn: func(data interface{}) bool {
+			_, ok := data.(*Sprite)
+			return ok
+		},
+		DestructorFn: func(_ ecs.WorldDicter, entity ecs.Entity, data interface{}) {
+			sd := data.(*Sprite)
+			sd.Options = nil
+		},
+	})
+}
+
+func (cs *SpriteComponentSystem) SystemTags() []string {
+	return []string{"draw"}
+}
+
+// func init() {
+// 	DefaultComp(func(e *Engine, w *World) {
+// 		SpriteComponent(w)
+// 	})
+// 	DefaultSys(func(e *Engine, w *World) {
+// 		SpriteSystem(w)
+// 	})
+// 	println("graphicsinit end")
+// }
 
 // Sprite is the data of a sprite component.
 type Sprite struct {
@@ -66,52 +110,14 @@ func (s *Sprite) GetPrecomputedImageDim() (width, height float64) {
 	return s.imageWidth, s.imageHeight
 }
 
-// SpriteComponent will get the registered sprite component of the world.
-// If a component is not present, it will create a new component
-// using world.NewComponent
-func SpriteComponent(w Worlder) *Component {
-	c := w.Component(spriteComponentName)
-	if c == nil {
-		var err error
-		c, err = w.NewComponent(NewComponentInput{
-			Name: spriteComponentName,
-			ValidateDataFn: func(data interface{}) bool {
-				_, ok := data.(*Sprite)
-				return ok
-			},
-			DestructorFn: func(_ WorldDicter, entity Entity, data interface{}) {
-				sd := data.(*Sprite)
-				sd.Options = nil
-			},
-		})
-		if err != nil {
-			panic(err)
-		}
-	}
-	return c
-}
-
-// SpriteSystem creates the sprite system
-func SpriteSystem(w *World) *System {
-	if sys := w.System("tau.SpriteSystem"); sys != nil {
-		return sys
-	}
-	sys := w.NewSystem("tau.SpriteSystem", SpritePriority, SpriteSystemExec, w.Component(spriteComponentName))
-	if w.Get(DefaultImageOptions) == nil {
-		opt := &ebiten.DrawImageOptions{}
-		w.Set(DefaultImageOptions, opt)
-	}
-	sys.AddTag(WorldTagDraw)
-	return sys
-}
-
 // SpriteSystemExec is the main function of the SpriteSystem
-func SpriteSystemExec(ctx Context, screen *ebiten.Image) {
+func SpriteSystemExec(ctx Context) {
+	screen := ctx.Screen()
 	// dt float64, v *ecs.View, s *ecs.System
 	v := ctx.System().View()
 	world := v.World()
 	matches := v.Matches()
-	spritecomp := world.Component(spriteComponentName)
+	spritecomp := ctx.World().Component(CNSprite)
 	defaultopts := world.Get(DefaultImageOptions).(*ebiten.DrawImageOptions)
 	hw, hh := 0.0, 0.0
 	for _, m := range matches {
