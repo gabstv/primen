@@ -1,4 +1,4 @@
-package troupe
+package tau
 
 import (
 	"os"
@@ -7,12 +7,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gabstv/troupe/fs"
-	osfs "github.com/gabstv/troupe/fs/os"
+	"github.com/gabstv/tau/fs"
+	osfs "github.com/gabstv/tau/fs/os"
 	"github.com/hajimehoshi/ebiten"
 )
 
-// Engine is what controls the ECS of troupe.
+// Engine is what controls the ECS of tau.
 type Engine struct {
 	lock         sync.Mutex
 	lt           time.Time
@@ -64,7 +64,7 @@ func NewEngine(v *NewEngineInput) *Engine {
 			Width:  800,
 			Height: 600,
 			Scale:  1,
-			Title:  "Troupe",
+			Title:  "tau",
 			FS:     osfs.New(fbase),
 		}
 	} else {

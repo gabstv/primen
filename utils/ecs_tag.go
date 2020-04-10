@@ -1,9 +1,9 @@
 package utils
 
 import (
-	"github.com/gabstv/troupe"
-	"github.com/gabstv/troupe/utils/sets"
-	"github.com/gabstv/troupe/utils/smid"
+	"github.com/gabstv/tau"
+	"github.com/gabstv/tau/utils/sets"
+	"github.com/gabstv/tau/utils/smid"
 	"github.com/hajimehoshi/ebiten"
 )
 
@@ -42,12 +42,12 @@ func (t *Tag) Remove(tag string) {
 // TagComponent will get the registered tag component of the world.
 // If a component is not present, it will create a new component
 // using world.NewComponent
-func TagComponent(w troupe.WorldDicter) *troupe.Component {
-	c := w.Component("troupe/utils.TagComponent")
+func TagComponent(w tau.WorldDicter) *tau.Component {
+	c := w.Component("tau/utils.TagComponent")
 	if c == nil {
 		var err error
-		c, err = w.NewComponent(troupe.NewComponentInput{
-			Name: "troupe/utils.TagComponent",
+		c, err = w.NewComponent(tau.NewComponentInput{
+			Name: "tau/utils.TagComponent",
 			ValidateDataFn: func(data interface{}) bool {
 				if data == nil {
 					return false
@@ -55,7 +55,7 @@ func TagComponent(w troupe.WorldDicter) *troupe.Component {
 				_, ok := data.(*Tag)
 				return ok
 			},
-			DestructorFn: func(_ troupe.WorldDicter, entity troupe.Entity, data interface{}) {
+			DestructorFn: func(_ tau.WorldDicter, entity tau.Entity, data interface{}) {
 				if t, _ := data.(*Tag); t != nil {
 					t.Dirty = false
 					t.lastTags = nil
@@ -71,27 +71,27 @@ func TagComponent(w troupe.WorldDicter) *troupe.Component {
 }
 
 // TagSystem creates the tag system
-func TagSystem(w *troupe.World) *troupe.System {
-	if sys := w.System("troupe/utils.TagSystem"); sys != nil {
+func TagSystem(w *tau.World) *tau.System {
+	if sys := w.System("tau/utils.TagSystem"); sys != nil {
 		return sys
 	}
-	sys := w.NewSystem("troupe/utils.TagSystem", 0, troupe.SysWrapFn(TagSystemExec, tagSystemMidDirty(), smid.SkipFrames(30)), TagComponent(w))
-	sys.AddTag(troupe.WorldTagUpdate)
+	sys := w.NewSystem("tau/utils.TagSystem", 0, tau.SysWrapFn(TagSystemExec, tagSystemMidDirty(), smid.SkipFrames(30)), TagComponent(w))
+	sys.AddTag(tau.WorldTagUpdate)
 	return sys
 }
 
-func FindWithTag(w *troupe.World, tag string, tags ...string) []troupe.Entity {
+func FindWithTag(w *tau.World, tag string, tags ...string) []tau.Entity {
 	if tag == "" {
-		return []troupe.Entity{}
+		return []tau.Entity{}
 	}
 	sys := TagSystem(w)
 	ci := sys.Get("cache")
 	if ci == nil {
-		return []troupe.Entity{}
+		return []tau.Entity{}
 	}
 	c := ci.(*tagSystemBakeCache)
 	if c.Sets[tag] == nil {
-		return []troupe.Entity{}
+		return []tau.Entity{}
 	}
 	ents := sets.NewEntitySet(c.Sets[tag].Values()...)
 	if len(tags) < 1 {
@@ -100,7 +100,7 @@ func FindWithTag(w *troupe.World, tag string, tags ...string) []troupe.Entity {
 	for _, tt := range tags {
 		en2 := c.Sets[tt]
 		if en2 == nil {
-			return []troupe.Entity{}
+			return []tau.Entity{}
 		}
 		el := ents.Values()
 		for _, k := range el {
@@ -109,20 +109,20 @@ func FindWithTag(w *troupe.World, tag string, tags ...string) []troupe.Entity {
 			}
 		}
 		if ents.Empty() {
-			return []troupe.Entity{}
+			return []tau.Entity{}
 		}
 	}
 	return ents.Values()
 }
 
-func tagSystemMidDirty() troupe.SystemMiddleware {
-	return func(next troupe.SystemFn) troupe.SystemFn {
-		return func(ctx troupe.Context, screen *ebiten.Image) {
+func tagSystemMidDirty() tau.SystemMiddleware {
+	return func(next tau.SystemFn) tau.SystemFn {
+		return func(ctx tau.Context, screen *ebiten.Image) {
 			defer next(ctx, screen)
 			c := TagComponent(ctx.World())
 			matches := ctx.System().View().Matches()
 			dtags := make([]*Tag, 0, 8)
-			dents := make([]troupe.Entity, 0, 8)
+			dents := make([]tau.Entity, 0, 8)
 			for _, m := range matches {
 				t := m.Components[c].(*Tag)
 				if t.Dirty {
@@ -151,12 +151,12 @@ func isStringSliceDirty(current, previous []string) bool {
 }
 
 // TagSystemExec is the main function of the TagSystem
-func TagSystemExec(ctx troupe.Context, screen *ebiten.Image) {
+func TagSystemExec(ctx tau.Context, screen *ebiten.Image) {
 	v := ctx.System().View()
 	matches := v.Matches()
 	tagcomp := TagComponent(ctx.World())
 	dtags := make([]*Tag, 0)
-	dents := make([]troupe.Entity, 0)
+	dents := make([]tau.Entity, 0)
 	for _, m := range matches {
 		t := m.Components[tagcomp].(*Tag)
 		if isStringSliceDirty(t.Tags, t.lastTags) {
@@ -212,7 +212,7 @@ type tagSystemBakeCache struct {
 	Sets   map[string]sets.EntitySet
 }
 
-func tagSystemBake(ctx troupe.Context, screen *ebiten.Image, dentities []troupe.Entity, dtags []*Tag) {
+func tagSystemBake(ctx tau.Context, screen *ebiten.Image, dentities []tau.Entity, dtags []*Tag) {
 	if len(dentities) < 1 {
 		return
 	}
@@ -279,10 +279,10 @@ func tagSystemBake(ctx troupe.Context, screen *ebiten.Image, dentities []troupe.
 }
 
 func init() {
-	troupe.DefaultComp(func(e *troupe.Engine, w *troupe.World) {
+	tau.DefaultComp(func(e *tau.Engine, w *tau.World) {
 		TagComponent(w)
 	})
-	troupe.DefaultSys(func(e *troupe.Engine, w *troupe.World) {
+	tau.DefaultSys(func(e *tau.Engine, w *tau.World) {
 		TagSystem(w)
 	})
 }

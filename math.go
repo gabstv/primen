@@ -1,4 +1,4 @@
-package troupe
+package tau
 
 // MIT License
 //

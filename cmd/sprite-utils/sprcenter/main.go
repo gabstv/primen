@@ -11,8 +11,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/gabstv/troupe/internal/spriteutils"
-	"github.com/gabstv/troupe/spr"
+	"github.com/gabstv/tau/internal/spriteutils"
+	"github.com/gabstv/tau/spr"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 	"github.com/hajimehoshi/ebiten/inpututil"

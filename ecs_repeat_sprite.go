@@ -1,4 +1,4 @@
-package troupe
+package tau
 
 import (
 	"github.com/hajimehoshi/ebiten"
@@ -16,11 +16,11 @@ type RepeatSprite struct {
 
 // RepeatSpriteComponent returns the registered RepeatSpriteComponent for the world
 func RepeatSpriteComponent(w Worlder) *Component {
-	c := w.Component("troupe.RepeatSpriteComponent")
+	c := w.Component("tau.RepeatSpriteComponent")
 	if c == nil {
 		var err error
 		c, err = w.NewComponent(NewComponentInput{
-			Name: "troupe.RepeatSpriteComponent",
+			Name: "tau.RepeatSpriteComponent",
 			ValidateDataFn: func(data interface{}) bool {
 				_, ok := data.(*RepeatSprite)
 				return ok

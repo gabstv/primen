@@ -2,7 +2,7 @@
 package {{.Tags.Package}}
 
 import (
-    "github.com/gabstv/troupe"
+    "github.com/gabstv/tau"
     "github.com/hajimehoshi/ebiten"
 )
 
@@ -14,11 +14,11 @@ type {{.Tags.Component}} struct {
 // {{.Tags.Component}}Component will get the registered {{tolower .Tags.Component}} component of the world.
 // If a component is not present, it will create a new component
 // using world.NewComponent
-func {{.Tags.Component}}Component(w troupe.WorldDicter) *troupe.Component {
+func {{.Tags.Component}}Component(w tau.WorldDicter) *tau.Component {
 	c := w.Component("{{tolower .Tags.Package}}.{{.Tags.Component}}Component")
 	if c == nil {
 		var err error
-		c, err = w.NewComponent(troupe.NewComponentInput{
+		c, err = w.NewComponent(tau.NewComponentInput{
 			Name: "{{tolower .Tags.Package}}.{{.Tags.Component}}Component",
 			ValidateDataFn: func(data interface{}) bool {
                 if data == nil {
@@ -27,7 +27,7 @@ func {{.Tags.Component}}Component(w troupe.WorldDicter) *troupe.Component {
 				_, ok := data.(*{{.Tags.Component}})
                 return ok
 			},
-			DestructorFn: func(_ troupe.WorldDicter, entity troupe.Entity, data interface{}) {
+			DestructorFn: func(_ tau.WorldDicter, entity tau.Entity, data interface{}) {
 				//TODO: fill
 			},
 		})
@@ -39,18 +39,18 @@ func {{.Tags.Component}}Component(w troupe.WorldDicter) *troupe.Component {
 }
 
 // {{.Tags.Component}}System creates the {{tolower .Tags.Component}} system
-func {{.Tags.Component}}System(w *troupe.World) *troupe.System {
+func {{.Tags.Component}}System(w *tau.World) *tau.System {
 	if sys := w.System("{{.Tags.Package}}.{{.Tags.Component}}System"); sys != nil {
 		return sys
 	}
 	sys := w.NewSystem("{{.Tags.Package}}.{{.Tags.Component}}System", {{.Tags.Priority}}, {{.Tags.Component}}SystemExec, {{.Tags.Component}}Component(w))
-	//sys.AddTag(troupe.WorldTagDraw)
-	sys.AddTag(troupe.WorldTagUpdate)
+	//sys.AddTag(tau.WorldTagDraw)
+	sys.AddTag(tau.WorldTagUpdate)
 	return sys
 }
 
 // {{.Tags.Component}}SystemExec is the main function of the {{.Tags.Component}}System
-func {{.Tags.Component}}SystemExec(ctx troupe.Context, screen *ebiten.Image) {
+func {{.Tags.Component}}SystemExec(ctx tau.Context, screen *ebiten.Image) {
 	v := ctx.System().View()
 	world := v.World()
 	matches := v.Matches()
@@ -61,18 +61,18 @@ func {{.Tags.Component}}SystemExec(ctx troupe.Context, screen *ebiten.Image) {
 }
 
 // {{.Tags.Component}}CS ensures that all the required components and systems are added to the world.
-func {{.Tags.Component}}CS(w *troupe.World) {
+func {{.Tags.Component}}CS(w *tau.World) {
 	{{.Tags.Component}}Component(w)
 	{{.Tags.Component}}System(w)
 	//TODO: add all additional required components and systems
 } 
 
 func init() {
-	troupe.DefaultComp(func(e *troupe.Engine, w *troupe.World) {
+	tau.DefaultComp(func(e *tau.Engine, w *tau.World) {
 		{{.Tags.Component}}Component(w)
 		//TODO: add all additional required components
 	})
-	troupe.DefaultSys(func(e *troupe.Engine, w *troupe.World) {
+	tau.DefaultSys(func(e *tau.Engine, w *tau.World) {
 		{{.Tags.Component}}System(w)
 		//TODO: add all additional required systems
 	})

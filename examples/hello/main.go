@@ -1,19 +1,19 @@
 package main
 
 import (
-	"github.com/gabstv/troupe"
+	"github.com/gabstv/tau"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
 
-var engine *troupe.Engine
-var hellocomp *troupe.Component
-var movecomp *troupe.Component
+var engine *tau.Engine
+var hellocomp *tau.Component
+var movecomp *tau.Component
 
 const SPEED float64 = 120
 
 func main() {
-	engine = troupe.NewEngine(&troupe.NewEngineInput{
+	engine = tau.NewEngine(&tau.NewEngineInput{
 		Width:  320,
 		Height: 240,
 		Scale:  2,
@@ -21,23 +21,23 @@ func main() {
 	})
 	// add components and systems
 	world := engine.Default()
-	comp, err := world.NewComponent(troupe.NewComponentInput{
+	comp, err := world.NewComponent(tau.NewComponentInput{
 		Name: "hello",
 	})
 	if err != nil {
 		panic(err)
 	}
 	hellocomp = comp
-	movecomp, err = world.NewComponent(troupe.NewComponentInput{
+	movecomp, err = world.NewComponent(tau.NewComponentInput{
 		Name: "move",
 	})
 	if err != nil {
 		panic(err)
 	}
 	sys0 := world.NewSystem("", 0, initEngineSystemExec, hellocomp)
-	sys0.AddTag(troupe.WorldTagDraw)
+	sys0.AddTag(tau.WorldTagDraw)
 	sys1 := world.NewSystem("", 1, moveSysExec, movecomp, hellocomp)
-	sys1.AddTag(troupe.WorldTagUpdate)
+	sys1.AddTag(tau.WorldTagUpdate)
 	entity0 := world.NewEntity()
 	world.AddComponentToEntity(entity0, hellocomp, &initEngineData{"Hello,", 30, 40})
 	entity1 := world.NewEntity()
@@ -63,14 +63,14 @@ type moveCompData struct {
 	YSum   float64
 }
 
-func initEngineSystemExec(ctx troupe.Context, screen *ebiten.Image) {
+func initEngineSystemExec(ctx tau.Context, screen *ebiten.Image) {
 	for _, v := range ctx.System().View().Matches() {
 		data := v.Components[hellocomp].(*initEngineData)
 		ebitenutil.DebugPrintAt(screen, data.Text, data.X, data.Y)
 	}
 }
 
-func moveSysExec(ctx troupe.Context, screen *ebiten.Image) {
+func moveSysExec(ctx tau.Context, screen *ebiten.Image) {
 	dt := ctx.DT()
 	for _, v := range ctx.System().View().Matches() {
 		iedata := v.Components[hellocomp].(*initEngineData)

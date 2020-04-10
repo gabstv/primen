@@ -1,4 +1,4 @@
-package troupe
+package tau
 
 // WorldTag is a tag used to filter systems of a world
 type WorldTag = string

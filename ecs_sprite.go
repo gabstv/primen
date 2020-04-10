@@ -1,4 +1,4 @@
-package troupe
+package tau
 
 import (
 	"image"
@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	spriteComponentName = "troupe.Sprite"
+	spriteComponentName = "tau.Sprite"
 )
 
 const (
@@ -93,10 +93,10 @@ func SpriteComponent(w Worlder) *Component {
 
 // SpriteSystem creates the sprite system
 func SpriteSystem(w *World) *System {
-	if sys := w.System("troupe.SpriteSystem"); sys != nil {
+	if sys := w.System("tau.SpriteSystem"); sys != nil {
 		return sys
 	}
-	sys := w.NewSystem("troupe.SpriteSystem", SpritePriority, SpriteSystemExec, w.Component(spriteComponentName))
+	sys := w.NewSystem("tau.SpriteSystem", SpritePriority, SpriteSystemExec, w.Component(spriteComponentName))
 	if w.Get(DefaultImageOptions) == nil {
 		opt := &ebiten.DrawImageOptions{}
 		w.Set(DefaultImageOptions, opt)

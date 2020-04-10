@@ -1,4 +1,4 @@
-package troupe
+package tau
 
 // Archetype is a recipe to create entities with a preset of components.
 type Archetype struct {
@@ -51,8 +51,6 @@ func (a *Archetype) NewEntity(compdata ...interface{}) Entity {
 
 func clonecompslc(v []*Component) []*Component {
 	x := make([]*Component, len(v), len(v))
-	for i, vv := range v {
-		x[i] = vv
-	}
+	copy(x, v)
 	return x
 }

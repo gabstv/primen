@@ -1,4 +1,4 @@
-package troupe
+package tau
 
 import (
 	"image"
@@ -85,11 +85,11 @@ type SpriteAnimationClip struct {
 // If a component is not present, it will create a new component
 // using world.NewComponent
 func SpriteAnimationComponent(w Worlder) *Component {
-	c := w.Component("troupe.SpriteAnimation")
+	c := w.Component("tau.SpriteAnimation")
 	if c == nil {
 		var err error
 		c, err = w.NewComponent(NewComponentInput{
-			Name: "troupe.SpriteAnimation",
+			Name: "tau.SpriteAnimation",
 			ValidateDataFn: func(data interface{}) bool {
 				_, ok := data.(*SpriteAnimation)
 				return ok
@@ -108,10 +108,10 @@ func SpriteAnimationComponent(w Worlder) *Component {
 
 // SpriteAnimationSystem creates the sprite system
 func SpriteAnimationSystem(w *World) *System {
-	if sys := w.System("troupe.SpriteAnimationSystem"); sys != nil {
+	if sys := w.System("tau.SpriteAnimationSystem"); sys != nil {
 		return sys
 	}
-	sys := w.NewSystem("troupe.SpriteAnimationSystem", SpriteAnimationPriority, SpriteAnimationSystemExec, SpriteAnimationComponent(w))
+	sys := w.NewSystem("tau.SpriteAnimationSystem", SpriteAnimationPriority, SpriteAnimationSystemExec, SpriteAnimationComponent(w))
 	sys.AddTag(WorldTagUpdate)
 	return sys
 }
@@ -222,10 +222,10 @@ func spriteAnimResolvePlayback(globalfps, dt float64, spranim *SpriteAnimation) 
 
 // SpriteAnimationLinkSystem creates the sprite system
 func SpriteAnimationLinkSystem(w *World) *System {
-	if sys := w.System("troupe.SpriteAnimationLinkSystem"); sys != nil {
+	if sys := w.System("tau.SpriteAnimationLinkSystem"); sys != nil {
 		return sys
 	}
-	sys := w.NewSystem("troupe.SpriteAnimationLinkSystem", SpriteAnimationLinkPriority, SpriteAnimationLinkSystemExec, SpriteAnimationComponent(w), SpriteComponent(w))
+	sys := w.NewSystem("tau.SpriteAnimationLinkSystem", SpriteAnimationLinkPriority, SpriteAnimationLinkSystemExec, SpriteAnimationComponent(w), SpriteComponent(w))
 	sys.AddTag(WorldTagDraw)
 	return sys
 }

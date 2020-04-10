@@ -3,19 +3,19 @@ package utils
 import (
 	"testing"
 
-	"github.com/gabstv/troupe"
+	"github.com/gabstv/tau"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTagSystem(t *testing.T) {
-	e := troupe.NewEngine(&troupe.NewEngineInput{
+	e := tau.NewEngine(&tau.NewEngineInput{
 		Scale:  1,
 		Width:  400,
 		Height: 300,
 	})
-	w := troupe.NewWorld(e)
-	w.Set(troupe.DefaultImageOptions, &ebiten.DrawImageOptions{})
+	w := tau.NewWorld(e)
+	w.Set(tau.DefaultImageOptions, &ebiten.DrawImageOptions{})
 	_ = TagSystem(w)
 	c := TagComponent(w)
 

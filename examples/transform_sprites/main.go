@@ -8,7 +8,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/gabstv/troupe"
+	"github.com/gabstv/tau"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
@@ -32,7 +32,7 @@ type spinner struct {
 func main() {
 	ebimg, _, _ := ebitenutil.NewImageFromFile("img.png", ebiten.FilterDefault)
 
-	engine := troupe.NewEngine(&troupe.NewEngineInput{
+	engine := tau.NewEngine(&tau.NewEngineInput{
 		Title:  "Basic Transform With Sprites",
 		Width:  320,
 		Height: 240,
@@ -40,9 +40,9 @@ func main() {
 	})
 
 	dw := engine.Default()
-	sc := troupe.SpriteComponent(dw)
-	tc := troupe.TransformComponent(dw)
-	spinnercomp, _ := dw.NewComponent(troupe.NewComponentInput{
+	sc := tau.SpriteComponent(dw)
+	tc := tau.TransformComponent(dw)
+	spinnercomp, _ := dw.NewComponent(tau.NewComponentInput{
 		Name: "spinner",
 	})
 	ss := dw.NewSystem("", 1, spinnersys, tc, spinnercomp)
@@ -50,7 +50,7 @@ func main() {
 	ss.Set("tc", tc)
 	ss.Set("scaleadd", float64(0))
 	e := dw.NewEntity()
-	t99 := &troupe.Transform{
+	t99 := &tau.Transform{
 		X:      320 / 2,
 		Y:      240 / 2,
 		ScaleX: 0.5,
@@ -63,9 +63,9 @@ func main() {
 	// add children
 	for i := 0; i < 10; i++ {
 		e2 := dw.NewEntity()
-		mm := troupe.IM.Moved(troupe.V(30, 0)).Rotated(troupe.ZV, (math.Pi*2)*(float64(i)/10)).Project(troupe.ZV)
+		mm := tau.IM.Moved(tau.V(30, 0)).Rotated(tau.ZV, (math.Pi*2)*(float64(i)/10)).Project(tau.ZV)
 		println(mm.String())
-		dw.AddComponentToEntity(e2, tc, &troupe.Transform{
+		dw.AddComponentToEntity(e2, tc, &tau.Transform{
 			X:      mm.X,
 			Y:      mm.Y,
 			Parent: t99,
@@ -73,7 +73,7 @@ func main() {
 			ScaleY: 1,
 		})
 		ri := randomsprites[rand.Intn(4)]
-		dw.AddComponentToEntity(e2, sc, &troupe.Sprite{
+		dw.AddComponentToEntity(e2, sc, &tau.Sprite{
 			Bounds: image.Rect(ri[0], ri[1], ri[2], ri[3]),
 			Image:  ebimg,
 			ScaleX: 1,
@@ -82,24 +82,24 @@ func main() {
 	}
 
 	// debug system
-	ddrawsys := dw.NewSystem("", -100, func(ctx troupe.Context, screen *ebiten.Image) {
+	ddrawsys := dw.NewSystem("", -100, func(ctx tau.Context, screen *ebiten.Image) {
 		fps := ebiten.CurrentFPS()
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%.2f fps", fps), 0, 0)
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("x = %.2f; y = %.2f;", t99.X, t99.Y), 0, 12)
 		ebitenutil.DebugPrintAt(screen, "arrows = move; x, z = rotate", 0, 24)
 
 	}, spinnercomp)
-	ddrawsys.AddTag(troupe.WorldTagDraw)
+	ddrawsys.AddTag(tau.WorldTagDraw)
 
 	engine.Run()
 }
 
-func spinnersys(ctx troupe.Context, screen *ebiten.Image) {
+func spinnersys(ctx tau.Context, screen *ebiten.Image) {
 	sys := ctx.System()
 	dt := ctx.DT()
 	view := sys.View()
-	sc := sys.Get("spinnercomp").(*troupe.Component)
-	tc := sys.Get("tc").(*troupe.Component)
+	sc := sys.Get("spinnercomp").(*tau.Component)
+	tc := sys.Get("tc").(*tau.Component)
 	scaleadd := sys.Get("scaleadd").(float64) + dt
 	sys.Set("scaleadd", scaleadd)
 	//
@@ -127,7 +127,7 @@ func spinnersys(ctx troupe.Context, screen *ebiten.Image) {
 	}
 	for _, v := range view.Matches() {
 		spin := v.Components[sc].(*spinner)
-		tr := v.Components[tc].(*troupe.Transform)
+		tr := v.Components[tc].(*tau.Transform)
 		tr.Angle += spin.Speed * dt * rs
 		tr.X += xs * dt
 		tr.Y += ys * dt

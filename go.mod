@@ -1,4 +1,4 @@
-module github.com/gabstv/troupe
+module github.com/gabstv/tau
 
 require (
 	github.com/gabstv/ecs v1.4.0

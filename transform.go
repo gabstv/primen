@@ -1,4 +1,4 @@
-package troupe
+package tau
 
 import (
 	"github.com/hajimehoshi/ebiten"
@@ -53,11 +53,11 @@ func NewTransform() *Transform {
 // If a component is not present, it will create a new component
 // using world.NewComponent
 func TransformComponent(w Worlder) *Component {
-	c := w.Component("troupe.Transform")
+	c := w.Component("tau.Transform")
 	if c == nil {
 		var err error
 		c, err = w.NewComponent(NewComponentInput{
-			Name: "troupe.Transform",
+			Name: "tau.Transform",
 			ValidateDataFn: func(data interface{}) bool {
 				_, ok := data.(*Transform)
 				return ok
@@ -75,10 +75,10 @@ func TransformComponent(w Worlder) *Component {
 
 // TransformSystem creates the transform system
 func TransformSystem(w *World) *System {
-	if sys := w.System("troupe.TransformSystem"); sys != nil {
+	if sys := w.System("tau.TransformSystem"); sys != nil {
 		return sys
 	}
-	sys := w.NewSystem("troupe.TransformSystem", TransformPriority, TransformSystemExec, TransformComponent(w))
+	sys := w.NewSystem("tau.TransformSystem", TransformPriority, TransformSystemExec, TransformComponent(w))
 	sys.AddTag(WorldTagUpdate)
 	sys.Set("tick", uint64(0))
 	return sys
@@ -86,10 +86,10 @@ func TransformSystem(w *World) *System {
 
 // TransformSpriteSystem creates the transform sprite system
 func TransformSpriteSystem(w *World) *System {
-	if sys := w.System("troupe.TransformSpriteSystem"); sys != nil {
+	if sys := w.System("tau.TransformSpriteSystem"); sys != nil {
 		return sys
 	}
-	sys := w.NewSystem("troupe.TransformSpriteSystem", TransformSpritePriority, TransformSpriteSystemExec, TransformComponent(w), SpriteComponent(w))
+	sys := w.NewSystem("tau.TransformSpriteSystem", TransformSpritePriority, TransformSpriteSystemExec, TransformComponent(w), SpriteComponent(w))
 	sys.AddTag(WorldTagUpdate)
 	println("TransformSpriteSystem")
 	return sys
