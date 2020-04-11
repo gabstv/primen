@@ -22,6 +22,12 @@ func (cs *TransformComponentSystem) SystemPriority() int {
 	return 0
 }
 
+func (cs *TransformComponentSystem) SystemInit() SystemInitFn {
+	return func(sys *ecs.System) {
+		sys.Set("tick", uint64(0))
+	}
+}
+
 func (cs *TransformComponentSystem) SystemExec() SystemExecFn {
 	return TransformSystemExec
 }

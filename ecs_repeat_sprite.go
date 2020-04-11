@@ -44,7 +44,7 @@ func (cs *RepeatSpriteComponentSystem) Components(w ecs.Worlder) []*ecs.Componen
 	}
 }
 
-func repeatSpriteComponentDef(w *ecs.World) *ecs.Component {
+func repeatSpriteComponentDef(w ecs.Worlder) *ecs.Component {
 	return UpsertComponent(w, ecs.NewComponentInput{
 		Name: CNRepeatSprite,
 		ValidateDataFn: func(data interface{}) bool {

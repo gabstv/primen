@@ -23,10 +23,12 @@ func UpsertComponent(w ecs.Worlder, comp ecs.NewComponentInput) *ecs.Component {
 }
 
 type SystemExecFn func(ctx Context)
+type SystemInitFn func(sys *ecs.System)
 
 type ComponentSystem interface {
 	SystemName() string
 	SystemPriority() int
+	SystemInit() SystemInitFn
 	SystemExec() SystemExecFn
 	SystemTags() []string
 	Components(w ecs.Worlder) []*ecs.Component
@@ -37,6 +39,12 @@ type BaseComponentSystem struct {
 
 func (cs *BaseComponentSystem) SystemPriority() int {
 	return 0
+}
+
+func (cs *BaseComponentSystem) SystemInit() SystemInitFn {
+	return func(sys *ecs.System) {
+		// noop
+	}
 }
 
 func (cs *BaseComponentSystem) SystemExec() SystemExecFn {
@@ -54,30 +62,48 @@ func SetupSystem(w *ecs.World, cs ComponentSystem) {
 	wexec := func(ctx ecs.Context) {
 		fnfn(ctx.(Context))
 	}
-	w.NewSystem(cs.SystemName(), cs.SystemPriority(), wexec, cs.Components(w)...)
+	sys := w.NewSystem(cs.SystemName(), cs.SystemPriority(), wexec, cs.Components(w)...)
+	if xinit := cs.SystemInit(); xinit != nil {
+		xinit(sys)
+	}
 }
 
-// func (cs *BaseComponentSystem) Components(w *ecs.World) []*ecs.Component {
-// 	return w.NewComponent(ecs.NewComponentInput{})
-// }
+type BasicCS struct {
+	SysName       string
+	SysPriority   int
+	SysInit       SystemInitFn
+	SysExec       SystemExecFn
+	SysTags       []string
+	GetComponents func(w ecs.Worlder) []*ecs.Component
+}
 
-// // Run all systems
-// func (w *World) Run(screen *ebiten.Image, delta float64) (taken time.Duration) {
-// 	w.Set("screen", screen)
-// 	return w.World.Run(delta)
-// }
+func (cs *BasicCS) SystemName() string {
+	return cs.SysName
+}
 
-// // RunWithTag runs all systems with the specified tag
-// func (w *World) RunWithTag(tag string, screen *ebiten.Image, delta float64) (taken time.Duration) {
-// 	w.Set("screen", screen)
-// 	return w.World.RunWithTag(tag, delta)
-// }
+func (cs *BasicCS) SystemPriority() int {
+	return cs.SysPriority
+}
 
-// // RunWithoutTag runs all systems without the specified tag
-// func (w *World) RunWithoutTag(tag string, screen *ebiten.Image, delta float64) (taken time.Duration) {
-// 	w.Set("screen", screen)
-// 	return w.World.RunWithoutTag(tag, delta)
-// }
+func (cs *BasicCS) BasicCS() int {
+	return cs.SysPriority
+}
+
+func (cs *BasicCS) SystemInit() SystemInitFn {
+	return cs.SysInit
+}
+
+func (cs *BasicCS) SystemExec() SystemExecFn {
+	return cs.SysExec
+}
+
+func (cs *BasicCS) SystemTags() []string {
+	return cs.SysTags
+}
+
+func (cs *BasicCS) Components(w ecs.Worlder) []*ecs.Component {
+	return cs.GetComponents(w)
+}
 
 // NewWorld creates a new world
 func NewWorld(e *Engine) *ecs.World {
