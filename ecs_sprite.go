@@ -33,6 +33,15 @@ func (cs *SpriteComponentSystem) SystemPriority() int {
 	return -10
 }
 
+func (cs *SpriteComponentSystem) SystemInit() SystemInitFn {
+	return func(w *ecs.World, sys *ecs.System) {
+		if w.Get(DefaultImageOptions) == nil {
+			opt := &ebiten.DrawImageOptions{}
+			w.Set(DefaultImageOptions, opt)
+		}
+	}
+}
+
 func (cs *SpriteComponentSystem) SystemExec() SystemExecFn {
 	return SpriteSystemExec
 }

@@ -23,7 +23,7 @@ func (cs *TransformComponentSystem) SystemPriority() int {
 }
 
 func (cs *TransformComponentSystem) SystemInit() SystemInitFn {
-	return func(sys *ecs.System) {
+	return func(w *ecs.World, sys *ecs.System) {
 		sys.Set("tick", uint64(0))
 	}
 }

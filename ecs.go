@@ -23,7 +23,7 @@ func UpsertComponent(w ecs.Worlder, comp ecs.NewComponentInput) *ecs.Component {
 }
 
 type SystemExecFn func(ctx Context)
-type SystemInitFn func(sys *ecs.System)
+type SystemInitFn func(w *ecs.World, sys *ecs.System)
 
 type ComponentSystem interface {
 	SystemName() string
@@ -42,7 +42,7 @@ func (cs *BaseComponentSystem) SystemPriority() int {
 }
 
 func (cs *BaseComponentSystem) SystemInit() SystemInitFn {
-	return func(sys *ecs.System) {
+	return func(w *ecs.World, sys *ecs.System) {
 		// noop
 	}
 }
@@ -64,7 +64,7 @@ func SetupSystem(w *ecs.World, cs ComponentSystem) {
 	}
 	sys := w.NewSystem(cs.SystemName(), cs.SystemPriority(), wexec, cs.Components(w)...)
 	if xinit := cs.SystemInit(); xinit != nil {
-		xinit(sys)
+		xinit(w, sys)
 	}
 }
 
