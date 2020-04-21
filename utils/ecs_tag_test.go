@@ -16,8 +16,8 @@ func TestTagSystem(t *testing.T) {
 	})
 	w := tau.NewWorld(e)
 	w.Set(tau.DefaultImageOptions, &ebiten.DrawImageOptions{})
-	_ = TagSystem(w)
-	c := TagComponent(w)
+	tau.SetupSystem(w, TagCS)
+	c := w.Component(CNTag)
 
 	ents := w.NewEntities(10)
 
@@ -62,7 +62,7 @@ func TestTagSystem(t *testing.T) {
 		Dirty: true,
 	})
 	assert.Empty(t, FindWithTag(w, "soft")) // cache is nil at this point
-	w.Run(nil, 1)
+	w.Run(1)
 	assert.Equal(t, 7, len(FindWithTag(w, "orange")))
 	tt := c.Data(ents[9]).(*Tag)
 	assert.Equal(t, 1, len(tt.Tags))
@@ -72,12 +72,12 @@ func TestTagSystem(t *testing.T) {
 	println(zent.Tags)
 	zent.Tags = []string{"tangerine"}
 	println(zent.Tags)
-	w.Run(nil, 1)
+	w.Run(1)
 	assert.Equal(t, 7, len(FindWithTag(w, "orange")))
 	// run a lot
 	println("OKDOK1")
 	for i := 0; i < 30; i++ {
-		w.Run(nil, 1)
+		w.Run(1)
 	}
 	println("OKDOK2")
 	assert.Equal(t, 6, len(FindWithTag(w, "orange")))
