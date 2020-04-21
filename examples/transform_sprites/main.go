@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/gabstv/ecs"
 	"github.com/gabstv/tau"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
@@ -29,6 +30,61 @@ type spinner struct {
 	Speed float64
 }
 
+var spinnercs = &tau.BasicCS{
+	SysName: "spinnercs",
+	SysExec: func(ctx tau.Context) {
+		sys := ctx.System()
+		dt := ctx.DT()
+		view := sys.View()
+		tc := ctx.World().Component(tau.CNTransform)
+		sc := ctx.World().Component("spinnercs")
+		scaleadd := sys.Get("scaleadd").(float64) + dt
+		sys.Set("scaleadd", scaleadd)
+		//
+		xs := float64(0)
+		if ebiten.IsKeyPressed(ebiten.KeyRight) {
+			xs = 50
+		} else if ebiten.IsKeyPressed(ebiten.KeyLeft) {
+			xs = -50
+		}
+		ys := float64(0)
+		if ebiten.IsKeyPressed(ebiten.KeyUp) {
+			ys = -50
+		} else if ebiten.IsKeyPressed(ebiten.KeyDown) {
+			ys = 50
+		}
+		rs := float64(0)
+		if ebiten.IsKeyPressed(ebiten.KeyX) {
+			rs = 1
+		}
+		if ebiten.IsKeyPressed(ebiten.KeyZ) {
+			rs = -1
+		}
+		if ebiten.IsKeyPressed(ebiten.KeyShift) {
+			rs *= 0.25
+		}
+		for _, v := range view.Matches() {
+			spin := v.Components[sc].(*spinner)
+			tr := v.Components[tc].(*tau.Transform)
+			tr.Angle += spin.Speed * dt * rs
+			tr.X += xs * dt
+			tr.Y += ys * dt
+			tr.ScaleY = 0.7 + math.Cos(scaleadd)/4
+		}
+	},
+	GetComponents: func(w ecs.Worlder) []*ecs.Component {
+		return []*ecs.Component{
+			w.Component(tau.CNTransform),
+			tau.UpsertComponent(w, ecs.NewComponentInput{
+				Name: "spinnercs",
+			}),
+		}
+	},
+	SysInit: func(w *ecs.World, sys *ecs.System) {
+		sys.Set("scaleadd", float64(0))
+	},
+}
+
 func main() {
 	ebimg, _, _ := ebitenutil.NewImageFromFile("img.png", ebiten.FilterDefault)
 
@@ -40,15 +96,9 @@ func main() {
 	})
 
 	dw := engine.Default()
-	sc := tau.SpriteComponent(dw)
-	tc := tau.TransformComponent(dw)
-	spinnercomp, _ := dw.NewComponent(tau.NewComponentInput{
-		Name: "spinner",
-	})
-	ss := dw.NewSystem("", 1, spinnersys, tc, spinnercomp)
-	ss.Set("spinnercomp", spinnercomp)
-	ss.Set("tc", tc)
-	ss.Set("scaleadd", float64(0))
+	sc := dw.Component(tau.CNSprite)
+	tc := dw.Component(tau.CNTransform)
+	spinnercomp := spinnercs.Components(dw)[1]
 	e := dw.NewEntity()
 	t99 := &tau.Transform{
 		X:      320 / 2,
@@ -80,9 +130,11 @@ func main() {
 			ScaleY: 1,
 		})
 	}
+	tau.SetupSystem(dw, spinnercs)
 
 	// debug system
-	ddrawsys := dw.NewSystem("", -100, func(ctx tau.Context, screen *ebiten.Image) {
+	ddrawsys := dw.NewSystem("", -100, func(ctx ecs.Context) {
+		screen := ctx.World().Get("screen").(*ebiten.Image)
 		fps := ebiten.CurrentFPS()
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%.2f fps", fps), 0, 0)
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("x = %.2f; y = %.2f;", t99.X, t99.Y), 0, 12)
@@ -92,45 +144,4 @@ func main() {
 	ddrawsys.AddTag(tau.WorldTagDraw)
 
 	engine.Run()
-}
-
-func spinnersys(ctx tau.Context, screen *ebiten.Image) {
-	sys := ctx.System()
-	dt := ctx.DT()
-	view := sys.View()
-	sc := sys.Get("spinnercomp").(*tau.Component)
-	tc := sys.Get("tc").(*tau.Component)
-	scaleadd := sys.Get("scaleadd").(float64) + dt
-	sys.Set("scaleadd", scaleadd)
-	//
-	xs := float64(0)
-	if ebiten.IsKeyPressed(ebiten.KeyRight) {
-		xs = 50
-	} else if ebiten.IsKeyPressed(ebiten.KeyLeft) {
-		xs = -50
-	}
-	ys := float64(0)
-	if ebiten.IsKeyPressed(ebiten.KeyUp) {
-		ys = -50
-	} else if ebiten.IsKeyPressed(ebiten.KeyDown) {
-		ys = 50
-	}
-	rs := float64(0)
-	if ebiten.IsKeyPressed(ebiten.KeyX) {
-		rs = 1
-	}
-	if ebiten.IsKeyPressed(ebiten.KeyZ) {
-		rs = -1
-	}
-	if ebiten.IsKeyPressed(ebiten.KeyShift) {
-		rs *= 0.25
-	}
-	for _, v := range view.Matches() {
-		spin := v.Components[sc].(*spinner)
-		tr := v.Components[tc].(*tau.Transform)
-		tr.Angle += spin.Speed * dt * rs
-		tr.X += xs * dt
-		tr.Y += ys * dt
-		tr.ScaleY = 0.7 + math.Cos(scaleadd)/4
-	}
 }
