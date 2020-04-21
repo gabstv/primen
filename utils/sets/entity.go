@@ -8,24 +8,24 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/gabstv/troupe"
+	"github.com/gabstv/ecs"
 )
 
 type EntitySet interface {
-	Add(elements ...troupe.Entity)
-	Remove(elements ...troupe.Entity)
-	Contains(elements ...troupe.Entity) bool
-	Values() []troupe.Entity
+	Add(elements ...ecs.Entity)
+	Remove(elements ...ecs.Entity)
+	Contains(elements ...ecs.Entity) bool
+	Values() []ecs.Entity
 	SetBase
 }
 
 type entitySet struct {
-	items map[troupe.Entity]struct{}
+	items map[ecs.Entity]struct{}
 }
 
 // NewEntitySet instantiates a new empty set and adds the entities (if present)
-func NewEntitySet(values ...troupe.Entity) EntitySet {
-	set := &entitySet{items: make(map[troupe.Entity]struct{})}
+func NewEntitySet(values ...ecs.Entity) EntitySet {
+	set := &entitySet{items: make(map[ecs.Entity]struct{})}
 	if len(values) > 0 {
 		set.Add(values...)
 	}
@@ -33,14 +33,14 @@ func NewEntitySet(values ...troupe.Entity) EntitySet {
 }
 
 // Add adds the items (one or more) to the set.
-func (set *entitySet) Add(items ...troupe.Entity) {
+func (set *entitySet) Add(items ...ecs.Entity) {
 	for _, item := range items {
 		set.items[item] = itemExists
 	}
 }
 
 // Remove removes the items (one or more) from the set.
-func (set *entitySet) Remove(items ...troupe.Entity) {
+func (set *entitySet) Remove(items ...ecs.Entity) {
 	for _, item := range items {
 		delete(set.items, item)
 	}
@@ -49,7 +49,7 @@ func (set *entitySet) Remove(items ...troupe.Entity) {
 // Contains check if items (one or more) are present in the set.
 // All items have to be present in the set for the method to return true.
 // Returns true if no arguments are passed at all, i.e. set is always superset of empty set.
-func (set *entitySet) Contains(items ...troupe.Entity) bool {
+func (set *entitySet) Contains(items ...ecs.Entity) bool {
 	for _, item := range items {
 		if _, contains := set.items[item]; !contains {
 			return false
@@ -70,12 +70,12 @@ func (set *entitySet) Size() int {
 
 // Clear clears all values in the set.
 func (set *entitySet) Clear() {
-	set.items = make(map[troupe.Entity]struct{})
+	set.items = make(map[ecs.Entity]struct{})
 }
 
 // Values returns all items in the set.
-func (set *entitySet) Values() []troupe.Entity {
-	values := make([]troupe.Entity, set.Size())
+func (set *entitySet) Values() []ecs.Entity {
+	values := make([]ecs.Entity, set.Size())
 	count := 0
 	for item := range set.items {
 		values[count] = item

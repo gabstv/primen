@@ -5,26 +5,47 @@ import (
 	_ "image/png"
 	"math"
 
-	"github.com/gabstv/troupe"
+	"github.com/gabstv/ecs"
+	"github.com/gabstv/tau"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
 
-func main() {
-	ebimg, _, _ := ebitenutil.NewImageFromFile("img.png", ebiten.FilterDefault)
+var anglecs = &tau.BasicCS{
+	SysName: "anglecs",
+	SysExec: func(ctx tau.Context) {
+		sc := ctx.World().Component(tau.CNSprite)
+		matches := ctx.System().View().Matches()
+		dt := ctx.DT()
+		for _, m := range matches {
+			sprite := m.Components[sc].(*tau.Sprite)
+			sprite.Angle = sprite.Angle + (math.Pi * dt * 0.0125 * 4)
+		}
+	},
+	GetComponents: func(w ecs.Worlder) []*ecs.Component {
+		return []*ecs.Component{
+			w.Component(tau.CNSprite),
+		}
+	},
+}
 
-	engine := troupe.NewEngine(&troupe.NewEngineInput{
+func main() {
+	ebimg, _, err := ebitenutil.NewImageFromFile("img.png", ebiten.FilterDefault)
+	if err != nil {
+		panic(err)
+	}
+
+	engine := tau.NewEngine(&tau.NewEngineInput{
 		Title:  "Basic Sprites",
 		Width:  320,
 		Height: 240,
 		Scale:  2,
 	})
 
-	//go func(){
 	dw := engine.Default()
-	sc := troupe.SpriteComponent(dw)
+	sc := dw.Component(tau.CNSprite)
 	e := dw.NewEntity()
-	dw.AddComponentToEntity(e, sc, &troupe.Sprite{
+	dw.AddComponentToEntity(e, sc, &tau.Sprite{
 		Image:  ebimg,
 		X:      64,
 		Y:      64,
@@ -34,7 +55,7 @@ func main() {
 		Bounds: image.Rect(0, 0, 16, 16),
 	})
 	e2 := dw.NewEntity()
-	dw.AddComponentToEntity(e2, sc, &troupe.Sprite{
+	dw.AddComponentToEntity(e2, sc, &tau.Sprite{
 		Image:   ebimg,
 		X:       128,
 		Y:       64,
@@ -45,14 +66,8 @@ func main() {
 		OriginY: -.5,
 		Bounds:  image.Rect(16, 16, 32, 32),
 	})
-	dw.NewSystem("", 0, func(ctx troupe.Context, screen *ebiten.Image) {
-		matches := ctx.System().View().Matches()
-		dt := ctx.DT()
-		for _, m := range matches {
-			sprite := m.Components[sc].(*troupe.Sprite)
-			sprite.Angle = sprite.Angle + (math.Pi * dt * 0.0125 * 4)
-		}
-	}, sc)
-	//}()
+
+	tau.SetupSystem(dw, anglecs)
+
 	engine.Run()
 }

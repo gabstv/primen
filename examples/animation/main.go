@@ -8,7 +8,8 @@ import (
 	_ "image/png"
 	"math"
 
-	"github.com/gabstv/troupe"
+	"github.com/gabstv/ecs"
+	"github.com/gabstv/tau"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
@@ -17,7 +18,7 @@ func main() {
 	ebimg, _, _ := ebitenutil.NewImageFromFile("zombie_kenney.png", ebiten.FilterDefault)
 	ppimg, _, _ := ebitenutil.NewImageFromFile("ping_pong.png", ebiten.FilterDefault)
 
-	engine := troupe.NewEngine(&troupe.NewEngineInput{
+	engine := tau.NewEngine(&tau.NewEngineInput{
 		Title:  "Basic Animation",
 		Width:  640,
 		Height: 480,
@@ -25,23 +26,24 @@ func main() {
 	})
 
 	dw := engine.Default()
-	sc := troupe.SpriteComponent(dw)
-	ac := troupe.SpriteAnimationComponent(dw)
+	sc := dw.Component(tau.CNSprite)
+	ac := dw.Component(tau.CNSpriteAnimation)
 	createCharacter(dw, sc, ac, ebimg)
 	createPingPonger(dw, sc, ac, ppimg)
 
-	s0 := dw.NewSystem("", 0, func(ctx troupe.Context, screen *ebiten.Image) {
+	s0 := dw.NewSystem("", 0, func(ctx ecs.Context) {
+		screen := ctx.World().Get("screen").(*ebiten.Image)
 		fps := ebiten.CurrentFPS()
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%.2f fps", fps), 0, 0)
 	})
-	s0.AddTag(troupe.WorldTagDraw)
+	s0.AddTag(tau.WorldTagDraw)
 
 	engine.Run()
 }
 
-func createCharacter(dw *troupe.World, spriteComp *troupe.Component, animComp *troupe.Component, ebimg *ebiten.Image) {
+func createCharacter(dw *ecs.World, spriteComp *ecs.Component, animComp *ecs.Component, ebimg *ebiten.Image) {
 	e := dw.NewEntity()
-	dw.AddComponentToEntity(e, spriteComp, &troupe.Sprite{
+	dw.AddComponentToEntity(e, spriteComp, &tau.Sprite{
 		Image:  ebimg,
 		X:      300,
 		Y:      200,
@@ -50,11 +52,11 @@ func createCharacter(dw *troupe.World, spriteComp *troupe.Component, animComp *t
 		ScaleY: 1,
 		Bounds: image.Rect(0, 0, 80, 110),
 	})
-	dw.AddComponentToEntity(e, animComp, &troupe.SpriteAnimation{
+	dw.AddComponentToEntity(e, animComp, &tau.SpriteAnimation{
 		Enabled: true,
 		Playing: true,
-		Clips: []troupe.SpriteAnimationClip{
-			troupe.SpriteAnimationClip{
+		Clips: []tau.SpriteAnimationClip{
+			tau.SpriteAnimationClip{
 				Name: "default",
 				Frames: []image.Rectangle{
 					image.Rect(0, 0, 80, 110),      // 0
@@ -63,16 +65,16 @@ func createCharacter(dw *troupe.World, spriteComp *troupe.Component, animComp *t
 					image.Rect(80*3, 0, 80*4, 110), // 3
 					image.Rect(0, 0, 80, 110),      // 0
 				},
-				ClipMode: troupe.AnimLoop,
+				ClipMode: tau.AnimLoop,
 			},
 		},
 		Fps: 24,
 	})
 }
 
-func createPingPonger(dw *troupe.World, spriteComp *troupe.Component, animComp *troupe.Component, ebimg *ebiten.Image) {
+func createPingPonger(dw *ecs.World, spriteComp *ecs.Component, animComp *ecs.Component, ebimg *ebiten.Image) {
 	e := dw.NewEntity()
-	dw.AddComponentToEntity(e, spriteComp, &troupe.Sprite{
+	dw.AddComponentToEntity(e, spriteComp, &tau.Sprite{
 		Image:  ebimg,
 		X:      370,
 		Y:      180,
@@ -81,11 +83,11 @@ func createPingPonger(dw *troupe.World, spriteComp *troupe.Component, animComp *
 		ScaleY: 1,
 		Bounds: image.Rect(0, 0, 8, 32),
 	})
-	dw.AddComponentToEntity(e, animComp, &troupe.SpriteAnimation{
+	dw.AddComponentToEntity(e, animComp, &tau.SpriteAnimation{
 		Enabled: true,
 		Playing: true,
-		Clips: []troupe.SpriteAnimationClip{
-			troupe.SpriteAnimationClip{
+		Clips: []tau.SpriteAnimationClip{
+			tau.SpriteAnimationClip{
 				Name: "default",
 				Frames: []image.Rectangle{
 					image.Rect(8*0, 0, 8*1, 32),
@@ -93,7 +95,7 @@ func createPingPonger(dw *troupe.World, spriteComp *troupe.Component, animComp *
 					image.Rect(8*2, 0, 8*3, 32),
 					image.Rect(8*3, 0, 8*4, 32),
 				},
-				ClipMode: troupe.AnimPingPong,
+				ClipMode: tau.AnimPingPong,
 			},
 		},
 		Fps: 24,

@@ -1,16 +1,20 @@
-package troupe
+package tau
+
+import (
+	"github.com/gabstv/ecs"
+)
 
 // Archetype is a recipe to create entities with a preset of components.
 type Archetype struct {
-	World      *World
-	Components []*Component
+	World      *ecs.World
+	Components []*ecs.Component
 }
 
 // NewArchetype returns a new archetype. This func unsures that no
 // duplicated components are added.
-func NewArchetype(world *World, comps ...*Component) *Archetype {
-	cmap := make(map[*Component]bool)
-	components := make([]*Component, 0, len(comps))
+func NewArchetype(world *ecs.World, comps ...*ecs.Component) *Archetype {
+	cmap := make(map[*ecs.Component]bool)
+	components := make([]*ecs.Component, 0, len(comps))
 	for _, c := range comps {
 		if cmap[c] {
 			// duplicated component
@@ -31,7 +35,7 @@ func NewArchetype(world *World, comps ...*Component) *Archetype {
 // The best way to create an archetype entity is to ensure that the
 // component data follows the same order that the components were
 // created in NewArchetype
-func (a *Archetype) NewEntity(compdata ...interface{}) Entity {
+func (a *Archetype) NewEntity(compdata ...interface{}) ecs.Entity {
 	entity := a.World.NewEntity()
 	compds := clonecompslc(a.Components)
 	for _, cdata := range compdata {
@@ -49,10 +53,8 @@ func (a *Archetype) NewEntity(compdata ...interface{}) Entity {
 	return entity
 }
 
-func clonecompslc(v []*Component) []*Component {
-	x := make([]*Component, len(v), len(v))
-	for i, vv := range v {
-		x[i] = vv
-	}
+func clonecompslc(v []*ecs.Component) []*ecs.Component {
+	x := make([]*ecs.Component, len(v), len(v))
+	copy(x, v)
 	return x
 }

@@ -1,58 +1,40 @@
-package troupe
+package tau
 
 import (
 	"sync"
 )
 
-// DefaultStarter is the function used to start a component or a system
-type DefaultStarter func(e *Engine, w *World)
-
 var (
-	defaultCompStarters []DefaultStarter
-	defaultSysStarters  []DefaultStarter
-	defaultLock         sync.Mutex
+	defaultStartersMap map[string]struct{}
+	defaultCSStarters  []ComponentSystem
+	defaultLock        sync.Mutex
 )
 
-// DefaultComp will add a component starter function
-func DefaultComp(st DefaultStarter) {
+func RegisterComponentSystem(cs ComponentSystem) {
 	defaultLock.Lock()
 	defer defaultLock.Unlock()
-	if defaultCompStarters == nil {
-		defaultCompStarters = make([]DefaultStarter, 0, 64)
+	if defaultStartersMap == nil {
+		defaultStartersMap = make(map[string]struct{})
+		defaultCSStarters = make([]ComponentSystem, 0, 128)
 	}
-	defaultCompStarters = append(defaultCompStarters, st)
+	if _, ok := defaultStartersMap[cs.SystemName()]; ok {
+		panic("system " + cs.SystemName() + " already registered")
+	}
+	defaultStartersMap[cs.SystemName()] = struct{}{}
+	defaultCSStarters = append(defaultCSStarters, cs)
 }
 
-// DefaultSys will add a system starter function
-func DefaultSys(st DefaultStarter) {
-	defaultLock.Lock()
-	defer defaultLock.Unlock()
-	if defaultSysStarters == nil {
-		defaultSysStarters = make([]DefaultStarter, 0, 64)
-	}
-	defaultSysStarters = append(defaultSysStarters, st)
-}
-
-func startDefaultSystems(e *Engine) {
+func startDefaults(e *Engine) {
 	defaultLock.Lock()
 	defer defaultLock.Unlock()
 	defaultWorld := e.Default()
 	if defaultWorld == nil {
 		return
 	}
-	for _, starter := range defaultSysStarters {
-		starter(e, defaultWorld)
+	for _, starter := range defaultCSStarters {
+		_ = starter.Components(defaultWorld)
 	}
-}
-
-func startDefaultComponents(e *Engine) {
-	defaultLock.Lock()
-	defer defaultLock.Unlock()
-	defaultWorld := e.Default()
-	if defaultWorld == nil {
-		return
-	}
-	for _, starter := range defaultCompStarters {
-		starter(e, defaultWorld)
+	for _, starter := range defaultCSStarters {
+		SetupSystem(defaultWorld, starter)
 	}
 }
