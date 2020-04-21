@@ -5,13 +5,35 @@ import (
 	_ "image/png"
 	"math"
 
+	"github.com/gabstv/ecs"
 	"github.com/gabstv/tau"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
 
+var anglecs = &tau.BasicCS{
+	SysName: "anglecs",
+	SysExec: func(ctx tau.Context) {
+		sc := ctx.World().Component(tau.CNSprite)
+		matches := ctx.System().View().Matches()
+		dt := ctx.DT()
+		for _, m := range matches {
+			sprite := m.Components[sc].(*tau.Sprite)
+			sprite.Angle = sprite.Angle + (math.Pi * dt * 0.0125 * 4)
+		}
+	},
+	GetComponents: func(w ecs.Worlder) []*ecs.Component {
+		return []*ecs.Component{
+			w.Component(tau.CNSprite),
+		}
+	},
+}
+
 func main() {
-	ebimg, _, _ := ebitenutil.NewImageFromFile("img.png", ebiten.FilterDefault)
+	ebimg, _, err := ebitenutil.NewImageFromFile("img.png", ebiten.FilterDefault)
+	if err != nil {
+		panic(err)
+	}
 
 	engine := tau.NewEngine(&tau.NewEngineInput{
 		Title:  "Basic Sprites",
@@ -20,9 +42,8 @@ func main() {
 		Scale:  2,
 	})
 
-	//go func(){
 	dw := engine.Default()
-	sc := tau.SpriteComponent(dw)
+	sc := dw.Component(tau.CNSprite)
 	e := dw.NewEntity()
 	dw.AddComponentToEntity(e, sc, &tau.Sprite{
 		Image:  ebimg,
@@ -45,14 +66,8 @@ func main() {
 		OriginY: -.5,
 		Bounds:  image.Rect(16, 16, 32, 32),
 	})
-	dw.NewSystem("", 0, func(ctx tau.Context, screen *ebiten.Image) {
-		matches := ctx.System().View().Matches()
-		dt := ctx.DT()
-		for _, m := range matches {
-			sprite := m.Components[sc].(*tau.Sprite)
-			sprite.Angle = sprite.Angle + (math.Pi * dt * 0.0125 * 4)
-		}
-	}, sc)
-	//}()
+
+	tau.SetupSystem(dw, anglecs)
+
 	engine.Run()
 }

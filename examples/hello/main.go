@@ -1,14 +1,47 @@
 package main
 
 import (
+	"github.com/gabstv/ecs"
 	"github.com/gabstv/tau"
-	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
 
 var engine *tau.Engine
-var hellocomp *tau.Component
-var movecomp *tau.Component
+
+func hellocomp(w ecs.Worlder) *ecs.Component {
+	return tau.UpsertComponent(w, ecs.NewComponentInput{
+		Name: "hellocs_comp",
+	})
+}
+
+func movecomp(w ecs.Worlder) *ecs.Component {
+	return tau.UpsertComponent(w, ecs.NewComponentInput{
+		Name: "movecs_comp",
+	})
+}
+
+var hellocs = &tau.BasicCS{
+	SysName: "hellocs_system",
+	SysExec: initEngineSystemExec,
+	SysTags: []string{tau.WorldTagDraw},
+	GetComponents: func(w ecs.Worlder) []*ecs.Component {
+		return []*ecs.Component{
+			hellocomp(w),
+		}
+	},
+}
+
+var movecs = &tau.BasicCS{
+	SysName: "movecs_system",
+	SysExec: moveSysExec,
+	SysTags: []string{tau.WorldTagUpdate},
+	GetComponents: func(w ecs.Worlder) []*ecs.Component {
+		return []*ecs.Component{
+			movecomp(w),
+			hellocomp(w),
+		}
+	},
+}
 
 const SPEED float64 = 120
 
@@ -21,28 +54,14 @@ func main() {
 	})
 	// add components and systems
 	world := engine.Default()
-	comp, err := world.NewComponent(tau.NewComponentInput{
-		Name: "hello",
-	})
-	if err != nil {
-		panic(err)
-	}
-	hellocomp = comp
-	movecomp, err = world.NewComponent(tau.NewComponentInput{
-		Name: "move",
-	})
-	if err != nil {
-		panic(err)
-	}
-	sys0 := world.NewSystem("", 0, initEngineSystemExec, hellocomp)
-	sys0.AddTag(tau.WorldTagDraw)
-	sys1 := world.NewSystem("", 1, moveSysExec, movecomp, hellocomp)
-	sys1.AddTag(tau.WorldTagUpdate)
+	tau.SetupSystem(world, hellocs)
+	tau.SetupSystem(world, movecs)
+
 	entity0 := world.NewEntity()
-	world.AddComponentToEntity(entity0, hellocomp, &initEngineData{"Hello,", 30, 40})
+	world.AddComponentToEntity(entity0, hellocomp(world), &initEngineData{"Hello,", 30, 40})
 	entity1 := world.NewEntity()
-	world.AddComponentToEntity(entity1, hellocomp, &initEngineData{"World!", 50, 60})
-	world.AddComponentToEntity(entity1, movecomp, &moveCompData{
+	world.AddComponentToEntity(entity1, hellocomp(world), &initEngineData{"World!", 50, 60})
+	world.AddComponentToEntity(entity1, movecomp(world), &moveCompData{
 		XSpeed: SPEED,
 		YSpeed: SPEED,
 	})
@@ -63,18 +82,22 @@ type moveCompData struct {
 	YSum   float64
 }
 
-func initEngineSystemExec(ctx tau.Context, screen *ebiten.Image) {
+func initEngineSystemExec(ctx tau.Context) {
+	screen := ctx.Screen()
+	c := hellocomp(ctx.World())
 	for _, v := range ctx.System().View().Matches() {
-		data := v.Components[hellocomp].(*initEngineData)
+		data := v.Components[c].(*initEngineData)
 		ebitenutil.DebugPrintAt(screen, data.Text, data.X, data.Y)
 	}
 }
 
-func moveSysExec(ctx tau.Context, screen *ebiten.Image) {
+func moveSysExec(ctx tau.Context) {
 	dt := ctx.DT()
+	helloc := hellocomp(ctx.World())
+	movec := movecomp(ctx.World())
 	for _, v := range ctx.System().View().Matches() {
-		iedata := v.Components[hellocomp].(*initEngineData)
-		movedata := v.Components[movecomp].(*moveCompData)
+		iedata := v.Components[helloc].(*initEngineData)
+		movedata := v.Components[movec].(*moveCompData)
 		movedata.XSum += dt * movedata.XSpeed
 		movedata.YSum += dt * movedata.YSpeed
 		for movedata.XSum >= 1 {

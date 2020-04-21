@@ -3,6 +3,7 @@ package tau
 import (
 	"image"
 
+	"github.com/gabstv/ecs"
 	"github.com/hajimehoshi/ebiten"
 )
 
@@ -27,19 +28,49 @@ const (
 )
 
 const (
-	// SpriteAnimationPriority - default -6
-	SpriteAnimationPriority int = -6
-	// SpriteAnimationLinkPriority - default -5
-	SpriteAnimationLinkPriority int = -5
+	SNSpriteAnimation     = "tau.SpriteAnimationSystem"
+	SNSpriteAnimationLink = "tau.SpriteAnimationLinkSystem"
+	CNSpriteAnimation     = "tau.SpriteAnimationComponent"
 )
 
-func init() {
-	DefaultComp(func(e *Engine, w *World) {
-		SpriteAnimationComponent(w)
-	})
-	DefaultSys(func(e *Engine, w *World) {
-		SpriteAnimationSystem(w)
-		SpriteAnimationLinkSystem(w)
+var (
+	SpriteAnimationCS     *SpriteAnimationComponentSystem     = new(SpriteAnimationComponentSystem)
+	SpriteAnimationLinkCS *SpriteAnimationLinkComponentSystem = new(SpriteAnimationLinkComponentSystem)
+)
+
+type SpriteAnimationComponentSystem struct {
+	BaseComponentSystem
+}
+
+func (cs *SpriteAnimationComponentSystem) SystemName() string {
+	return SNSpriteAnimation
+}
+
+func (cs *SpriteAnimationComponentSystem) SystemPriority() int {
+	return -6
+}
+
+func (cs *SpriteAnimationComponentSystem) SystemExec() SystemExecFn {
+	return SpriteAnimationSystemExec
+}
+
+func (cs *SpriteAnimationComponentSystem) Components(w ecs.Worlder) []*ecs.Component {
+	return []*ecs.Component{
+		spriteAnimationComponentDef(w),
+	}
+}
+
+func spriteAnimationComponentDef(w ecs.Worlder) *ecs.Component {
+	return UpsertComponent(w, ecs.NewComponentInput{
+		Name: CNSpriteAnimation,
+		ValidateDataFn: func(data interface{}) bool {
+			_, ok := data.(*SpriteAnimation)
+			return ok
+		},
+		DestructorFn: func(_ ecs.WorldDicter, entity ecs.Entity, data interface{}) {
+			sd := data.(*SpriteAnimation)
+			sd.Clips = nil
+		},
 	})
 }
 
@@ -81,48 +112,14 @@ type SpriteAnimationClip struct {
 	ClipMode AnimClipMode
 }
 
-// SpriteAnimationComponent will get the registered sprite anim component of the world.
-// If a component is not present, it will create a new component
-// using world.NewComponent
-func SpriteAnimationComponent(w Worlder) *Component {
-	c := w.Component("tau.SpriteAnimation")
-	if c == nil {
-		var err error
-		c, err = w.NewComponent(NewComponentInput{
-			Name: "tau.SpriteAnimation",
-			ValidateDataFn: func(data interface{}) bool {
-				_, ok := data.(*SpriteAnimation)
-				return ok
-			},
-			DestructorFn: func(_ WorldDicter, entity Entity, data interface{}) {
-				sd := data.(*SpriteAnimation)
-				sd.Clips = nil
-			},
-		})
-		if err != nil {
-			panic(err)
-		}
-	}
-	return c
-}
-
-// SpriteAnimationSystem creates the sprite system
-func SpriteAnimationSystem(w *World) *System {
-	if sys := w.System("tau.SpriteAnimationSystem"); sys != nil {
-		return sys
-	}
-	sys := w.NewSystem("tau.SpriteAnimationSystem", SpriteAnimationPriority, SpriteAnimationSystemExec, SpriteAnimationComponent(w))
-	sys.AddTag(WorldTagUpdate)
-	return sys
-}
-
 // SpriteAnimationSystemExec is the main function of the SpriteSystem
-func SpriteAnimationSystemExec(ctx Context, screen *ebiten.Image) {
+func SpriteAnimationSystemExec(ctx Context) {
+	//screen := ctx.Screen()
 	//dt float64, v *ecs.View, s *ecs.System
 	dt := ctx.DT()
 	v := ctx.System().View()
 	matches := v.Matches()
-	spriteanimcomp := SpriteAnimationComponent(ctx.World())
+	spriteanimcomp := ctx.World().Component(CNSpriteAnimation)
 	globalfps := nonzeroval(ebiten.CurrentFPS(), 60)
 	for _, m := range matches {
 		spranim := m.Components[spriteanimcomp].(*SpriteAnimation)
@@ -220,23 +217,41 @@ func spriteAnimResolvePlayback(globalfps, dt float64, spranim *SpriteAnimation) 
 	}
 }
 
-// SpriteAnimationLinkSystem creates the sprite system
-func SpriteAnimationLinkSystem(w *World) *System {
-	if sys := w.System("tau.SpriteAnimationLinkSystem"); sys != nil {
-		return sys
+type SpriteAnimationLinkComponentSystem struct {
+	BaseComponentSystem
+}
+
+func (cs *SpriteAnimationLinkComponentSystem) SystemName() string {
+	return SNSpriteAnimationLink
+}
+
+func (cs *SpriteAnimationLinkComponentSystem) SystemPriority() int {
+	return -5
+}
+
+func (cs *SpriteAnimationLinkComponentSystem) SystemExec() SystemExecFn {
+	return SpriteAnimationLinkSystemExec
+}
+
+func (cs *SpriteAnimationLinkComponentSystem) SystemTags() []string {
+	return []string{"draw"}
+}
+
+func (cs *SpriteAnimationLinkComponentSystem) Components(w ecs.Worlder) []*ecs.Component {
+	return []*ecs.Component{
+		spriteAnimationComponentDef(w),
+		spriteComponentDef(w),
 	}
-	sys := w.NewSystem("tau.SpriteAnimationLinkSystem", SpriteAnimationLinkPriority, SpriteAnimationLinkSystemExec, SpriteAnimationComponent(w), SpriteComponent(w))
-	sys.AddTag(WorldTagDraw)
-	return sys
 }
 
 // SpriteAnimationLinkSystemExec is what glues the animation and sprite together
-func SpriteAnimationLinkSystemExec(ctx Context, screen *ebiten.Image) {
+func SpriteAnimationLinkSystemExec(ctx Context) {
+	//screen := ctx.Screen()
 	v := ctx.System().View()
 	world := ctx.World()
 	matches := v.Matches()
-	spriteanimcomp := SpriteAnimationComponent(ctx.World())
-	spritecomp := world.Component(spriteComponentName)
+	spriteanimcomp := world.Component(CNSpriteAnimation)
+	spritecomp := world.Component(CNSprite)
 	for _, m := range matches {
 		spranim := m.Components[spriteanimcomp].(*SpriteAnimation)
 		spr := m.Components[spritecomp].(*Sprite)
@@ -245,4 +260,9 @@ func SpriteAnimationLinkSystemExec(ctx Context, screen *ebiten.Image) {
 		}
 		spr.Bounds = spranim.Clips[spranim.ActiveClip].Frames[spranim.ActiveFrame]
 	}
+}
+
+func init() {
+	RegisterComponentSystem(&SpriteAnimationComponentSystem{})
+	RegisterComponentSystem(&SpriteAnimationLinkComponentSystem{})
 }
