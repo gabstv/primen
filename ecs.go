@@ -25,6 +25,9 @@ func UpsertComponent(w ecs.Worlder, comp ecs.NewComponentInput) *ecs.Component {
 type SystemExecFn func(ctx Context)
 type SystemInitFn func(w *ecs.World, sys *ecs.System)
 
+// Middleware is a system middleware
+type Middleware func(next SystemExecFn) SystemExecFn
+
 type ComponentSystem interface {
 	SystemName() string
 	SystemPriority() int
@@ -125,6 +128,14 @@ func NewWorld(e *Engine) *ecs.World {
 	})
 	w.Set(DefaultImageOptions, &ebiten.DrawImageOptions{})
 	return w
+}
+
+// SystemWrap wraps middlewares into a SystemExecFn
+func SystemWrap(fn SystemExecFn, mid ...Middleware) SystemExecFn {
+	for _, m := range mid {
+		fn = m(fn)
+	}
+	return fn
 }
 
 func init() {

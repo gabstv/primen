@@ -2,18 +2,17 @@ package smid
 
 import (
 	"github.com/gabstv/tau"
-	"github.com/hajimehoshi/ebiten"
 )
 
 // SkipFrames is a System middleware that skips n frames and then executes the
 // next function in the system function stack
-func SkipFrames(n int) tau.SystemMiddleware {
-	return func(next tau.SystemFn) tau.SystemFn {
-		return func(ctx tau.Context, screen *ebiten.Image) {
+func SkipFrames(n int) tau.Middleware {
+	return func(next tau.SystemExecFn) tau.SystemExecFn {
+		return func(ctx tau.Context) {
 			vi := ctx.System().Get("SkipFrames")
 			if vi == nil {
 				ctx.System().Set("SkipFrames", 0)
-				next(ctx, screen)
+				next(ctx)
 				return
 			}
 			v := vi.(int)
@@ -22,7 +21,7 @@ func SkipFrames(n int) tau.SystemMiddleware {
 				return
 			}
 			ctx.System().Set("SkipFrames", 0)
-			next(ctx, screen)
+			next(ctx)
 		}
 	}
 }
