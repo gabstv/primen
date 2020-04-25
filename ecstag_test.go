@@ -1,22 +1,21 @@
-package utils
+package tau
 
 import (
 	"testing"
 
-	"github.com/gabstv/tau"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTagSystem(t *testing.T) {
-	e := tau.NewEngine(&tau.NewEngineInput{
+	e := NewEngine(&NewEngineInput{
 		Scale:  1,
 		Width:  400,
 		Height: 300,
 	})
-	w := tau.NewWorld(e)
-	w.Set(tau.DefaultImageOptions, &ebiten.DrawImageOptions{})
-	tau.SetupSystem(w, TagCS)
+	w := NewWorld(e)
+	w.Set(DefaultImageOptions, &ebiten.DrawImageOptions{})
+	SetupSystem(w, TagCS)
 	c := w.Component(CNTag)
 
 	ents := w.NewEntities(10)

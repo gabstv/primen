@@ -1,14 +1,10 @@
-package smid
+package tau
 
-import (
-	"github.com/gabstv/tau"
-)
-
-// SkipFrames is a System middleware that skips n frames and then executes the
+// MidSkipFrames is a System middleware that skips n frames and then executes the
 // next function in the system function stack
-func SkipFrames(n int) tau.Middleware {
-	return func(next tau.SystemExecFn) tau.SystemExecFn {
-		return func(ctx tau.Context) {
+func MidSkipFrames(n int) Middleware {
+	return func(next SystemExecFn) SystemExecFn {
+		return func(ctx Context) {
 			vi := ctx.System().Get("SkipFrames")
 			if vi == nil {
 				ctx.System().Set("SkipFrames", 0)

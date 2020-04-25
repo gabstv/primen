@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package sets
+package tau
 
 import (
 	"bytes"
@@ -10,6 +10,14 @@ import (
 
 	"github.com/gabstv/ecs"
 )
+
+var itemExists = struct{}{}
+
+type SetBase interface {
+	Empty() bool
+	Size() int
+	Clear()
+}
 
 type EntitySet interface {
 	Add(elements ...ecs.Entity)
