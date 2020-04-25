@@ -1,15 +1,12 @@
-package utils
+package tau
 
 import (
 	"github.com/gabstv/ecs"
-	"github.com/gabstv/tau"
-	"github.com/gabstv/tau/utils/sets"
-	"github.com/gabstv/tau/utils/smid"
 )
 
 const (
-	SNTag = "tau/utils.TagSystem"
-	CNTag = "tau/utils.TagComponent"
+	SNTag = "tau.TagSystem"
+	CNTag = "tau.TagComponent"
 )
 
 var tagPresent = struct{}{}
@@ -49,26 +46,26 @@ var (
 )
 
 type TagComponentSystem struct {
-	tau.BaseComponentSystem
+	BaseComponentSystem
 }
 
 func (cs *TagComponentSystem) SystemName() string {
 	return SNTag
 }
 
-func (cs *TagComponentSystem) SystemInit() tau.SystemInitFn {
+func (cs *TagComponentSystem) SystemInit() SystemInitFn {
 	return func(w *ecs.World, sys *ecs.System) {
 
 	}
 }
 
-func (cs *TagComponentSystem) SystemExec() tau.SystemExecFn {
-	return tau.SystemWrap(TagSystemExec, tagSystemMidDirty(), smid.SkipFrames(30))
+func (cs *TagComponentSystem) SystemExec() SystemExecFn {
+	return SystemWrap(TagSystemExec, tagSystemMidDirty(), MidSkipFrames(30))
 }
 
 func (cs *TagComponentSystem) Components(w ecs.Worlder) []*ecs.Component {
 	return []*ecs.Component{
-		tau.UpsertComponent(w, ecs.NewComponentInput{
+		UpsertComponent(w, ecs.NewComponentInput{
 			Name: CNTag,
 			ValidateDataFn: func(data interface{}) bool {
 				if data == nil {
@@ -101,7 +98,7 @@ func FindWithTag(w *ecs.World, tag string, tags ...string) []ecs.Entity {
 	if c.Sets[tag] == nil {
 		return []ecs.Entity{}
 	}
-	ents := sets.NewEntitySet(c.Sets[tag].Values()...)
+	ents := NewEntitySet(c.Sets[tag].Values()...)
 	if len(tags) < 1 {
 		return ents.Values()
 	}
@@ -123,9 +120,9 @@ func FindWithTag(w *ecs.World, tag string, tags ...string) []ecs.Entity {
 	return ents.Values()
 }
 
-func tagSystemMidDirty() tau.Middleware {
-	return func(next tau.SystemExecFn) tau.SystemExecFn {
-		return func(ctx tau.Context) {
+func tagSystemMidDirty() Middleware {
+	return func(next SystemExecFn) SystemExecFn {
+		return func(ctx Context) {
 			defer next(ctx)
 			c := ctx.World().Component(CNTag)
 			matches := ctx.System().View().Matches()
@@ -159,7 +156,7 @@ func isStringSliceDirty(current, previous []string) bool {
 }
 
 // TagSystemExec is the main function of the TagSystem
-func TagSystemExec(ctx tau.Context) {
+func TagSystemExec(ctx Context) {
 	v := ctx.System().View()
 	matches := v.Matches()
 	tagcomp := ctx.World().Component(CNTag)
@@ -217,10 +214,10 @@ func (b *tagBuf) List() []string {
 type tagSystemBakeCache struct {
 	AddBuf *tagBuf
 	DelBuf *tagBuf
-	Sets   map[string]sets.EntitySet
+	Sets   map[string]EntitySet
 }
 
-func tagSystemBake(ctx tau.Context, dentities []ecs.Entity, dtags []*Tag) {
+func tagSystemBake(ctx Context, dentities []ecs.Entity, dtags []*Tag) {
 	if len(dentities) < 1 {
 		return
 	}
@@ -231,7 +228,7 @@ func tagSystemBake(ctx tau.Context, dentities []ecs.Entity, dtags []*Tag) {
 		cache = &tagSystemBakeCache{
 			AddBuf: newTagBuf(32),
 			DelBuf: newTagBuf(32),
-			Sets:   make(map[string]sets.EntitySet),
+			Sets:   make(map[string]EntitySet),
 		}
 		ctx.System().Set("cache", cache)
 	}
@@ -275,7 +272,7 @@ func tagSystemBake(ctx tau.Context, dentities []ecs.Entity, dtags []*Tag) {
 		for _, k := range adds {
 			v := cache.Sets[k]
 			if v == nil {
-				cache.Sets[k] = sets.NewEntitySet(dentities[i])
+				cache.Sets[k] = NewEntitySet(dentities[i])
 			} else {
 				v.Add(dentities[i])
 			}
@@ -287,5 +284,5 @@ func tagSystemBake(ctx tau.Context, dentities []ecs.Entity, dtags []*Tag) {
 }
 
 func init() {
-	tau.RegisterComponentSystem(&TagComponentSystem{})
+	RegisterComponentSystem(&TagComponentSystem{})
 }
