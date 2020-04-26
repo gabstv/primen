@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"image"
 	"log"
 	"sync"
 	"sync/atomic"
@@ -18,6 +19,7 @@ type Container interface {
 	LoadAll(names []string) (progress chan float64, done chan struct{})
 	UnloadAll()
 	Get(name string) ([]byte, error)
+	GetImage(name string) (image.Image, error)
 }
 
 type container struct {
@@ -112,6 +114,13 @@ func (c *container) LoadAll(names []string) (progress chan float64, done chan st
 	}
 	go func() {
 		defer close(done)
+		defer func() {
+			select {
+			case <-c.ctx.Done():
+			case <-time.After(time.Second):
+			}
+			close(progress)
+		}()
 		var step float64 = 1 / float64(len(names))
 		var current float64
 		for _, name := range names {
@@ -173,6 +182,15 @@ func (c *container) Get(name string) ([]byte, error) {
 		return nil, errors.New("x not found")
 	}
 	return fd, nil
+}
+
+func (c *container) GetImage(name string) (image.Image, error) {
+	b, err := c.Get(name)
+	if err != nil {
+		return nil, err
+	}
+	img, _, err := image.Decode(bytes.NewReader(b))
+	return img, err
 }
 
 func NewContainer(ctx context.Context, fs Filesystem) Container {
