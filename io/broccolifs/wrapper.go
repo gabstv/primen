@@ -21,6 +21,12 @@ type wrapper struct {
 	*fs.Broccoli
 }
 
+func New(b *fs.Broccoli) io.Filesystem {
+	return &wrapper{
+		Broccoli: b,
+	}
+}
+
 func (w *wrapper) Open(name string) (io.File, error) {
 	ff, err := w.Broccoli.Open(name)
 	if err != nil {
