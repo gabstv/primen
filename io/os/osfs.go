@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/gabstv/tau/fs"
+	"github.com/gabstv/tau/io"
 )
 
 type osfs struct {
@@ -13,7 +13,7 @@ type osfs struct {
 }
 
 // New returns a new OS filesystem with the base path as root.
-func New(base string) fs.Filesystem {
+func New(base string) io.Filesystem {
 	return &osfs{base}
 }
 
@@ -21,7 +21,7 @@ func (fs *osfs) Open(name string) (io.ReadCloser, error) {
 	return os.Open(path.Join(fs.basepath, name))
 }
 
-func (fs *osfs) Stat(name string) (fs.Stat, error) {
+func (fs *osfs) Stat(name string) (io.File, error) {
 	finfo, err := os.Stat(path.Join(fs.basepath, name))
 	return finfo, err
 }

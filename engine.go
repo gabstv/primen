@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/gabstv/ecs"
-	"github.com/gabstv/tau/fs"
-	osfs "github.com/gabstv/tau/fs/os"
+	"github.com/gabstv/tau/io"
+	osfs "github.com/gabstv/tau/io/os"
 	"github.com/hajimehoshi/ebiten"
 )
 
@@ -22,7 +22,7 @@ type Engine struct {
 	defaultWorld *ecs.World
 	dmap         Dict
 	options      EngineOptions
-	f            fs.Filesystem
+	f            io.Filesystem
 }
 
 // NewEngineInput is the input data of NewEngine
@@ -31,7 +31,7 @@ type NewEngineInput struct {
 	Height int
 	Scale  float64
 	Title  string
-	FS     fs.Filesystem
+	FS     io.Filesystem
 }
 
 // EngineOptions is used to setup Ebiten @ Engine.boot
@@ -197,6 +197,6 @@ func (e *Engine) Set(key string, value interface{}) {
 }
 
 // FS returns the filesystem
-func (e *Engine) FS() fs.Filesystem {
+func (e *Engine) FS() io.Filesystem {
 	return e.f
 }

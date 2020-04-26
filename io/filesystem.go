@@ -1,18 +1,26 @@
-package fs
+package io
 
 import (
 	"bytes"
 	"io"
 )
 
-// Filesystem interface
-type Filesystem interface {
-	Open(name string) (io.ReadCloser, error)
-	Stat(name string) (Stat, error)
+// File interface is almost a copy of http.File
+type File interface {
+	io.Closer
+	io.Reader
+	io.Seeker
+	Stat() (FileInfo, error)
 }
 
-// Stat interface
-type Stat interface {
+// Filesystem interface
+type Filesystem interface {
+	Open(name string) (File, error)
+	Stat(name string) (FileInfo, error)
+}
+
+// FileInfo interface
+type FileInfo interface {
 	Size() int64
 	IsDir() bool
 }
