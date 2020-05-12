@@ -13,6 +13,7 @@ type File interface {
 	Walk(fn func(i FrameInfo) bool)
 	Type() FileType
 	GetMetadata() Metadata
+	GetFrame(name string) (i FrameInfo, ok bool)
 }
 
 type FileMap struct {
@@ -38,6 +39,11 @@ func (f *FileMap) GetMetadata() Metadata {
 	return f.Meta
 }
 
+func (f *FileMap) GetFrame(name string) (i FrameInfo, ok bool) {
+	i, ok = f.Frames[name]
+	return
+}
+
 type FileSlice struct {
 	Frames []FrameInfo `json:"frames"`
 	Meta   Metadata    `json:"meta"`
@@ -57,6 +63,15 @@ func (f *FileSlice) Type() FileType {
 
 func (f *FileSlice) GetMetadata() Metadata {
 	return f.Meta
+}
+
+func (f *FileSlice) GetFrame(name string) (i FrameInfo, ok bool) {
+	for _, v := range f.Frames {
+		if v.Filename == name {
+			return v, true
+		}
+	}
+	return
 }
 
 type FrameInfo struct {
