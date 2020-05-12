@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package pb;
+
+enum ImageFilter {
+  // DEFAULT represents the default filter.
+  DEFAULT = 0;
+  // NEAREST represents nearest (crisp-edged) filter
+  NEAREST = 1;
+  // LINEAR represents linear filter
+  LINEAR = 2;
+}
+
+message AtlasFile {
+  repeated bytes images = 1;
+  repeated ImageFilter filters = 2;
+  map<string, Frame> frames = 3;
+}
+
+message Frame {
+  uint32 image = 1;
+  uint32 x = 2;
+  uint32 y = 3;
+  uint32 w = 4;
+  uint32 h = 5;
+}
