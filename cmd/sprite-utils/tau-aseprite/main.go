@@ -124,7 +124,7 @@ func cmdAtlasSkel(c *cli.Context) error {
 			return nil
 		}
 		xi := len(outtpl.SpriteSheets)
-		outtpl.SpriteSheets = append(outtpl.SpriteSheets, f.GetMetadata().Image)
+		outtpl.SpriteSheets = append(outtpl.SpriteSheets, v)
 		f.Walk(func(i aseprite.FrameInfo) bool {
 			outtpl.Sprites = append(outtpl.Sprites, aseprite.FrameIO{
 				Filename:   i.Filename,
