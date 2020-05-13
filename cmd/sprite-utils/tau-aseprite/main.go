@@ -137,7 +137,7 @@ func cmdAtlasSkel(c *cli.Context) error {
 	}
 	if outp == "" {
 		_, f1 := filepath.Split(inpt[0])
-		outp = strings.TrimSuffix(".json") + "-importer.json"
+		outp = strings.TrimSuffix(f1, ".json") + "-importer.json"
 	}
 	outtpl.Output = odat
 	//
