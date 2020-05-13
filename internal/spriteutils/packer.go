@@ -56,6 +56,10 @@ func (n *RectPackerNode) ID() int {
 	return n.id
 }
 
+func (n *RectPackerNode) R() image.Rectangle {
+	return image.Rect(n.X, n.Y, n.X+n.Width, n.Y+n.Height)
+}
+
 type ImgRectPacker interface {
 	AddRect(r image.Rectangle) *RectPackerNode
 	AddRects(r ...image.Rectangle) []*RectPackerNode

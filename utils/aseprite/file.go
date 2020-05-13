@@ -1,6 +1,10 @@
 package aseprite
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"image"
+	"strconv"
+)
 
 type FileType string
 
@@ -89,6 +93,14 @@ type FrameRect struct {
 	Y int `json:"y"`
 	W int `json:"w"`
 	H int `json:"h"`
+}
+
+func (r FrameRect) String() string {
+	return "FrameRect{x:" + strconv.Itoa(r.X) + ",y:" + strconv.Itoa(r.Y) + ",w:" + strconv.Itoa(r.W) + ",h:" + strconv.Itoa(r.H) + "}"
+}
+
+func (r FrameRect) ToRect() image.Rectangle {
+	return image.Rect(r.X, r.Y, r.X+r.W, r.Y+r.H)
 }
 
 type ImSize struct {
