@@ -193,6 +193,14 @@ func (c *container) GetImage(name string) (image.Image, error) {
 	return img, err
 }
 
+func (c *container) GetAtlas(name string) (*Atlas, error) {
+	b, err := c.Get(name)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAtlas(b)
+}
+
 func NewContainer(ctx context.Context, fs Filesystem) Container {
 	c := &container{
 		ctx:          ctx,
