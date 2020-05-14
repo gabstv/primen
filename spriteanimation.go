@@ -60,6 +60,10 @@ func (cs *SpriteAnimationComponentSystem) Components(w ecs.Worlder) []*ecs.Compo
 	}
 }
 
+func (cs *SpriteAnimationComponentSystem) ExcludeComponents(w ecs.Worlder) []*ecs.Component {
+	return emptyCompSlice
+}
+
 func spriteAnimationComponentDef(w ecs.Worlder) *ecs.Component {
 	return UpsertComponent(w, ecs.NewComponentInput{
 		Name: CNSpriteAnimation,
@@ -242,6 +246,10 @@ func (cs *SpriteAnimationLinkComponentSystem) Components(w ecs.Worlder) []*ecs.C
 		spriteAnimationComponentDef(w),
 		spriteComponentDef(w),
 	}
+}
+
+func (cs *SpriteAnimationLinkComponentSystem) ExcludeComponents(w ecs.Worlder) []*ecs.Component {
+	return emptyCompSlice
 }
 
 // SpriteAnimationLinkSystemExec is what glues the animation and sprite together

@@ -38,6 +38,10 @@ func (cs *TransformComponentSystem) Components(w ecs.Worlder) []*ecs.Component {
 	}
 }
 
+func (cs *TransformComponentSystem) ExcludeComponents(w ecs.Worlder) []*ecs.Component {
+	return emptyCompSlice
+}
+
 func transformComponentDef(w ecs.Worlder) *ecs.Component {
 	return UpsertComponent(w, ecs.NewComponentInput{
 		Name: CNTransform,
@@ -99,6 +103,10 @@ func (cs *TransformSpriteComponentSystem) Components(w ecs.Worlder) []*ecs.Compo
 		transformComponentDef(w),
 		spriteComponentDef(w),
 	}
+}
+
+func (cs *TransformSpriteComponentSystem) ExcludeComponents(w ecs.Worlder) []*ecs.Component {
+	return emptyCompSlice
 }
 
 // TransformSystemExec is the main function of the TransformSystem

@@ -44,6 +44,10 @@ func (cs *RepeatSpriteComponentSystem) Components(w ecs.Worlder) []*ecs.Componen
 	}
 }
 
+func (cs *RepeatSpriteComponentSystem) ExcludeComponents(w ecs.Worlder) []*ecs.Component {
+	return emptyCompSlice
+}
+
 func repeatSpriteComponentDef(w ecs.Worlder) *ecs.Component {
 	return UpsertComponent(w, ecs.NewComponentInput{
 		Name: CNRepeatSprite,

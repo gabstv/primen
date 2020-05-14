@@ -52,6 +52,10 @@ func (cs *SpriteComponentSystem) Components(w ecs.Worlder) []*ecs.Component {
 	}
 }
 
+func (cs *SpriteComponentSystem) ExcludeComponents(w ecs.Worlder) []*ecs.Component {
+	return emptyCompSlice
+}
+
 func spriteComponentDef(w ecs.Worlder) *ecs.Component {
 	return UpsertComponent(w, ecs.NewComponentInput{
 		Name: CNSprite,

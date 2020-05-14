@@ -7,6 +7,8 @@ import (
 	"github.com/hajimehoshi/ebiten"
 )
 
+var emptyCompSlice []*ecs.Component = make([]*ecs.Component, 0)
+
 // Component
 //   Data
 // System
@@ -35,6 +37,7 @@ type ComponentSystem interface {
 	SystemExec() SystemExecFn
 	SystemTags() []string
 	Components(w ecs.Worlder) []*ecs.Component
+	ExcludeComponents(w ecs.Worlder) []*ecs.Component
 }
 
 type BaseComponentSystem struct {
@@ -65,7 +68,7 @@ func SetupSystem(w *ecs.World, cs ComponentSystem) {
 	wexec := func(ctx ecs.Context) {
 		fnfn(ctx.(Context))
 	}
-	sys := w.NewSystem(cs.SystemName(), cs.SystemPriority(), wexec, cs.Components(w)...)
+	sys := w.NewSystemX(cs.SystemName(), cs.SystemPriority(), wexec, cs.Components(w), cs.ExcludeComponents(w))
 	if xinit := cs.SystemInit(); xinit != nil {
 		xinit(w, sys)
 	}
@@ -106,6 +109,10 @@ func (cs *BasicCS) SystemTags() []string {
 
 func (cs *BasicCS) Components(w ecs.Worlder) []*ecs.Component {
 	return cs.GetComponents(w)
+}
+
+func (cs *BasicCS) ExcludeComponents(w ecs.Worlder) []*ecs.Component {
+	return emptyCompSlice
 }
 
 // NewWorld creates a new world

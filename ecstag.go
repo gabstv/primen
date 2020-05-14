@@ -85,6 +85,10 @@ func (cs *TagComponentSystem) Components(w ecs.Worlder) []*ecs.Component {
 	}
 }
 
+func (cs *TagComponentSystem) ExcludeComponents(w ecs.Worlder) []*ecs.Component {
+	return emptyCompSlice
+}
+
 func FindWithTag(w *ecs.World, tag string, tags ...string) []ecs.Entity {
 	if tag == "" {
 		return []ecs.Entity{}
