@@ -102,6 +102,20 @@ func main() {
 			},
 		},
 	}
+	app.Flags = []cli.Flag{
+		cli.StringFlag{
+			Name:  "workdir, wd",
+			Usage: "Change the working directory before running commands",
+		},
+	}
+	app.Before = func(c *cli.Context) error {
+		if v := c.GlobalString("workdir"); v != "" {
+			if err := os.Chdir(v); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
 	if err := app.Run(os.Args); err != nil {
 		println(err.Error())
 		os.Exit(1)
