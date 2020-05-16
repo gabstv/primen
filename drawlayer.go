@@ -11,11 +11,14 @@ import (
 
 const (
 	// SNDrawLayer is the system name
-	SNDrawLayer       = "tau.DrawLayerSystem"
-	CNDrawLayer       = "tau.DrawLayerComponent"
+	SNDrawLayer = "tau.DrawLayerSystem"
+	// CNDrawLayer is the component signature name
+	CNDrawLayer = "tau.DrawLayerComponent"
+	// SNDrawLayerSprite is the system name
 	SNDrawLayerSprite = "tau.DrawLayerSpriteSystem"
 )
 
+// DrawLayer component data
 type DrawLayer struct {
 	Layer  LayerIndex
 	ZIndex int64
@@ -25,12 +28,13 @@ type DrawLayer struct {
 }
 
 const (
-	// ZIndexLast is to set the ZIndex at the top
+	// ZIndexTop is to set the ZIndex at the top
 	ZIndexTop = int64(math.MinInt64)
 	// ZIndexBottom is to set the ZIndex at the bottom
 	ZIndexBottom = int64(math.MinInt64 + 1)
 )
 
+// LayerIndex is the layer index
 type LayerIndex int64
 
 // LAYERS
@@ -68,7 +72,6 @@ func (c *drawLayerItemCache) Less(v interface{}) bool {
 	return c.ZIndex < v.(*drawLayerItemCache).ZIndex
 }
 
-//
 type drawLayerDrawers struct {
 	l     sync.RWMutex
 	slice []*drawLayerDrawer
@@ -95,11 +98,13 @@ func (d *drawLayerDrawers) UpsertLayer(index LayerIndex) *EntitySortedList {
 	return x.items
 }
 
+// LayerTuple is returned when fetching all layers
 type LayerTuple struct {
 	Index LayerIndex
 	Items *EntitySortedList
 }
 
+// All layers
 func (d *drawLayerDrawers) All() []LayerTuple {
 	d.l.RLock()
 	defer d.l.RUnlock()
@@ -135,18 +140,22 @@ func drawLayerComponentDef(w *ecs.World) *ecs.Component {
 	})
 }
 
+// DrawLayerComponentSystem component system
 type DrawLayerComponentSystem struct {
 	BaseComponentSystem
 }
 
+// SystemName returns the system name
 func (cs *DrawLayerComponentSystem) SystemName() string {
 	return SNDrawLayer
 }
 
+// SystemPriority returns the system priority
 func (cs *DrawLayerComponentSystem) SystemPriority() int {
 	return 0
 }
 
+// SystemInit returns the system init
 func (cs *DrawLayerComponentSystem) SystemInit() SystemInitFn {
 	return func(w *ecs.World, sys *ecs.System) {
 		layers := &drawLayerDrawers{
@@ -195,16 +204,19 @@ func (cs *DrawLayerComponentSystem) SystemInit() SystemInitFn {
 	}
 }
 
+// SystemExec returns the system exec fn
 func (cs *DrawLayerComponentSystem) SystemExec() SystemExecFn {
 	return DrawLayerSystemExec
 }
 
+// Components returns the component signature(s)
 func (cs *DrawLayerComponentSystem) Components(w *ecs.World) []*ecs.Component {
 	return []*ecs.Component{
 		drawLayerComponentDef(w),
 	}
 }
 
+// ExcludeComponents returns the components that must not be present in this system
 func (cs *DrawLayerComponentSystem) ExcludeComponents(w *ecs.World) []*ecs.Component {
 	return emptyCompSlice
 }

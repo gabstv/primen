@@ -98,6 +98,7 @@ type Sprite struct {
 	imageWidth  float64 // last calculated image width
 	imageHeight float64 // last calculated image height
 
+	imageBounds  image.Rectangle
 	lastBounds   image.Rectangle
 	lastSubImage *ebiten.Image
 }
@@ -123,13 +124,20 @@ func drawSprite(screen *ebiten.Image, spriteComp *ecs.Component, sprite *Sprite,
 		sprite.lastImage = sprite.Image
 		// redo subimage
 		sprite.lastBounds = image.Rect(0, 0, 0, 0)
+		sprite.imageBounds = sprite.Image.Bounds()
 	}
 	if sprite.lastBounds != sprite.Bounds {
 		sprite.lastBounds = sprite.Bounds
-		sprite.lastSubImage = sprite.Image.SubImage(sprite.lastBounds).(*ebiten.Image)
-		w, h := sprite.lastSubImage.Size()
-		sprite.imageWidth = float64(w)
-		sprite.imageHeight = float64(h)
+		if sprite.imageBounds.Min.Eq(sprite.Bounds.Min) && sprite.imageBounds.Max.Eq(sprite.Bounds.Max) {
+			sprite.imageWidth = float64(sprite.Bounds.Dx())
+			sprite.imageHeight = float64(sprite.Bounds.Dy())
+			sprite.lastSubImage = nil
+		} else {
+			sprite.lastSubImage = sprite.Image.SubImage(sprite.lastBounds).(*ebiten.Image)
+			w, h := sprite.lastSubImage.Size()
+			sprite.imageWidth = float64(w)
+			sprite.imageHeight = float64(h)
+		}
 	}
 	if sprite.DrawDisabled {
 		return
