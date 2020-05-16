@@ -13,7 +13,7 @@ var emptyCompSlice []*ecs.Component = make([]*ecs.Component, 0)
 //   Data
 // System
 
-func UpsertComponent(w ecs.Worlder, comp ecs.NewComponentInput) *ecs.Component {
+func UpsertComponent(w *ecs.World, comp ecs.NewComponentInput) *ecs.Component {
 	if c := w.Component(comp.Name); c != nil {
 		return c
 	}
@@ -36,8 +36,8 @@ type ComponentSystem interface {
 	SystemInit() SystemInitFn
 	SystemExec() SystemExecFn
 	SystemTags() []string
-	Components(w ecs.Worlder) []*ecs.Component
-	ExcludeComponents(w ecs.Worlder) []*ecs.Component
+	Components(w *ecs.World) []*ecs.Component
+	ExcludeComponents(w *ecs.World) []*ecs.Component
 }
 
 type BaseComponentSystem struct {
@@ -63,6 +63,10 @@ func (cs *BaseComponentSystem) SystemTags() []string {
 	return []string{"update"}
 }
 
+func (cs *BaseComponentSystem) ExcludeComponents(w *ecs.World) []*ecs.Component {
+	return emptyCompSlice
+}
+
 func SetupSystem(w *ecs.World, cs ComponentSystem) {
 	fnfn := cs.SystemExec()
 	wexec := func(ctx ecs.Context) {
@@ -80,7 +84,7 @@ type BasicCS struct {
 	SysInit       SystemInitFn
 	SysExec       SystemExecFn
 	SysTags       []string
-	GetComponents func(w ecs.Worlder) []*ecs.Component
+	GetComponents func(w *ecs.World) []*ecs.Component
 }
 
 func (cs *BasicCS) SystemName() string {
@@ -107,11 +111,11 @@ func (cs *BasicCS) SystemTags() []string {
 	return cs.SysTags
 }
 
-func (cs *BasicCS) Components(w ecs.Worlder) []*ecs.Component {
+func (cs *BasicCS) Components(w *ecs.World) []*ecs.Component {
 	return cs.GetComponents(w)
 }
 
-func (cs *BasicCS) ExcludeComponents(w ecs.Worlder) []*ecs.Component {
+func (cs *BasicCS) ExcludeComponents(w *ecs.World) []*ecs.Component {
 	return emptyCompSlice
 }
 
@@ -120,7 +124,7 @@ func NewWorld(e *Engine) *ecs.World {
 	if e == nil {
 		panic("engine can't be nil")
 	}
-	w := ecs.NewWorldWithCtx(func(c0 context.Context, dt float64, sys *ecs.System, w ecs.WorldDicter) ecs.Context {
+	w := ecs.NewWorldWithCtx(func(c0 context.Context, dt float64, sys *ecs.System, w *ecs.World) ecs.Context {
 		return ctxt{
 			c:          c0,
 			dt:         dt,

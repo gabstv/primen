@@ -46,24 +46,26 @@ func (cs *SpriteComponentSystem) SystemExec() SystemExecFn {
 	return SpriteSystemExec
 }
 
-func (cs *SpriteComponentSystem) Components(w ecs.Worlder) []*ecs.Component {
+func (cs *SpriteComponentSystem) Components(w *ecs.World) []*ecs.Component {
 	return []*ecs.Component{
 		spriteComponentDef(w),
 	}
 }
 
-func (cs *SpriteComponentSystem) ExcludeComponents(w ecs.Worlder) []*ecs.Component {
-	return emptyCompSlice
+func (cs *SpriteComponentSystem) ExcludeComponents(w *ecs.World) []*ecs.Component {
+	return []*ecs.Component{
+		drawLayerComponentDef(w),
+	}
 }
 
-func spriteComponentDef(w ecs.Worlder) *ecs.Component {
+func spriteComponentDef(w *ecs.World) *ecs.Component {
 	return UpsertComponent(w, ecs.NewComponentInput{
 		Name: CNSprite,
 		ValidateDataFn: func(data interface{}) bool {
 			_, ok := data.(*Sprite)
 			return ok
 		},
-		DestructorFn: func(_ ecs.WorldDicter, entity ecs.Entity, data interface{}) {
+		DestructorFn: func(_ *ecs.World, entity ecs.Entity, data interface{}) {
 			sd := data.(*Sprite)
 			sd.Options = nil
 		},
@@ -113,6 +115,39 @@ func (s *Sprite) GetPrecomputedImageDim() (width, height float64) {
 	return s.imageWidth, s.imageHeight
 }
 
+func drawSprite(screen *ebiten.Image, spriteComp *ecs.Component, sprite *Sprite, opt *ebiten.DrawImageOptions) {
+	if sprite.lastImage != sprite.Image {
+		w, h := sprite.Image.Size()
+		sprite.imageWidth = float64(w)
+		sprite.imageHeight = float64(h)
+		sprite.lastImage = sprite.Image
+		// redo subimage
+		sprite.lastBounds = image.Rect(0, 0, 0, 0)
+	}
+	if sprite.lastBounds != sprite.Bounds {
+		sprite.lastBounds = sprite.Bounds
+		sprite.lastSubImage = sprite.Image.SubImage(sprite.lastBounds).(*ebiten.Image)
+		w, h := sprite.lastSubImage.Size()
+		sprite.imageWidth = float64(w)
+		sprite.imageHeight = float64(h)
+	}
+	if sprite.DrawDisabled {
+		return
+	}
+	hw, hh := sprite.imageWidth/2, sprite.imageHeight/2
+	opt.GeoM.Reset()
+	opt.GeoM.Translate(-hw+sprite.OriginX*sprite.imageWidth*-1, -hh+sprite.OriginY*sprite.imageHeight*-1)
+	opt.GeoM.Scale(sprite.ScaleX, sprite.ScaleY)
+	opt.GeoM.Rotate(sprite.Angle)
+	opt.GeoM.Translate(hw, hh)
+	opt.GeoM.Translate(sprite.X, sprite.Y)
+	if sprite.lastSubImage != nil {
+		screen.DrawImage(sprite.lastSubImage, opt)
+	} else {
+		screen.DrawImage(sprite.Image, opt)
+	}
+}
+
 // SpriteSystemExec is the main function of the SpriteSystem
 func SpriteSystemExec(ctx Context) {
 	screen := ctx.Screen()
@@ -122,43 +157,13 @@ func SpriteSystemExec(ctx Context) {
 	matches := v.Matches()
 	spritecomp := ctx.World().Component(CNSprite)
 	defaultopts := world.Get(DefaultImageOptions).(*ebiten.DrawImageOptions)
-	hw, hh := 0.0, 0.0
 	for _, m := range matches {
 		sprite := m.Components[spritecomp].(*Sprite)
 		opt := sprite.Options
 		if opt == nil {
 			opt = defaultopts
 		}
-		if sprite.lastImage != sprite.Image {
-			w, h := sprite.Image.Size()
-			sprite.imageWidth = float64(w)
-			sprite.imageHeight = float64(h)
-			sprite.lastImage = sprite.Image
-			// redo subimage
-			sprite.lastBounds = image.Rect(0, 0, 0, 0)
-		}
-		if sprite.lastBounds != sprite.Bounds {
-			sprite.lastBounds = sprite.Bounds
-			sprite.lastSubImage = sprite.Image.SubImage(sprite.lastBounds).(*ebiten.Image)
-			w, h := sprite.lastSubImage.Size()
-			sprite.imageWidth = float64(w)
-			sprite.imageHeight = float64(h)
-		}
-		if sprite.DrawDisabled {
-			continue
-		}
-		hw, hh = sprite.imageWidth/2, sprite.imageHeight/2
-		opt.GeoM.Reset()
-		opt.GeoM.Translate(-hw+sprite.OriginX*sprite.imageWidth*-1, -hh+sprite.OriginY*sprite.imageHeight*-1)
-		opt.GeoM.Scale(sprite.ScaleX, sprite.ScaleY)
-		opt.GeoM.Rotate(sprite.Angle)
-		opt.GeoM.Translate(hw, hh)
-		opt.GeoM.Translate(sprite.X, sprite.Y)
-		if sprite.lastSubImage != nil {
-			screen.DrawImage(sprite.lastSubImage, opt)
-		} else {
-			screen.DrawImage(sprite.Image, opt)
-		}
+		drawSprite(screen, spritecomp, sprite, opt)
 	}
 }
 

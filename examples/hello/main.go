@@ -8,13 +8,13 @@ import (
 
 var engine *tau.Engine
 
-func hellocomp(w ecs.Worlder) *ecs.Component {
+func hellocomp(w *ecs.World) *ecs.Component {
 	return tau.UpsertComponent(w, ecs.NewComponentInput{
 		Name: "hellocs_comp",
 	})
 }
 
-func movecomp(w ecs.Worlder) *ecs.Component {
+func movecomp(w *ecs.World) *ecs.Component {
 	return tau.UpsertComponent(w, ecs.NewComponentInput{
 		Name: "movecs_comp",
 	})
@@ -24,7 +24,7 @@ var hellocs = &tau.BasicCS{
 	SysName: "hellocs_system",
 	SysExec: initEngineSystemExec,
 	SysTags: []string{tau.WorldTagDraw},
-	GetComponents: func(w ecs.Worlder) []*ecs.Component {
+	GetComponents: func(w *ecs.World) []*ecs.Component {
 		return []*ecs.Component{
 			hellocomp(w),
 		}
@@ -35,7 +35,7 @@ var movecs = &tau.BasicCS{
 	SysName: "movecs_system",
 	SysExec: moveSysExec,
 	SysTags: []string{tau.WorldTagUpdate},
-	GetComponents: func(w ecs.Worlder) []*ecs.Component {
+	GetComponents: func(w *ecs.World) []*ecs.Component {
 		return []*ecs.Component{
 			movecomp(w),
 			hellocomp(w),

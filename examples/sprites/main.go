@@ -22,7 +22,7 @@ var anglecs = &tau.BasicCS{
 			sprite.Angle = sprite.Angle + (math.Pi * dt * 0.0125 * 4)
 		}
 	},
-	GetComponents: func(w ecs.Worlder) []*ecs.Component {
+	GetComponents: func(w *ecs.World) []*ecs.Component {
 		return []*ecs.Component{
 			w.Component(tau.CNSprite),
 		}

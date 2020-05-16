@@ -20,6 +20,7 @@ type Container interface {
 	UnloadAll()
 	Get(name string) ([]byte, error)
 	GetImage(name string) (image.Image, error)
+	GetAtlas(name string) (*Atlas, error)
 }
 
 type container struct {

@@ -1,0 +1,55 @@
+{
+    "sprites": [{
+            "filename": "box1",
+            "output_name": "box1",
+            "sheet_index": 0,
+            "sheet_name": "spritesheet.json"
+        },
+        {
+            "filename": "box2",
+            "output_name": "box2",
+            "sheet_index": 0,
+            "sheet_name": "spritesheet.json"
+        },
+        {
+            "filename": "box3",
+            "output_name": "box3",
+            "sheet_index": 0,
+            "sheet_name": "spritesheet.json"
+        },
+        {
+            "filename": "box4",
+            "output_name": "box4",
+            "sheet_index": 0,
+            "sheet_name": "spritesheet.json"
+        },
+        {
+            "filename": "l1",
+            "output_name": "l1",
+            "sheet_index": 0,
+            "sheet_name": "spritesheet.json"
+        },
+        {
+            "filename": "l2",
+            "output_name": "l2",
+            "sheet_index": 0,
+            "sheet_name": "spritesheet.json"
+        },
+        {
+            "filename": "l3",
+            "output_name": "l3",
+            "sheet_index": 0,
+            "sheet_name": "spritesheet.json"
+        },
+        {
+            "filename": "l4",
+            "output_name": "l4",
+            "sheet_index": 0,
+            "sheet_name": "spritesheet.json"
+        }
+    ],
+    "sprite_sheets": [
+        "spritesheet.json"
+    ],
+    "output": "public/atlas.dat"
+}

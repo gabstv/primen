@@ -63,7 +63,7 @@ func (cs *TagComponentSystem) SystemExec() SystemExecFn {
 	return SystemWrap(TagSystemExec, tagSystemMidDirty(), MidSkipFrames(30))
 }
 
-func (cs *TagComponentSystem) Components(w ecs.Worlder) []*ecs.Component {
+func (cs *TagComponentSystem) Components(w *ecs.World) []*ecs.Component {
 	return []*ecs.Component{
 		UpsertComponent(w, ecs.NewComponentInput{
 			Name: CNTag,
@@ -74,7 +74,7 @@ func (cs *TagComponentSystem) Components(w ecs.Worlder) []*ecs.Component {
 				_, ok := data.(*Tag)
 				return ok
 			},
-			DestructorFn: func(w ecs.WorldDicter, entity ecs.Entity, data interface{}) {
+			DestructorFn: func(w *ecs.World, entity ecs.Entity, data interface{}) {
 				if t, _ := data.(*Tag); t != nil {
 					t.Dirty = false
 					t.lastTags = nil
@@ -85,7 +85,7 @@ func (cs *TagComponentSystem) Components(w ecs.Worlder) []*ecs.Component {
 	}
 }
 
-func (cs *TagComponentSystem) ExcludeComponents(w ecs.Worlder) []*ecs.Component {
+func (cs *TagComponentSystem) ExcludeComponents(w *ecs.World) []*ecs.Component {
 	return emptyCompSlice
 }
 

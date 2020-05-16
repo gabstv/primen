@@ -32,24 +32,24 @@ func (cs *TransformComponentSystem) SystemExec() SystemExecFn {
 	return TransformSystemExec
 }
 
-func (cs *TransformComponentSystem) Components(w ecs.Worlder) []*ecs.Component {
+func (cs *TransformComponentSystem) Components(w *ecs.World) []*ecs.Component {
 	return []*ecs.Component{
 		transformComponentDef(w),
 	}
 }
 
-func (cs *TransformComponentSystem) ExcludeComponents(w ecs.Worlder) []*ecs.Component {
+func (cs *TransformComponentSystem) ExcludeComponents(w *ecs.World) []*ecs.Component {
 	return emptyCompSlice
 }
 
-func transformComponentDef(w ecs.Worlder) *ecs.Component {
+func transformComponentDef(w *ecs.World) *ecs.Component {
 	return UpsertComponent(w, ecs.NewComponentInput{
 		Name: CNTransform,
 		ValidateDataFn: func(data interface{}) bool {
 			_, ok := data.(*Transform)
 			return ok
 		},
-		DestructorFn: func(_ ecs.WorldDicter, entity ecs.Entity, data interface{}) {
+		DestructorFn: func(_ *ecs.World, entity ecs.Entity, data interface{}) {
 			//sd := data.(*Transform)
 		},
 	})
@@ -98,14 +98,14 @@ func (cs *TransformSpriteComponentSystem) SystemExec() SystemExecFn {
 	return TransformSpriteSystemExec
 }
 
-func (cs *TransformSpriteComponentSystem) Components(w ecs.Worlder) []*ecs.Component {
+func (cs *TransformSpriteComponentSystem) Components(w *ecs.World) []*ecs.Component {
 	return []*ecs.Component{
 		transformComponentDef(w),
 		spriteComponentDef(w),
 	}
 }
 
-func (cs *TransformSpriteComponentSystem) ExcludeComponents(w ecs.Worlder) []*ecs.Component {
+func (cs *TransformSpriteComponentSystem) ExcludeComponents(w *ecs.World) []*ecs.Component {
 	return emptyCompSlice
 }
 

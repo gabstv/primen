@@ -72,7 +72,7 @@ var spinnercs = &tau.BasicCS{
 			tr.ScaleY = 0.7 + math.Cos(scaleadd)/4
 		}
 	},
-	GetComponents: func(w ecs.Worlder) []*ecs.Component {
+	GetComponents: func(w *ecs.World) []*ecs.Component {
 		return []*ecs.Component{
 			w.Component(tau.CNTransform),
 			tau.UpsertComponent(w, ecs.NewComponentInput{

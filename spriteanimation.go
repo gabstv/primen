@@ -54,24 +54,24 @@ func (cs *SpriteAnimationComponentSystem) SystemExec() SystemExecFn {
 	return SpriteAnimationSystemExec
 }
 
-func (cs *SpriteAnimationComponentSystem) Components(w ecs.Worlder) []*ecs.Component {
+func (cs *SpriteAnimationComponentSystem) Components(w *ecs.World) []*ecs.Component {
 	return []*ecs.Component{
 		spriteAnimationComponentDef(w),
 	}
 }
 
-func (cs *SpriteAnimationComponentSystem) ExcludeComponents(w ecs.Worlder) []*ecs.Component {
+func (cs *SpriteAnimationComponentSystem) ExcludeComponents(w *ecs.World) []*ecs.Component {
 	return emptyCompSlice
 }
 
-func spriteAnimationComponentDef(w ecs.Worlder) *ecs.Component {
+func spriteAnimationComponentDef(w *ecs.World) *ecs.Component {
 	return UpsertComponent(w, ecs.NewComponentInput{
 		Name: CNSpriteAnimation,
 		ValidateDataFn: func(data interface{}) bool {
 			_, ok := data.(*SpriteAnimation)
 			return ok
 		},
-		DestructorFn: func(_ ecs.WorldDicter, entity ecs.Entity, data interface{}) {
+		DestructorFn: func(_ *ecs.World, entity ecs.Entity, data interface{}) {
 			sd := data.(*SpriteAnimation)
 			sd.Clips = nil
 		},
@@ -241,14 +241,14 @@ func (cs *SpriteAnimationLinkComponentSystem) SystemTags() []string {
 	return []string{"draw"}
 }
 
-func (cs *SpriteAnimationLinkComponentSystem) Components(w ecs.Worlder) []*ecs.Component {
+func (cs *SpriteAnimationLinkComponentSystem) Components(w *ecs.World) []*ecs.Component {
 	return []*ecs.Component{
 		spriteAnimationComponentDef(w),
 		spriteComponentDef(w),
 	}
 }
 
-func (cs *SpriteAnimationLinkComponentSystem) ExcludeComponents(w ecs.Worlder) []*ecs.Component {
+func (cs *SpriteAnimationLinkComponentSystem) ExcludeComponents(w *ecs.World) []*ecs.Component {
 	return emptyCompSlice
 }
 

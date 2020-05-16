@@ -37,25 +37,25 @@ func (cs *RepeatSpriteComponentSystem) SystemTags() []string {
 	return []string{"draw"}
 }
 
-func (cs *RepeatSpriteComponentSystem) Components(w ecs.Worlder) []*ecs.Component {
+func (cs *RepeatSpriteComponentSystem) Components(w *ecs.World) []*ecs.Component {
 	return []*ecs.Component{
 		repeatSpriteComponentDef(w),
 		spriteComponentDef(w),
 	}
 }
 
-func (cs *RepeatSpriteComponentSystem) ExcludeComponents(w ecs.Worlder) []*ecs.Component {
+func (cs *RepeatSpriteComponentSystem) ExcludeComponents(w *ecs.World) []*ecs.Component {
 	return emptyCompSlice
 }
 
-func repeatSpriteComponentDef(w ecs.Worlder) *ecs.Component {
+func repeatSpriteComponentDef(w *ecs.World) *ecs.Component {
 	return UpsertComponent(w, ecs.NewComponentInput{
 		Name: CNRepeatSprite,
 		ValidateDataFn: func(data interface{}) bool {
 			_, ok := data.(*RepeatSprite)
 			return ok
 		},
-		DestructorFn: func(_ ecs.WorldDicter, entity ecs.Entity, data interface{}) {
+		DestructorFn: func(_ *ecs.World, entity ecs.Entity, data interface{}) {
 			//sd := data.(*RepeatSprite)
 			//sd.Options = nil
 		},

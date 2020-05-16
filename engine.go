@@ -23,15 +23,19 @@ type Engine struct {
 	dmap         Dict
 	options      EngineOptions
 	f            io.Filesystem
+	donech       chan struct{}
+	once         sync.Once
+	ready        func(e *Engine)
 }
 
 // NewEngineInput is the input data of NewEngine
 type NewEngineInput struct {
-	Width  int
-	Height int
-	Scale  float64
-	Title  string
-	FS     io.Filesystem
+	Width   int
+	Height  int
+	Scale   float64
+	Title   string
+	FS      io.Filesystem
+	OnReady func(e *Engine)
 }
 
 // EngineOptions is used to setup Ebiten @ Engine.boot
@@ -87,6 +91,8 @@ func NewEngine(v *NewEngineInput) *Engine {
 	e := &Engine{
 		options: v.Options(),
 		f:       v.FS,
+		donech:  make(chan struct{}),
+		ready:   v.OnReady,
 	}
 
 	// create the default world
@@ -159,6 +165,10 @@ func (e *Engine) Run() error {
 	return ebiten.Run(e.loop, width, height, scale, title)
 }
 
+func (e *Engine) Ready() <-chan struct{} {
+	return e.donech
+}
+
 func (e *Engine) loop(screen *ebiten.Image) error {
 	e.lock.Lock()
 	now := time.Now()
@@ -168,6 +178,13 @@ func (e *Engine) loop(screen *ebiten.Image) error {
 	worlds := e.worlds
 	e.frame++
 	e.lock.Unlock()
+
+	e.once.Do(func() {
+		close(e.donech)
+		if e.ready != nil {
+			e.ready(e)
+		}
+	})
 
 	for _, w := range worlds {
 		w.world.Set("screen", screen)

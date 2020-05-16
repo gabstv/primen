@@ -82,7 +82,7 @@ func main() {
 			Subcommands: cli.Commands{
 				cli.Command{
 					Name:      "atlas-importer",
-					ShortName: "atlasi",
+					ShortName: "ai",
 					Flags: []cli.Flag{
 						cli.StringFlag{
 							Name: "output, o",
