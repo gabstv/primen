@@ -2,7 +2,6 @@ package tau
 
 import (
 	"image/color"
-	"math"
 
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
@@ -12,7 +11,11 @@ var (
 	debugBoundsColor = color.RGBA{
 		R: 255,
 		B: 255,
-		A: 255,
+		A: 230,
+	}
+	debugPivotColor = color.RGBA{
+		R: 255,
+		A: 230,
 	}
 )
 
@@ -31,45 +34,10 @@ func colorScale(clr color.Color) (rf, gf, bf, af float64) {
 	return
 }
 
-func debugLineM(dst *ebiten.Image, srcopt *ebiten.DrawImageOptions, x1, y1, x2, y2 float64, clr color.Color) {
-	xx1, yx1 := srcopt.GeoM.Apply(x1, y1)
-	xx2, yx2 := srcopt.GeoM.Apply(x2, y2)
+func debugLineM(dst *ebiten.Image, m ebiten.GeoM, x1, y1, x2, y2 float64, clr color.Color) {
+	xx1, yx1 := m.Apply(x1, y1)
+	xx2, yx2 := m.Apply(x2, y2)
 	ebitenutil.DrawLine(dst, xx1, yx1, xx2, yx2, clr)
-}
-
-func debugLineM2(dst *ebiten.Image, srcopt *ebiten.DrawImageOptions, x1, y1, x2, y2 float64, clr color.Color) {
-	srcColor := srcopt.ColorM
-	srcGeo := srcopt.GeoM
-
-	//srcopt.GeoM.Apply(x1, y1)
-	//
-	/*
-		ew, eh := emptyImage.Size()
-		length := math.Hypot(x2-x1, y2-y1)
-
-		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Scale(length/float64(ew), 1/float64(eh))
-		op.GeoM.Rotate(math.Atan2(y2-y1, x2-x1))
-		op.GeoM.Translate(x1, y1)
-		op.ColorM.Scale(colorScale(clr))
-		// Filter must be 'nearest' filter (default).
-		// Linear filtering would make edges blurred.
-		_ = dst.DrawImage(emptyImage, op)
-	*/
-	//
-	//
-	ew, eh := debugPixel.Size()
-	length := math.Hypot(x2-x1, y2-y1)
-	mm := &ebiten.GeoM{}
-	mm.Scale(length/float64(ew), 1/float64(eh))
-	mm.Rotate(math.Atan2(y2-y1, x2-x1))
-	mm.Translate(x1, y1)
-	mm.Concat(srcGeo)
-	srcopt.GeoM = *mm
-	//srcopt.ColorM.Scale(colorScale(clr))
-	dst.DrawImage(debugPixel, srcopt)
-	srcopt.GeoM = srcGeo
-	srcopt.ColorM = srcColor
 }
 
 func init() {

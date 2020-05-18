@@ -6,6 +6,8 @@ import (
 	"math"
 	"math/rand"
 
+	"github.com/hajimehoshi/ebiten/inpututil"
+
 	"github.com/gabstv/ecs"
 	"github.com/gabstv/tau"
 	"github.com/gabstv/tau/examples/layers/res"
@@ -14,6 +16,8 @@ import (
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
+
+var movementPaused = false
 
 func main() {
 	fs := res.FS()
@@ -61,6 +65,7 @@ type OrbitalMovement struct {
 	Ox          float64
 	Oy          float64
 	R           float64
+	AngleR      float64
 	ChildSprite *graphics.Sprite
 }
 
@@ -82,15 +87,18 @@ func dogamesetup(ctx context.Context, engine *tau.Engine, bgs, fgs []*ebiten.Ima
 				}),
 				w.Component(tau.CNTransform),
 				w.Component(tau.CNDrawLayer),
-				w.Component(tau.CNSprite),
+				w.Component(tau.CNDrawable),
 			}
 		},
 		SysPriority: -3,
 		SysExec: func(ctx tau.Context) {
+			if movementPaused {
+				return
+			}
 			trc := ctx.World().Component(tau.CNTransform)
 			dlc := ctx.World().Component(tau.CNDrawLayer)
 			moc := ctx.World().Component(movecompname)
-			spc := ctx.World().Component(tau.CNSprite)
+			spc := ctx.World().Component(tau.CNDrawable)
 			dt := ctx.DT()
 			//
 			for _, match := range ctx.System().View().Matches() {
@@ -103,11 +111,12 @@ func dogamesetup(ctx context.Context, engine *tau.Engine, bgs, fgs []*ebiten.Ima
 				yy := math.Sin(movecomp.R) * movecomp.Dy
 				transform.X = movecomp.Ox + xx
 				transform.Y = movecomp.Oy + yy
-				transform.Angle += dt * (math.Pi / 4)
-				if rand.Float64() < 0.05 {
+				transform.Angle += dt * (math.Pi / 4) * movecomp.AngleR
+				if rand.Float64() < 0.001 {
 					newlayer := rand.Intn(4)
 					drawlayer.Layer = tau.LayerIndex(newlayer)
 					sprite.Image = bgs[newlayer]
+					sprite.Bounds = sprite.Image.Bounds()
 					//drawlayer.ZIndex = 1
 					movecomp.ChildSprite.TauSprite.Image = fgs[newlayer]
 					movecomp.ChildSprite.TauSprite.Bounds = fgs[newlayer].Bounds()
@@ -132,8 +141,12 @@ func dogamesetup(ctx context.Context, engine *tau.Engine, bgs, fgs []*ebiten.Ima
 			//ri := rand.Intn(4)
 			rl := rand.Intn(4)
 			bgs := graphics.NewSprite(engine.Default(), bgs[rl], tau.LayerIndex(rl), root.TauTransform)
+			bgs.TauSprite.OriginX = .5
+			bgs.TauSprite.OriginY = .5
 			fgs := graphics.NewSprite(engine.Default(), fgs[rl], tau.LayerIndex(rl), bgs.Transform)
-			fgs.Transform.Angle = -math.Pi * 0.5
+			fgs.TauSprite.OriginX = .5
+			fgs.TauSprite.OriginY = .5
+			//fgs.Transform.Angle = -math.Pi * 0.5
 			mvc := &OrbitalMovement{
 				Dx:          float64(i+1)*30 + rand.Float64()*10,
 				Dy:          float64(i+1)*30 + rand.Float64()*10,
@@ -142,6 +155,7 @@ func dogamesetup(ctx context.Context, engine *tau.Engine, bgs, fgs []*ebiten.Ima
 				Speed:       float64(5-i)/4 + rand.Float64()/4,
 				Ox:          (rand.Float64() - 0.5) * 5,
 				Oy:          (rand.Float64() - 0.5) * 5,
+				AngleR:      rand.Float64(),
 			}
 			engine.Default().AddComponentToEntity(bgs.Entity, engine.Default().Component(movecompname), mvc)
 		}
@@ -151,6 +165,14 @@ func dogamesetup(ctx context.Context, engine *tau.Engine, bgs, fgs []*ebiten.Ima
 		screen := ctx.World().Get("screen").(*ebiten.Image)
 		fps := ebiten.CurrentFPS()
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%.2f fps", fps), 0, 0)
+		ebitenutil.DebugPrintAt(screen, "d: toggle debug draw", 0, 15)
+		ebitenutil.DebugPrintAt(screen, "p: toggle pause", 0, 30)
+		if inpututil.IsKeyJustPressed(ebiten.KeyD) {
+			tau.DebugDraw = !tau.DebugDraw
+		}
+		if inpututil.IsKeyJustPressed(ebiten.KeyP) {
+			movementPaused = !movementPaused
+		}
 	})
 	s0.AddTag(tau.WorldTagDraw)
 

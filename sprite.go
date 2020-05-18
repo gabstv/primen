@@ -76,6 +76,7 @@ func (s *Sprite) Draw(screen *ebiten.Image, opt *ebiten.DrawImageOptions) {
 	xxg := &ebiten.GeoM{}
 	xxg.Translate(applyOrigin(s.imageWidth, s.OriginX), applyOrigin(s.imageHeight, s.OriginY))
 	xxg.Concat(opt.GeoM)
+	centerM := opt.GeoM
 	opt.GeoM = *xxg
 
 	if s.lastSubImage != nil {
@@ -88,10 +89,12 @@ func (s *Sprite) Draw(screen *ebiten.Image, opt *ebiten.DrawImageOptions) {
 		x1, y1 := x0+s.imageWidth, y0
 		x2, y2 := x1, y1+s.imageHeight
 		x3, y3 := x2-s.imageWidth, y2
-		debugLineM(screen, opt, x0, y0, x1, y1, debugBoundsColor)
-		debugLineM(screen, opt, x1, y1, x2, y2, debugBoundsColor)
-		debugLineM(screen, opt, x2, y2, x3, y3, debugBoundsColor)
-		debugLineM(screen, opt, x3, y3, x0, y0, debugBoundsColor)
+		debugLineM(screen, opt.GeoM, x0, y0, x1, y1, debugBoundsColor)
+		debugLineM(screen, opt.GeoM, x1, y1, x2, y2, debugBoundsColor)
+		debugLineM(screen, opt.GeoM, x2, y2, x3, y3, debugBoundsColor)
+		debugLineM(screen, opt.GeoM, x3, y3, x0, y0, debugBoundsColor)
+		debugLineM(screen, centerM, -4, 0, 4, 0, debugPivotColor)
+		debugLineM(screen, centerM, 0, -4, 0, 4, debugPivotColor)
 	}
 	opt.GeoM = prevGeo
 	s.customMatrix = false
