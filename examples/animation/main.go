@@ -25,8 +25,10 @@ func main() {
 		Scale:  1,
 	})
 
+	tau.DebugDraw = true
+
 	dw := engine.Default()
-	sc := dw.Component(tau.CNSprite)
+	sc := dw.Component(tau.CNDrawable)
 	ac := dw.Component(tau.CNSpriteAnimation)
 	createCharacter(dw, sc, ac, ebimg)
 	createPingPonger(dw, sc, ac, ppimg)

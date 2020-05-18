@@ -95,8 +95,10 @@ func main() {
 		Scale:  2,
 	})
 
+	tau.DebugDraw = true
+
 	dw := engine.Default()
-	sc := dw.Component(tau.CNSprite)
+	sc := dw.Component(tau.CNDrawable)
 	tc := dw.Component(tau.CNTransform)
 	spinnercomp := spinnercs.Components(dw)[1]
 	e := dw.NewEntity()
@@ -124,10 +126,12 @@ func main() {
 		})
 		ri := randomsprites[rand.Intn(4)]
 		dw.AddComponentToEntity(e2, sc, &tau.Sprite{
-			Bounds: image.Rect(ri[0], ri[1], ri[2], ri[3]),
-			Image:  ebimg,
-			ScaleX: 1,
-			ScaleY: 1,
+			Bounds:  image.Rect(ri[0], ri[1], ri[2], ri[3]),
+			Image:   ebimg,
+			ScaleX:  1,
+			ScaleY:  1,
+			OriginX: 0.5,
+			OriginY: 0.5,
 		})
 	}
 	tau.SetupSystem(dw, spinnercs)

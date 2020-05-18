@@ -1,6 +1,8 @@
 package tau
 
 import (
+	"image"
+
 	"github.com/gabstv/ecs"
 	"github.com/hajimehoshi/ebiten"
 )
@@ -19,6 +21,7 @@ type Drawable interface {
 	IsDisabled() bool
 	Size() (w, h float64)
 	SetTransformMatrix(m ebiten.GeoM)
+	SetBounds(b image.Rectangle)
 }
 
 const (
@@ -178,11 +181,14 @@ func drawLayerDrawableSystemExec(ctx Context) {
 			if cache.Drawable == nil {
 				cache.Drawable = dwgetter.Data(key).(Drawable)
 			}
+			cache.Drawable.Update(ctx)
+			if cache.Drawable.IsDisabled() {
+				return true
+			}
 			opt := cache.Drawable.DrawImageOptions()
 			if opt == nil {
 				opt = defaultopts
 			}
-			cache.Drawable.Update(ctx)
 			cache.Drawable.Draw(screen, opt)
 			return true
 		})

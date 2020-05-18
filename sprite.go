@@ -105,6 +105,10 @@ func (s *Sprite) SetTransformMatrix(m ebiten.GeoM) {
 	s.customMatrix = true
 }
 
+func (s *Sprite) SetBounds(b image.Rectangle) {
+	s.Bounds = b
+}
+
 func (s *Sprite) Destroy() {
 	s.Image = nil
 	s.Options = nil

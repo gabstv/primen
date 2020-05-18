@@ -262,11 +262,11 @@ func SpriteAnimationLinkSystemExec(ctx Context) {
 	spritecomp := world.Component(CNDrawable)
 	for _, m := range matches {
 		spranim := m.Components[spriteanimcomp].(*SpriteAnimation)
-		spr := m.Components[spritecomp].(*Sprite)
+		spr := m.Components[spritecomp].(Drawable)
 		if !spranim.Enabled {
 			continue
 		}
-		spr.Bounds = spranim.Clips[spranim.ActiveClip].Frames[spranim.ActiveFrame]
+		spr.SetBounds(spranim.Clips[spranim.ActiveClip].Frames[spranim.ActiveFrame])
 	}
 }
 
