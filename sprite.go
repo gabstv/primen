@@ -142,14 +142,14 @@ func (s *Sprite) Draw(screen *ebiten.Image, opt *ebiten.DrawImageOptions) {
 	xxg.Translate(applyOrigin(s.imageWidth, s.OriginX), applyOrigin(s.imageHeight, s.OriginY))
 	xxg.Concat(opt.GeoM)
 	opt.GeoM = *xxg
-	//opt.GeoM.Translate(applyOrigin(s.imageWidth, s.OriginX), applyOrigin(s.imageHeight, s.OriginY))
+
 	if s.lastSubImage != nil {
 		screen.DrawImage(s.lastSubImage, opt)
 	} else {
 		screen.DrawImage(s.Image, opt)
 	}
 	if DebugDraw {
-		x0, y0 := 0.0, 0.0 //applyOrigin(s.imageWidth, s.OriginX), applyOrigin(s.imageHeight, s.OriginY)
+		x0, y0 := 0.0, 0.0
 		x1, y1 := x0+s.imageWidth, y0
 		x2, y2 := x1, y1+s.imageHeight
 		x3, y3 := x2-s.imageWidth, y2
@@ -196,68 +196,3 @@ func (s *Sprite) GetPrecomputedImage() *ebiten.Image {
 func (s *Sprite) GetPrecomputedImageDim() (width, height float64) {
 	return s.imageWidth, s.imageHeight
 }
-
-/*
-func drawSprite(screen *ebiten.Image, spriteComp *ecs.Component, sprite *Sprite, opt *ebiten.DrawImageOptions) {
-	if sprite.lastImage != sprite.Image {
-		w, h := sprite.Image.Size()
-		sprite.imageWidth = float64(w)
-		sprite.imageHeight = float64(h)
-		sprite.lastImage = sprite.Image
-		// redo subimage
-		sprite.lastBounds = image.Rect(0, 0, 0, 0)
-		sprite.imageBounds = sprite.Image.Bounds()
-	}
-	if sprite.lastBounds != sprite.Bounds {
-		sprite.lastBounds = sprite.Bounds
-		if sprite.imageBounds.Min.Eq(sprite.Bounds.Min) && sprite.imageBounds.Max.Eq(sprite.Bounds.Max) {
-			sprite.imageWidth = float64(sprite.Bounds.Dx())
-			sprite.imageHeight = float64(sprite.Bounds.Dy())
-			sprite.lastSubImage = nil
-		} else {
-			sprite.lastSubImage = sprite.Image.SubImage(sprite.lastBounds).(*ebiten.Image)
-			w, h := sprite.lastSubImage.Size()
-			sprite.imageWidth = float64(w)
-			sprite.imageHeight = float64(h)
-		}
-	}
-	if sprite.DrawDisabled {
-		return
-	}
-	hw, hh := sprite.imageWidth/2, sprite.imageHeight/2
-	opt.GeoM.Reset()
-	opt.GeoM.Translate(-hw+sprite.OriginX*sprite.imageWidth*-1, -hh+sprite.OriginY*sprite.imageHeight*-1)
-	opt.GeoM.Scale(sprite.ScaleX, sprite.ScaleY)
-	opt.GeoM.Rotate(sprite.Angle)
-	opt.GeoM.Translate(hw, hh)
-	opt.GeoM.Translate(sprite.X, sprite.Y)
-	if sprite.lastSubImage != nil {
-		screen.DrawImage(sprite.lastSubImage, opt)
-	} else {
-		screen.DrawImage(sprite.Image, opt)
-	}
-}
-
-// SpriteSystemExec is the main function of the SpriteSystem
-func SpriteSystemExec(ctx Context) {
-	screen := ctx.Screen()
-	// dt float64, v *ecs.View, s *ecs.System
-	v := ctx.System().View()
-	world := v.World()
-	matches := v.Matches()
-	spritecomp := ctx.World().Component(CNSprite)
-	defaultopts := world.Get(DefaultImageOptions).(*ebiten.DrawImageOptions)
-	for _, m := range matches {
-		sprite := m.Components[spritecomp].(*Sprite)
-		opt := sprite.Options
-		if opt == nil {
-			opt = defaultopts
-		}
-		drawSprite(screen, spritecomp, sprite, opt)
-	}
-}
-
-func init() {
-	RegisterComponentSystem(&SpriteComponentSystem{})
-}
-*/
