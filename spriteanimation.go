@@ -244,7 +244,7 @@ func (cs *SpriteAnimationLinkComponentSystem) SystemTags() []string {
 func (cs *SpriteAnimationLinkComponentSystem) Components(w *ecs.World) []*ecs.Component {
 	return []*ecs.Component{
 		spriteAnimationComponentDef(w),
-		spriteComponentDef(w),
+		drawableComponentDef(w),
 	}
 }
 
@@ -259,7 +259,7 @@ func SpriteAnimationLinkSystemExec(ctx Context) {
 	world := ctx.World()
 	matches := v.Matches()
 	spriteanimcomp := world.Component(CNSpriteAnimation)
-	spritecomp := world.Component(CNSprite)
+	spritecomp := world.Component(CNDrawable)
 	for _, m := range matches {
 		spranim := m.Components[spriteanimcomp].(*SpriteAnimation)
 		spr := m.Components[spritecomp].(*Sprite)

@@ -438,3 +438,9 @@ func nonzeroval(vals ...float64) float64 {
 	}
 	return 0
 }
+
+//
+
+func applyOrigin(length, origin float64) float64 {
+	return length * (-origin)
+}

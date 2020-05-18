@@ -1,6 +1,6 @@
 package tau
 
-import (
+/*import (
 	"github.com/gabstv/ecs"
 	"github.com/hajimehoshi/ebiten"
 )
@@ -125,3 +125,4 @@ func anyDrawImageOptions(a ...*ebiten.DrawImageOptions) *ebiten.DrawImageOptions
 func init() {
 	RegisterComponentSystem(&RepeatSpriteComponentSystem{})
 }
+*/

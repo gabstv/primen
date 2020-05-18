@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/gabstv/ecs"
-	"github.com/hajimehoshi/ebiten"
 )
 
 const (
@@ -64,8 +63,8 @@ type drawLayerDrawer struct {
 }
 
 type drawLayerItemCache struct {
-	ZIndex int64
-	Sprite *Sprite
+	ZIndex   int64
+	Drawable Drawable
 }
 
 func (c *drawLayerItemCache) Less(v interface{}) bool {
@@ -253,68 +252,6 @@ func DrawLayerSystemExec(ctx Context) {
 	}
 }
 
-//
-//
-//
-
-type DrawLayerSpriteComponentSystem struct {
-	BaseComponentSystem
-}
-
-func (cs *DrawLayerSpriteComponentSystem) SystemName() string {
-	return SNDrawLayerSprite
-}
-
-func (cs *DrawLayerSpriteComponentSystem) SystemPriority() int {
-	return -9
-}
-
-func (cs *DrawLayerSpriteComponentSystem) SystemInit() SystemInitFn {
-	return func(w *ecs.World, sys *ecs.System) {
-		sys.View().SetOnEntityAdded(func(e ecs.Entity, w *ecs.World) {
-
-		})
-		sys.View().SetOnEntityRemoved(func(e ecs.Entity, w *ecs.World) {
-
-		})
-	}
-}
-
-func (cs *DrawLayerSpriteComponentSystem) SystemExec() SystemExecFn {
-	return DrawLayerSpriteSystemExec
-}
-
-func (cs *DrawLayerSpriteComponentSystem) Components(w *ecs.World) []*ecs.Component {
-	return []*ecs.Component{
-		drawLayerComponentDef(w),
-		spriteComponentDef(w),
-	}
-}
-
-// DrawLayerSpriteSystemExec is the main function of the DrawLayerSystem
-func DrawLayerSpriteSystemExec(ctx Context) {
-	world := ctx.World()
-	screen := ctx.Screen()
-	layers := world.System(SNDrawLayer).Get("layers").(*drawLayerDrawers).All()
-	spritec := world.Component(CNSprite)
-	defaultopts := world.Get(DefaultImageOptions).(*ebiten.DrawImageOptions)
-	for _, layer := range layers {
-		layer.Items.Each(func(key ecs.Entity, value SLVal) bool {
-			cache := value.(*drawLayerItemCache)
-			if cache.Sprite == nil {
-				cache.Sprite = spritec.Data(key).(*Sprite)
-			}
-			opt := cache.Sprite.Options
-			if opt == nil {
-				opt = defaultopts
-			}
-			drawSprite(screen, spritec, cache.Sprite, opt)
-			return true
-		})
-	}
-}
-
 func init() {
 	RegisterComponentSystem(&DrawLayerComponentSystem{})
-	RegisterComponentSystem(&DrawLayerSpriteComponentSystem{})
 }

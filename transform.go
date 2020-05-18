@@ -2,6 +2,7 @@ package tau
 
 import (
 	"github.com/gabstv/ecs"
+	"github.com/hajimehoshi/ebiten"
 )
 
 const (
@@ -64,14 +65,11 @@ type Transform struct {
 	ScaleX float64
 	ScaleY float64
 
-	// calculated transform matrix
-	M Matrix
-
 	// priv
-	lastTick     uint64
-	globalAngle  float64
-	globalScaleX float64
-	globalScaleY float64
+	lastTick uint64
+	// calculated transform matrix (Ebiten)
+	m      ebiten.GeoM
+	mAngle float64
 }
 
 // NewTransform returns a new transform with ScaleX = 1 and ScaleY = 1
@@ -82,30 +80,30 @@ func NewTransform() *Transform {
 	}
 }
 
-type TransformSpriteComponentSystem struct {
+type TransformDrawableComponentSystem struct {
 	BaseComponentSystem
 }
 
-func (cs *TransformSpriteComponentSystem) SystemName() string {
+func (cs *TransformDrawableComponentSystem) SystemName() string {
 	return SNTransformSprite
 }
 
-func (cs *TransformSpriteComponentSystem) SystemPriority() int {
+func (cs *TransformDrawableComponentSystem) SystemPriority() int {
 	return -6
 }
 
-func (cs *TransformSpriteComponentSystem) SystemExec() SystemExecFn {
+func (cs *TransformDrawableComponentSystem) SystemExec() SystemExecFn {
 	return TransformSpriteSystemExec
 }
 
-func (cs *TransformSpriteComponentSystem) Components(w *ecs.World) []*ecs.Component {
+func (cs *TransformDrawableComponentSystem) Components(w *ecs.World) []*ecs.Component {
 	return []*ecs.Component{
 		transformComponentDef(w),
-		spriteComponentDef(w),
+		drawableComponentDef(w),
 	}
 }
 
-func (cs *TransformSpriteComponentSystem) ExcludeComponents(w *ecs.World) []*ecs.Component {
+func (cs *TransformDrawableComponentSystem) ExcludeComponents(w *ecs.World) []*ecs.Component {
 	return emptyCompSlice
 }
 
@@ -122,7 +120,7 @@ func TransformSystemExec(ctx Context) {
 	transformcomp := ctx.World().Component(CNTransform)
 	for _, m := range matches {
 		t := m.Components[transformcomp].(*Transform)
-		resolveTransform(t, tick)
+		_ = resolveTransformM2(t, tick)
 	}
 }
 
@@ -131,45 +129,62 @@ func TransformSpriteSystemExec(ctx Context) {
 	// dt float64, v *ecs.View, s *ecs.System
 	v := ctx.System().View()
 	matches := v.Matches()
-	transformcomp := ctx.World().Component(CNTransform)
-	spritecomp := ctx.World().Component(CNSprite)
+	transformgetter := ctx.World().Component(CNTransform)
+	drawablegetter := ctx.World().Component(CNDrawable)
 	for _, m := range matches {
-		t := m.Components[transformcomp].(*Transform)
+		t := m.Components[transformgetter].(*Transform)
 		// transform is already resolved because the TransformSystem executed first
-		s := m.Components[spritecomp].(*Sprite)
-		vvec := t.M.Project(ZV)
-		s.X = vvec.X
-		s.Y = vvec.Y
-		s.Angle = t.globalAngle
-		s.ScaleX = t.globalScaleX
-		s.ScaleY = t.globalScaleY
-		//TODO: convert pixel matrix to ebiten matrix (and use it for scale/skew)
+		d := m.Components[drawablegetter].(Drawable)
+		d.SetTransformMatrix(t.m)
 	}
 }
 
-func resolveTransform(t *Transform, tick uint64) {
-	if t.Parent != nil && t.Parent.lastTick != tick {
-		resolveTransform(t.Parent, tick)
+func resolveTransformM2(t *Transform, tick uint64) ebiten.GeoM {
+	if t == nil {
+		return ebiten.GeoM{}
 	}
-	parentAngle := float64(0)
-	parentScaleX := float64(1)
-	parentScaleY := float64(1)
-	localAngle := t.Angle
-	parentMatrix := IM
-	if t.Parent != nil {
-		parentAngle = t.Parent.globalAngle
-		parentScaleX = t.Parent.globalScaleX
-		parentScaleY = t.Parent.globalScaleY
-		parentMatrix = t.Parent.M
+	if t.lastTick == tick {
+		return t.m
 	}
-	t.M = IM.ScaledXY(ZV, V(t.ScaleX, t.ScaleY)).Rotated(ZV, localAngle).Moved(V(t.X, t.Y)).Chained(parentMatrix)
-	t.globalAngle = parentAngle + localAngle
-	t.globalScaleX = parentScaleX * t.ScaleX
-	t.globalScaleY = parentScaleY * t.ScaleY
+
+	parent := resolveTransformM2(t.Parent, tick)
+	xb := &ebiten.GeoM{}
+
+	xb.Scale(t.ScaleX, t.ScaleY)
+	xb.Rotate(t.Angle)
+	xb.Translate(t.X, t.Y)
+	xb.Concat(parent)
+	t.m = *xb
 	t.lastTick = tick
+	//t.mAngle = pangle + t.Angle
+	return t.m
+}
+func resolveTransformM(t *Transform, tick uint64) (ebiten.GeoM, float64) {
+	if t == nil {
+		return ebiten.GeoM{}, 0
+	}
+	if t.lastTick == tick {
+		return t.m, t.mAngle
+	}
+
+	base, pangle := resolveTransformM(t.Parent, tick)
+	xb := &base
+
+	xb.Rotate(pangle)
+	// gx, gy := xb.Element(0, 2), xb.Element(1, 2)
+	// xb.SetElement(0, 2, 0)
+	// xb.SetElement(1, 2, 0)
+	xb.Scale(t.ScaleX, t.ScaleY)
+	xb.Rotate(t.Angle)
+	// xb.Translate(gx+t.X, gy+t.Y)
+	xb.Translate(t.X, t.Y)
+	t.m = *xb
+	t.lastTick = tick
+	t.mAngle = pangle + t.Angle
+	return t.m, t.mAngle
 }
 
 func init() {
 	RegisterComponentSystem(&TransformComponentSystem{})
-	RegisterComponentSystem(&TransformSpriteComponentSystem{})
+	RegisterComponentSystem(&TransformDrawableComponentSystem{})
 }

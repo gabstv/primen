@@ -3,15 +3,10 @@ package tau
 import (
 	"image"
 
-	"github.com/gabstv/ecs"
 	"github.com/hajimehoshi/ebiten"
 )
 
-const (
-	// DefaultImageOptions key passed to the default world (&ebiten.DrawImageOptions{})
-	DefaultImageOptions string = "default_image_options"
-)
-
+/*
 const (
 	SNSprite = "tau.SpriteSystem"
 	CNSprite = "tau.SpriteComponent"
@@ -74,7 +69,7 @@ func spriteComponentDef(w *ecs.World) *ecs.Component {
 
 func (cs *SpriteComponentSystem) SystemTags() []string {
 	return []string{"draw"}
-}
+}*/
 
 // Sprite is the data of a sprite component.
 type Sprite struct {
@@ -101,6 +96,92 @@ type Sprite struct {
 	imageBounds  image.Rectangle
 	lastBounds   image.Rectangle
 	lastSubImage *ebiten.Image
+	//
+	transformMatrix ebiten.GeoM
+	customMatrix    bool
+}
+
+func (s *Sprite) Update(ctx Context) {
+	if s.lastImage != s.Image {
+		w, h := s.Image.Size()
+		s.imageWidth = float64(w)
+		s.imageHeight = float64(h)
+		s.lastImage = s.Image
+		// redo subimage
+		s.lastBounds = image.Rect(0, 0, 0, 0)
+		s.imageBounds = s.Image.Bounds()
+	}
+	if s.lastBounds != s.Bounds {
+		s.lastBounds = s.Bounds
+		if s.imageBounds.Min.Eq(s.Bounds.Min) && s.imageBounds.Max.Eq(s.Bounds.Max) {
+			s.imageWidth = float64(s.Bounds.Dx())
+			s.imageHeight = float64(s.Bounds.Dy())
+			s.lastSubImage = nil
+		} else {
+			s.lastSubImage = s.Image.SubImage(s.lastBounds).(*ebiten.Image)
+			w, h := s.lastSubImage.Size()
+			s.imageWidth = float64(w)
+			s.imageHeight = float64(h)
+		}
+	}
+}
+
+func (s *Sprite) Draw(screen *ebiten.Image, opt *ebiten.DrawImageOptions) {
+	if s.DrawDisabled {
+		return
+	}
+	prevGeo := opt.GeoM
+	if s.customMatrix {
+		opt.GeoM = s.transformMatrix
+	} else {
+		opt.GeoM.Scale(s.ScaleX, s.ScaleY)
+		opt.GeoM.Rotate(s.Angle)
+		opt.GeoM.Translate(s.X, s.Y)
+	}
+	xxg := &ebiten.GeoM{}
+	xxg.Translate(applyOrigin(s.imageWidth, s.OriginX), applyOrigin(s.imageHeight, s.OriginY))
+	xxg.Concat(opt.GeoM)
+	opt.GeoM = *xxg
+	//opt.GeoM.Translate(applyOrigin(s.imageWidth, s.OriginX), applyOrigin(s.imageHeight, s.OriginY))
+	if s.lastSubImage != nil {
+		screen.DrawImage(s.lastSubImage, opt)
+	} else {
+		screen.DrawImage(s.Image, opt)
+	}
+	if DebugDraw {
+		x0, y0 := 0.0, 0.0 //applyOrigin(s.imageWidth, s.OriginX), applyOrigin(s.imageHeight, s.OriginY)
+		x1, y1 := x0+s.imageWidth, y0
+		x2, y2 := x1, y1+s.imageHeight
+		x3, y3 := x2-s.imageWidth, y2
+		debugLineM(screen, opt, x0, y0, x1, y1, debugBoundsColor)
+		debugLineM(screen, opt, x1, y1, x2, y2, debugBoundsColor)
+		debugLineM(screen, opt, x2, y2, x3, y3, debugBoundsColor)
+		debugLineM(screen, opt, x3, y3, x0, y0, debugBoundsColor)
+	}
+	opt.GeoM = prevGeo
+	s.customMatrix = false
+}
+
+func (s *Sprite) SetTransformMatrix(m ebiten.GeoM) {
+	s.transformMatrix = m
+	s.customMatrix = true
+}
+
+func (s *Sprite) Destroy() {
+	s.Image = nil
+	s.Options = nil
+}
+
+func (s *Sprite) DrawImageOptions() *ebiten.DrawImageOptions {
+	return s.Options
+}
+
+func (s *Sprite) IsDisabled() bool {
+	return s.DrawDisabled
+}
+
+func (s *Sprite) Size() (w, h float64) {
+	return s.imageWidth, s.imageHeight
 }
 
 // GetPrecomputedImage returns the last precomputed image
@@ -116,6 +197,7 @@ func (s *Sprite) GetPrecomputedImageDim() (width, height float64) {
 	return s.imageWidth, s.imageHeight
 }
 
+/*
 func drawSprite(screen *ebiten.Image, spriteComp *ecs.Component, sprite *Sprite, opt *ebiten.DrawImageOptions) {
 	if sprite.lastImage != sprite.Image {
 		w, h := sprite.Image.Size()
@@ -178,3 +260,4 @@ func SpriteSystemExec(ctx Context) {
 func init() {
 	RegisterComponentSystem(&SpriteComponentSystem{})
 }
+*/

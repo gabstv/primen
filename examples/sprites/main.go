@@ -14,7 +14,7 @@ import (
 var anglecs = &tau.BasicCS{
 	SysName: "anglecs",
 	SysExec: func(ctx tau.Context) {
-		sc := ctx.World().Component(tau.CNSprite)
+		sc := ctx.World().Component(tau.CNDrawable)
 		matches := ctx.System().View().Matches()
 		dt := ctx.DT()
 		for _, m := range matches {
@@ -24,7 +24,7 @@ var anglecs = &tau.BasicCS{
 	},
 	GetComponents: func(w *ecs.World) []*ecs.Component {
 		return []*ecs.Component{
-			w.Component(tau.CNSprite),
+			w.Component(tau.CNDrawable),
 		}
 	},
 }
@@ -43,16 +43,18 @@ func main() {
 	})
 
 	dw := engine.Default()
-	sc := dw.Component(tau.CNSprite)
+	sc := dw.Component(tau.CNDrawable)
 	e := dw.NewEntity()
 	dw.AddComponentToEntity(e, sc, &tau.Sprite{
-		Image:  ebimg,
-		X:      64,
-		Y:      64,
-		Angle:  math.Pi / 2,
-		ScaleX: 1,
-		ScaleY: 1,
-		Bounds: image.Rect(0, 0, 16, 16),
+		Image:   ebimg,
+		X:       64,
+		Y:       64,
+		Angle:   math.Pi / 2,
+		ScaleX:  1,
+		ScaleY:  1,
+		OriginX: 0.5,
+		OriginY: 0.5,
+		Bounds:  image.Rect(0, 0, 16, 16),
 	})
 	e2 := dw.NewEntity()
 	dw.AddComponentToEntity(e2, sc, &tau.Sprite{
@@ -62,8 +64,8 @@ func main() {
 		Angle:   0,
 		ScaleX:  2,
 		ScaleY:  2,
-		OriginX: -.5,
-		OriginY: -.5,
+		OriginX: 0,
+		OriginY: 0,
 		Bounds:  image.Rect(16, 16, 32, 32),
 	})
 

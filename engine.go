@@ -13,6 +13,11 @@ import (
 	"github.com/hajimehoshi/ebiten"
 )
 
+var (
+	// DebugDraw enables to see debug lines and stats
+	DebugDraw = false
+)
+
 // Engine is what controls the ECS of tau.
 type Engine struct {
 	lock         sync.Mutex

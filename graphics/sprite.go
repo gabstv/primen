@@ -31,7 +31,7 @@ func NewSprite(w *ecs.World, im *ebiten.Image, layer tau.LayerIndex, parent *tau
 		ScaleX: 1,
 		ScaleY: 1,
 	}
-	if err := w.AddComponentToEntity(spr.Entity, w.Component(tau.CNSprite), spr.TauSprite); err != nil {
+	if err := w.AddComponentToEntity(spr.Entity, w.Component(tau.CNDrawable), spr.TauSprite); err != nil {
 		panic(err)
 	}
 	if err := w.AddComponentToEntity(spr.Entity, w.Component(tau.CNDrawLayer), spr.DrawLayer); err != nil {
