@@ -6,18 +6,18 @@ import (
 	"math"
 	"math/rand"
 
-	"github.com/hajimehoshi/ebiten/inpututil"
-
 	"github.com/gabstv/ecs"
 	"github.com/gabstv/tau"
+	"github.com/gabstv/tau/core"
 	"github.com/gabstv/tau/examples/layers/res"
-	"github.com/gabstv/tau/graphics"
 	"github.com/gabstv/tau/io"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
+	"github.com/hajimehoshi/ebiten/inpututil"
 )
 
 var movementPaused = false
+var xframes = make(chan struct{}, 30)
 
 func main() {
 	fs := res.FS()
@@ -66,7 +66,7 @@ type OrbitalMovement struct {
 	Oy          float64
 	R           float64
 	AngleR      float64
-	ChildSprite *graphics.Sprite
+	ChildSprite *tau.Sprite
 }
 
 func dogamesetup(ctx context.Context, engine *tau.Engine, bgs, fgs []*ebiten.Image) {
@@ -78,33 +78,38 @@ func dogamesetup(ctx context.Context, engine *tau.Engine, bgs, fgs []*ebiten.Ima
 
 	movecompname := "__movement_comp"
 
-	movecs := &tau.BasicCS{
+	movecs := &core.BasicCS{
 		SysName: "__movement_system",
 		GetComponents: func(w *ecs.World) []*ecs.Component {
 			return []*ecs.Component{
-				tau.UpsertComponent(w, ecs.NewComponentInput{
+				core.UpsertComponent(w, ecs.NewComponentInput{
 					Name: movecompname,
 				}),
-				w.Component(tau.CNTransform),
-				w.Component(tau.CNDrawLayer),
-				w.Component(tau.CNDrawable),
+				w.Component(core.CNTransform),
+				w.Component(core.CNDrawLayer),
+				w.Component(core.CNDrawable),
 			}
 		},
 		SysPriority: -3,
-		SysExec: func(ctx tau.Context) {
+		SysExec: func(ctx core.Context) {
 			if movementPaused {
-				return
+				select {
+				case <-xframes:
+					// exec a frame
+				default:
+					return
+				}
 			}
-			trc := ctx.World().Component(tau.CNTransform)
-			dlc := ctx.World().Component(tau.CNDrawLayer)
+			trc := ctx.World().Component(core.CNTransform)
+			dlc := ctx.World().Component(core.CNDrawLayer)
 			moc := ctx.World().Component(movecompname)
-			spc := ctx.World().Component(tau.CNDrawable)
+			spc := ctx.World().Component(core.CNDrawable)
 			dt := ctx.DT()
 			//
 			for _, match := range ctx.System().View().Matches() {
-				sprite := match.Components[spc].(*tau.Sprite)
-				transform := match.Components[trc].(*tau.Transform)
-				drawlayer := match.Components[dlc].(*tau.DrawLayer)
+				sprite := match.Components[spc].(*core.Sprite)
+				transform := match.Components[trc].(*core.Transform)
+				drawlayer := match.Components[dlc].(*core.DrawLayer)
 				movecomp := match.Components[moc].(*OrbitalMovement)
 				movecomp.R += movecomp.Speed * dt
 				xx := math.Cos(movecomp.R) * movecomp.Dx
@@ -114,13 +119,13 @@ func dogamesetup(ctx context.Context, engine *tau.Engine, bgs, fgs []*ebiten.Ima
 				transform.Angle += dt * (math.Pi / 4) * movecomp.AngleR
 				if rand.Float64() < 0.001 {
 					newlayer := rand.Intn(4)
-					drawlayer.Layer = tau.LayerIndex(newlayer)
+					drawlayer.Layer = core.LayerIndex(newlayer)
 					sprite.Image = bgs[newlayer]
 					sprite.Bounds = sprite.Image.Bounds()
 					//drawlayer.ZIndex = 1
 					movecomp.ChildSprite.TauSprite.Image = fgs[newlayer]
 					movecomp.ChildSprite.TauSprite.Bounds = fgs[newlayer].Bounds()
-					movecomp.ChildSprite.DrawLayer.Layer = tau.LayerIndex(newlayer)
+					movecomp.ChildSprite.DrawLayer.Layer = core.LayerIndex(newlayer)
 					//movecomp.ChildSprite.OriginX
 				}
 			}
@@ -128,11 +133,11 @@ func dogamesetup(ctx context.Context, engine *tau.Engine, bgs, fgs []*ebiten.Ima
 	}
 	//
 	_ = movecs.Components(engine.Default())
-	tau.SetupSystem(engine.Default(), movecs)
+	core.SetupSystem(engine.Default(), movecs)
 
 	rand.Seed(112358)
 
-	root := graphics.NewTransform(engine.Default(), nil)
+	root := tau.NewTransform(engine.Default(), nil)
 	root.TauTransform.X = 320 / 2
 	root.TauTransform.Y = 240 / 2
 
@@ -140,10 +145,10 @@ func dogamesetup(ctx context.Context, engine *tau.Engine, bgs, fgs []*ebiten.Ima
 		for j := 0; j < 20; j++ {
 			//ri := rand.Intn(4)
 			rl := rand.Intn(4)
-			bgs := graphics.NewSprite(engine.Default(), bgs[rl], tau.LayerIndex(rl), root.TauTransform)
+			bgs := tau.NewSprite(engine.Default(), bgs[rl], core.LayerIndex(rl), root.TauTransform)
 			bgs.TauSprite.OriginX = .5
 			bgs.TauSprite.OriginY = .5
-			fgs := graphics.NewSprite(engine.Default(), fgs[rl], tau.LayerIndex(rl), bgs.Transform)
+			fgs := tau.NewSprite(engine.Default(), fgs[rl], core.LayerIndex(rl), bgs.Transform)
 			fgs.TauSprite.OriginX = .5
 			fgs.TauSprite.OriginY = .5
 			//fgs.Transform.Angle = -math.Pi * 0.5
@@ -168,10 +173,13 @@ func dogamesetup(ctx context.Context, engine *tau.Engine, bgs, fgs []*ebiten.Ima
 		ebitenutil.DebugPrintAt(screen, "d: toggle debug draw", 0, 15)
 		ebitenutil.DebugPrintAt(screen, "p: toggle pause", 0, 30)
 		if inpututil.IsKeyJustPressed(ebiten.KeyD) {
-			tau.DebugDraw = !tau.DebugDraw
+			core.DebugDraw = !core.DebugDraw
 		}
 		if inpututil.IsKeyJustPressed(ebiten.KeyP) {
 			movementPaused = !movementPaused
+		}
+		if inpututil.IsKeyJustPressed(ebiten.KeyN) && movementPaused {
+			xframes <- struct{}{}
 		}
 	})
 	s0.AddTag(tau.WorldTagDraw)

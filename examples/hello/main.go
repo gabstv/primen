@@ -3,24 +3,25 @@ package main
 import (
 	"github.com/gabstv/ecs"
 	"github.com/gabstv/tau"
+	"github.com/gabstv/tau/core"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
 
 var engine *tau.Engine
 
 func hellocomp(w *ecs.World) *ecs.Component {
-	return tau.UpsertComponent(w, ecs.NewComponentInput{
+	return core.UpsertComponent(w, ecs.NewComponentInput{
 		Name: "hellocs_comp",
 	})
 }
 
 func movecomp(w *ecs.World) *ecs.Component {
-	return tau.UpsertComponent(w, ecs.NewComponentInput{
+	return core.UpsertComponent(w, ecs.NewComponentInput{
 		Name: "movecs_comp",
 	})
 }
 
-var hellocs = &tau.BasicCS{
+var hellocs = &core.BasicCS{
 	SysName: "hellocs_system",
 	SysExec: initEngineSystemExec,
 	SysTags: []string{tau.WorldTagDraw},
@@ -31,7 +32,7 @@ var hellocs = &tau.BasicCS{
 	},
 }
 
-var movecs = &tau.BasicCS{
+var movecs = &core.BasicCS{
 	SysName: "movecs_system",
 	SysExec: moveSysExec,
 	SysTags: []string{tau.WorldTagUpdate},
@@ -54,8 +55,8 @@ func main() {
 	})
 	// add components and systems
 	world := engine.Default()
-	tau.SetupSystem(world, hellocs)
-	tau.SetupSystem(world, movecs)
+	core.SetupSystem(world, hellocs)
+	core.SetupSystem(world, movecs)
 
 	entity0 := world.NewEntity()
 	world.AddComponentToEntity(entity0, hellocomp(world), &initEngineData{"Hello,", 30, 40})
@@ -82,7 +83,7 @@ type moveCompData struct {
 	YSum   float64
 }
 
-func initEngineSystemExec(ctx tau.Context) {
+func initEngineSystemExec(ctx core.Context) {
 	screen := ctx.Screen()
 	c := hellocomp(ctx.World())
 	for _, v := range ctx.System().View().Matches() {
@@ -91,7 +92,7 @@ func initEngineSystemExec(ctx tau.Context) {
 	}
 }
 
-func moveSysExec(ctx tau.Context) {
+func moveSysExec(ctx core.Context) {
 	dt := ctx.DT()
 	helloc := hellocomp(ctx.World())
 	movec := movecomp(ctx.World())

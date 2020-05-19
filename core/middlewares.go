@@ -1,4 +1,4 @@
-package tau
+package core
 
 // MidSkipFrames is a System middleware that skips n frames and then executes the
 // next function in the system function stack

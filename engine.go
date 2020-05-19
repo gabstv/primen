@@ -8,14 +8,10 @@ import (
 	"time"
 
 	"github.com/gabstv/ecs"
+	"github.com/gabstv/tau/core"
 	"github.com/gabstv/tau/io"
 	osfs "github.com/gabstv/tau/io/os"
 	"github.com/hajimehoshi/ebiten"
-)
-
-var (
-	// DebugDraw enables to see debug lines and stats
-	DebugDraw = false
 )
 
 // Engine is what controls the ECS of tau.
@@ -101,7 +97,7 @@ func NewEngine(v *NewEngineInput) *Engine {
 	}
 
 	// create the default world
-	dw := NewWorld(e)
+	dw := core.NewWorld(e)
 
 	e.worlds = []worldContainer{
 		worldContainer{
@@ -112,7 +108,7 @@ func NewEngine(v *NewEngineInput) *Engine {
 	e.defaultWorld = dw
 
 	// start default components and systems
-	startDefaults(e)
+	core.StartDefaults(e)
 
 	return e
 }
@@ -170,8 +166,16 @@ func (e *Engine) Run() error {
 	return ebiten.Run(e.loop, width, height, scale, title)
 }
 
+// Ready returns a channel that signals when the engine is ready
 func (e *Engine) Ready() <-chan struct{} {
 	return e.donech
+}
+
+// Frame returns the current frame. Use ctx.Frame() (more performant)
+func (e *Engine) Frame() int64 {
+	e.lock.Lock()
+	defer e.lock.Unlock()
+	return e.frame
 }
 
 func (e *Engine) loop(screen *ebiten.Image) error {

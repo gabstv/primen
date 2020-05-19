@@ -1,4 +1,4 @@
-package tau
+package core
 
 import (
 	"github.com/gabstv/ecs"

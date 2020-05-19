@@ -1,10 +1,15 @@
-package tau
+package core
 
 import (
 	"image/color"
 
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
+)
+
+var (
+	// DebugDraw enables to see debug lines and stats
+	DebugDraw = false
 )
 
 var (

@@ -1,4 +1,4 @@
-package tau
+package core
 
 import (
 	"context"
@@ -120,7 +120,7 @@ func (cs *BasicCS) ExcludeComponents(w *ecs.World) []*ecs.Component {
 }
 
 // NewWorld creates a new world
-func NewWorld(e *Engine) *ecs.World {
+func NewWorld(e Engine) *ecs.World {
 	if e == nil {
 		panic("engine can't be nil")
 	}
@@ -132,7 +132,7 @@ func NewWorld(e *Engine) *ecs.World {
 			world:      w,
 			engine:     e,
 			fps:        ebiten.CurrentFPS(),
-			frame:      e.frame,
+			frame:      e.Frame(),
 			drwskipped: ebiten.IsDrawingSkipped(),
 			imopt:      w.Get(DefaultImageOptions).(*ebiten.DrawImageOptions),
 		}

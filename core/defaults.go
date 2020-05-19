@@ -1,4 +1,4 @@
-package tau
+package core
 
 import (
 	"sync"
@@ -24,7 +24,7 @@ func RegisterComponentSystem(cs ComponentSystem) {
 	defaultCSStarters = append(defaultCSStarters, cs)
 }
 
-func startDefaults(e *Engine) {
+func StartDefaults(e Engine) {
 	defaultLock.Lock()
 	defer defaultLock.Unlock()
 	defaultWorld := e.Default()

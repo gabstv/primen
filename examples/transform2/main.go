@@ -5,8 +5,8 @@ import (
 	"math"
 
 	"github.com/gabstv/tau"
+	"github.com/gabstv/tau/core"
 	"github.com/gabstv/tau/examples/layers/res"
-	"github.com/gabstv/tau/graphics"
 	"github.com/gabstv/tau/io"
 	"github.com/hajimehoshi/ebiten"
 )
@@ -25,7 +25,7 @@ func main() {
 		atlas.Get("box3"),
 		atlas.Get("box4"),
 	}
-	tau.DebugDraw = true
+	core.DebugDraw = true
 	//
 	ctx, cf := context.WithCancel(context.Background())
 	defer cf()
@@ -51,20 +51,20 @@ func dogamesetup(ctx context.Context, engine *tau.Engine, bgs []*ebiten.Image) {
 		return
 	case <-engine.Ready():
 	}
-	spr := graphics.NewSprite(engine.Default(), bgs[0], tau.Layer0, nil)
+	spr := tau.NewSprite(engine.Default(), bgs[0], tau.Layer0, nil)
 	spr.Transform.X = 100
 	spr.Transform.Y = 100
 	spr.Transform.ScaleX = .5
 	spr.TauSprite.OriginX = .5
 	spr.TauSprite.OriginY = .5
-	engine.Default().AddComponentToEntity(spr.Entity, engine.Default().Component(tau.CNRotation), &tau.Rotation{
+	engine.Default().AddComponentToEntity(spr.Entity, engine.Default().Component(core.CNRotation), &core.Rotation{
 		Speed: math.Pi / 16,
 	})
-	spr2 := graphics.NewSprite(engine.Default(), bgs[1], tau.Layer0, spr.Transform)
+	spr2 := tau.NewSprite(engine.Default(), bgs[1], tau.Layer0, spr.Transform)
 	spr2.Transform.X = 10
 	spr2.Transform.Y = 7
 
-	spr3 := graphics.NewSprite(engine.Default(), bgs[2], tau.Layer0, spr2.Transform)
+	spr3 := tau.NewSprite(engine.Default(), bgs[2], tau.Layer0, spr2.Transform)
 	spr3.Transform.X = 16
 	spr3.Transform.Y = 16
 	spr3.Transform.ScaleX = 2

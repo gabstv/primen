@@ -7,24 +7,25 @@ import (
 
 	"github.com/gabstv/ecs"
 	"github.com/gabstv/tau"
+	"github.com/gabstv/tau/core"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
 
-var anglecs = &tau.BasicCS{
+var anglecs = &core.BasicCS{
 	SysName: "anglecs",
-	SysExec: func(ctx tau.Context) {
-		sc := ctx.World().Component(tau.CNDrawable)
+	SysExec: func(ctx core.Context) {
+		sc := ctx.World().Component(core.CNDrawable)
 		matches := ctx.System().View().Matches()
 		dt := ctx.DT()
 		for _, m := range matches {
-			sprite := m.Components[sc].(*tau.Sprite)
+			sprite := m.Components[sc].(*core.Sprite)
 			sprite.Angle = sprite.Angle + (math.Pi * dt * 0.0125 * 4)
 		}
 	},
 	GetComponents: func(w *ecs.World) []*ecs.Component {
 		return []*ecs.Component{
-			w.Component(tau.CNDrawable),
+			w.Component(core.CNDrawable),
 		}
 	},
 }
@@ -43,9 +44,9 @@ func main() {
 	})
 
 	dw := engine.Default()
-	sc := dw.Component(tau.CNDrawable)
+	sc := dw.Component(core.CNDrawable)
 	e := dw.NewEntity()
-	dw.AddComponentToEntity(e, sc, &tau.Sprite{
+	dw.AddComponentToEntity(e, sc, &core.Sprite{
 		Image:   ebimg,
 		X:       64,
 		Y:       64,
@@ -57,7 +58,7 @@ func main() {
 		Bounds:  image.Rect(0, 0, 16, 16),
 	})
 	e2 := dw.NewEntity()
-	dw.AddComponentToEntity(e2, sc, &tau.Sprite{
+	dw.AddComponentToEntity(e2, sc, &core.Sprite{
 		Image:   ebimg,
 		X:       128,
 		Y:       64,
@@ -69,7 +70,7 @@ func main() {
 		Bounds:  image.Rect(16, 16, 32, 32),
 	})
 
-	tau.SetupSystem(dw, anglecs)
+	core.SetupSystem(dw, anglecs)
 
 	engine.Run()
 }

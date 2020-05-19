@@ -1,4 +1,4 @@
-package tau
+package core
 
 import (
 	"math"
@@ -35,26 +35,6 @@ const (
 
 // LayerIndex is the layer index
 type LayerIndex int64
-
-// LAYERS
-const (
-	Layer0  LayerIndex = 0
-	Layer1  LayerIndex = 1
-	Layer2  LayerIndex = 2
-	Layer3  LayerIndex = 3
-	Layer4  LayerIndex = 4
-	Layer5  LayerIndex = 5
-	Layer6  LayerIndex = 6
-	Layer7  LayerIndex = 7
-	Layer8  LayerIndex = 8
-	Layer9  LayerIndex = 9
-	Layer10 LayerIndex = 10
-	Layer11 LayerIndex = 11
-	Layer12 LayerIndex = 12
-	Layer13 LayerIndex = 13
-	Layer14 LayerIndex = 14
-	Layer15 LayerIndex = 15
-)
 
 type drawLayerDrawer struct {
 	index    LayerIndex
