@@ -7,7 +7,7 @@ import (
 )
 
 type Sprite struct {
-	Entity    ecs.Entity
+	*WorldItem
 	TauSprite *core.Sprite
 	Transform *core.Transform
 	DrawLayer *core.DrawLayer
@@ -15,7 +15,7 @@ type Sprite struct {
 
 func NewSprite(w *ecs.World, im *ebiten.Image, layer core.LayerIndex, parent *core.Transform) *Sprite {
 	spr := &Sprite{}
-	spr.Entity = w.NewEntity()
+	spr.WorldItem = newWorldItem(w.NewEntity(), w)
 	spr.TauSprite = &core.Sprite{
 		ScaleX: 1,
 		ScaleY: 1,
@@ -31,13 +31,13 @@ func NewSprite(w *ecs.World, im *ebiten.Image, layer core.LayerIndex, parent *co
 		ScaleX: 1,
 		ScaleY: 1,
 	}
-	if err := w.AddComponentToEntity(spr.Entity, w.Component(core.CNDrawable), spr.TauSprite); err != nil {
+	if err := w.AddComponentToEntity(spr.entity, w.Component(core.CNDrawable), spr.TauSprite); err != nil {
 		panic(err)
 	}
-	if err := w.AddComponentToEntity(spr.Entity, w.Component(core.CNDrawLayer), spr.DrawLayer); err != nil {
+	if err := w.AddComponentToEntity(spr.entity, w.Component(core.CNDrawLayer), spr.DrawLayer); err != nil {
 		panic(err)
 	}
-	if err := w.AddComponentToEntity(spr.Entity, w.Component(core.CNTransform), spr.Transform); err != nil {
+	if err := w.AddComponentToEntity(spr.entity, w.Component(core.CNTransform), spr.Transform); err != nil {
 		panic(err)
 	}
 	return spr

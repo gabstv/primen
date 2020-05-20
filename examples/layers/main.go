@@ -142,8 +142,12 @@ func dogamesetup(ctx context.Context, engine *tau.Engine, bgs, fgs []*ebiten.Ima
 	root := tau.NewTransform(engine.Default(), nil)
 	root.TauTransform.X = 320 / 2
 	root.TauTransform.Y = 240 / 2
-	// TODO: auto center
-	//root.Entity
+
+	root.UpsertFns(func(ctx core.Context, e ecs.Entity) {
+		t := ctx.World().Component(core.CNTransform).Data(e).(*core.Transform)
+		t.X = float64(ctx.Engine().Width() / 2)
+		t.Y = float64(ctx.Engine().Height() / 2)
+	}, nil, nil)
 
 	for i := 0; i < 4; i++ {
 		for j := 0; j < 20; j++ {
@@ -166,7 +170,7 @@ func dogamesetup(ctx context.Context, engine *tau.Engine, bgs, fgs []*ebiten.Ima
 				Oy:          (rand.Float64() - 0.5) * 5,
 				AngleR:      rand.Float64(),
 			}
-			engine.Default().AddComponentToEntity(bgs.Entity, engine.Default().Component(movecompname), mvc)
+			engine.Default().AddComponentToEntity(bgs.Entity(), engine.Default().Component(movecompname), mvc)
 		}
 	}
 

@@ -6,20 +6,20 @@ import (
 )
 
 type Transform struct {
-	Entity       ecs.Entity
+	*WorldItem
 	TauTransform *core.Transform
 }
 
 func NewTransform(w *ecs.World, parent *core.Transform) *Transform {
 	tr := &Transform{
-		Entity: w.NewEntity(),
+		WorldItem: newWorldItem(w.NewEntity(), w),
 	}
 	tr.TauTransform = &core.Transform{
 		Parent: parent,
 		ScaleX: 1,
 		ScaleY: 1,
 	}
-	if err := w.AddComponentToEntity(tr.Entity, w.Component(core.CNTransform), tr.TauTransform); err != nil {
+	if err := w.AddComponentToEntity(tr.entity, w.Component(core.CNTransform), tr.TauTransform); err != nil {
 		panic(err)
 	}
 	return tr

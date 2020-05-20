@@ -29,6 +29,8 @@ type Engine interface {
 	Set(key string, value interface{})
 	UpdateFrame() int64
 	DrawFrame() int64
+	Width() int
+	Height() int
 }
 
 type ctxt struct {

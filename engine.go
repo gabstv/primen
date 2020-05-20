@@ -266,40 +266,6 @@ func (e *Engine) DrawFrame() int64 {
 	return e.drawInfo.GetFrame()
 }
 
-// func (e *Engine) loop(screen *ebiten.Image) error {
-// 	e.lock.Lock()
-// 	now := time.Now()
-// 	ld := now.Sub(e.lt).Seconds()
-// 	e.lt = now
-// 	e.dmap.Set(TagDelta, ld)
-// 	worlds := e.worlds
-// 	e.frame++
-// 	e.lock.Unlock()
-
-// 	e.once.Do(func() {
-// 		close(e.donech)
-// 		if e.ready != nil {
-// 			e.ready(e)
-// 		}
-// 	})
-
-// 	for _, w := range worlds {
-// 		w.world.Set("screen", screen)
-// 		w.world.RunWithoutTag(WorldTagDraw, ld)
-// 	}
-
-// 	if ebiten.IsDrawingSkipped() {
-// 		return nil
-// 	}
-
-// 	for _, w := range worlds {
-// 		w.world.Set("screen", screen)
-// 		w.world.RunWithTag(WorldTagDraw, ld)
-// 	}
-
-// 	return nil
-// }
-
 // Get an item from the global map
 func (e *Engine) Get(key string) interface{} {
 	return e.dmap.Get(key)
@@ -313,6 +279,20 @@ func (e *Engine) Set(key string, value interface{}) {
 // FS returns the filesystem
 func (e *Engine) FS() io.Filesystem {
 	return e.f
+}
+
+// Width returns the logical width
+func (e *Engine) Width() int {
+	e.ebilock.RLock()
+	defer e.ebilock.RUnlock()
+	return e.ebiLogicalW
+}
+
+// Height returns the logical height
+func (e *Engine) Height() int {
+	e.ebilock.RLock()
+	defer e.ebilock.RUnlock()
+	return e.ebiLogicalH
 }
 
 // EBITEN Game interface

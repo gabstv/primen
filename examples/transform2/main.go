@@ -59,7 +59,7 @@ func dogamesetup(ctx context.Context, engine *tau.Engine, bgs []*ebiten.Image) {
 	spr.Transform.ScaleX = .5
 	spr.TauSprite.OriginX = .5
 	spr.TauSprite.OriginY = .5
-	engine.Default().AddComponentToEntity(spr.Entity, engine.Default().Component(core.CNRotation), &core.Rotation{
+	engine.Default().AddComponentToEntity(spr.Entity(), engine.Default().Component(core.CNRotation), &core.Rotation{
 		Speed: math.Pi / 16,
 	})
 	spr2 := tau.NewSprite(engine.Default(), bgs[1], tau.Layer0, spr.Transform)
