@@ -59,6 +59,7 @@ type Engine struct {
 	ebiLogicalH  int
 	ebiScale     int
 	ebiFixed     bool
+	eventManager *core.EventManager
 }
 
 // NewEngineInput is the input data of NewEngine
@@ -149,18 +150,19 @@ func NewEngine(v *NewEngineInput) *Engine {
 	iw, ih := getLogicalSize(v.Width, v.Height, v.Scale, v.Width/v.Scale, v.Height/v.Scale, v.FixedResolution)
 
 	e := &Engine{
-		updateInfo:  &StepInfo{},
-		drawInfo:    &StepInfo{},
-		options:     v.Options(),
-		f:           v.FS,
-		donech:      make(chan struct{}),
-		ready:       v.OnReady,
-		ebiFixed:    v.FixedResolution,
-		ebiLogicalW: iw,
-		ebiLogicalH: ih,
-		ebiOutsideW: v.Width,
-		ebiOutsideH: v.Height,
-		ebiScale:    v.Scale,
+		updateInfo:   &StepInfo{},
+		drawInfo:     &StepInfo{},
+		options:      v.Options(),
+		f:            v.FS,
+		donech:       make(chan struct{}),
+		ready:        v.OnReady,
+		ebiFixed:     v.FixedResolution,
+		ebiLogicalW:  iw,
+		ebiLogicalH:  ih,
+		ebiOutsideW:  v.Width,
+		ebiOutsideH:  v.Height,
+		ebiScale:     v.Scale,
+		eventManager: &core.EventManager{},
 	}
 
 	// create the default world

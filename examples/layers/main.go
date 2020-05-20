@@ -55,6 +55,10 @@ func main() {
 			dogamesetup(ctx, e, spbgs, spfgs)
 		},
 	})
+	engine.AddEventListener("act_of_nature", func(eventName string, e core.Event) {
+		println("act of nature happened!")
+		println(e.Data.(ecs.Entity))
+	})
 	if err := engine.Run(); err != nil {
 		println(err.Error())
 	}
@@ -124,11 +128,10 @@ func dogamesetup(ctx context.Context, engine *tau.Engine, bgs, fgs []*ebiten.Ima
 					drawlayer.Layer = core.LayerIndex(newlayer)
 					sprite.Image = bgs[newlayer]
 					sprite.Bounds = sprite.Image.Bounds()
-					//drawlayer.ZIndex = 1
 					movecomp.ChildSprite.TauSprite.Image = fgs[newlayer]
 					movecomp.ChildSprite.TauSprite.Bounds = fgs[newlayer].Bounds()
 					movecomp.ChildSprite.DrawLayer.Layer = core.LayerIndex(newlayer)
-					//movecomp.ChildSprite.OriginX
+					ctx.Engine().DispatchEvent("act_of_nature", match.Entity)
 				}
 			}
 		},

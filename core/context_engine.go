@@ -31,6 +31,9 @@ type Engine interface {
 	DrawFrame() int64
 	Width() int
 	Height() int
+	AddEventListener(eventName string, fn EventFn) EventID
+	RemoveEventListener(id EventID) bool
+	DispatchEvent(eventName string, data interface{})
 }
 
 type ctxt struct {
