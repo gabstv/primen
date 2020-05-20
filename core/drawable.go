@@ -21,6 +21,7 @@ type Drawable interface {
 	IsDisabled() bool
 	Size() (w, h float64)
 	SetTransformMatrix(m ebiten.GeoM)
+	ClearTransformMatrix()
 	SetBounds(b image.Rectangle)
 }
 
@@ -152,6 +153,12 @@ func (cs *DrawLayerDrawableComponentSystem) SystemInit() SystemInitFn {
 		sys.View().SetOnEntityRemoved(func(e ecs.Entity, w *ecs.World) {
 			//TODO: checks?
 		})
+	}
+}
+
+func (cs *DrawLayerDrawableComponentSystem) SystemTags() []string {
+	return []string{
+		"draw",
 	}
 }
 

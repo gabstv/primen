@@ -73,6 +73,9 @@ func SetupSystem(w *ecs.World, cs ComponentSystem) {
 		fnfn(ctx.(Context))
 	}
 	sys := w.NewSystemX(cs.SystemName(), cs.SystemPriority(), wexec, cs.Components(w), cs.ExcludeComponents(w))
+	for _, v := range cs.SystemTags() {
+		sys.AddTag(v)
+	}
 	if xinit := cs.SystemInit(); xinit != nil {
 		xinit(w, sys)
 	}
@@ -132,7 +135,7 @@ func NewWorld(e Engine) *ecs.World {
 			world:      w,
 			engine:     e,
 			fps:        ebiten.CurrentFPS(),
-			frame:      e.Frame(),
+			frame:      e.UpdateFrame(),
 			drwskipped: ebiten.IsDrawingSkipped(),
 			imopt:      w.Get(DefaultImageOptions).(*ebiten.DrawImageOptions),
 		}

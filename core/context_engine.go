@@ -27,7 +27,8 @@ type Engine interface {
 	Ready() <-chan struct{}
 	Get(key string) interface{}
 	Set(key string, value interface{})
-	Frame() int64
+	UpdateFrame() int64
+	DrawFrame() int64
 }
 
 type ctxt struct {

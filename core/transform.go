@@ -92,6 +92,21 @@ func (cs *TransformDrawableComponentSystem) SystemPriority() int {
 	return -6
 }
 
+// SystemInit returns the system init
+func (cs *TransformDrawableComponentSystem) SystemInit() SystemInitFn {
+	return func(w *ecs.World, sys *ecs.System) {
+		sys.View().SetOnEntityRemoved(func(e ecs.Entity, w *ecs.World) {
+			if getter := w.Component(CNDrawable); getter != nil {
+				if vi := getter.Data(e); vi != nil {
+					if v, ok := vi.(Drawable); ok {
+						v.ClearTransformMatrix()
+					}
+				}
+			}
+		})
+	}
+}
+
 func (cs *TransformDrawableComponentSystem) SystemExec() SystemExecFn {
 	return TransformSpriteSystemExec
 }

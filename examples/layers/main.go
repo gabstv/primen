@@ -44,11 +44,13 @@ func main() {
 	defer cf()
 	//
 	engine := tau.NewEngine(&tau.NewEngineInput{
-		Width:  640 / 2,
-		Height: 480 / 2,
-		FS:     fs,
-		Title:  "Layers Test",
-		Scale:  2,
+		Width:         640,
+		Height:        480,
+		FS:            fs,
+		Title:         "Layers Test",
+		Scale:         2,
+		Resizable:     true,
+		MaxResolution: true,
 		OnReady: func(e *tau.Engine) {
 			dogamesetup(ctx, e, spbgs, spfgs)
 		},
@@ -140,6 +142,8 @@ func dogamesetup(ctx context.Context, engine *tau.Engine, bgs, fgs []*ebiten.Ima
 	root := tau.NewTransform(engine.Default(), nil)
 	root.TauTransform.X = 320 / 2
 	root.TauTransform.Y = 240 / 2
+	// TODO: auto center
+	//root.Entity
 
 	for i := 0; i < 4; i++ {
 		for j := 0; j < 20; j++ {

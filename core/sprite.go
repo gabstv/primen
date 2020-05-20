@@ -97,12 +97,15 @@ func (s *Sprite) Draw(screen *ebiten.Image, opt *ebiten.DrawImageOptions) {
 		debugLineM(screen, centerM, 0, -4, 0, 4, debugPivotColor)
 	}
 	opt.GeoM = prevGeo
-	s.customMatrix = false
 }
 
 func (s *Sprite) SetTransformMatrix(m ebiten.GeoM) {
 	s.transformMatrix = m
 	s.customMatrix = true
+}
+
+func (s *Sprite) ClearTransformMatrix() {
+	s.customMatrix = false
 }
 
 func (s *Sprite) SetBounds(b image.Rectangle) {

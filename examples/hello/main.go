@@ -48,8 +48,8 @@ const SPEED float64 = 120
 
 func main() {
 	engine = tau.NewEngine(&tau.NewEngineInput{
-		Width:  320,
-		Height: 240,
+		Width:  640,
+		Height: 480,
 		Scale:  2,
 		Title:  "Hello, World!",
 	})
