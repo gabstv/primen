@@ -72,7 +72,7 @@ func (m *EventManager) Dispatch(eventName string, engine Engine, data interface{
 	}
 	m.l.RUnlock()
 	for _, v := range list {
-		v.OnEvent(Event{
+		go v.OnEvent(Event{
 			Engine: engine,
 			Data:   data,
 		})
