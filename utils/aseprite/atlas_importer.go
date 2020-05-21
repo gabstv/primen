@@ -24,3 +24,17 @@ type FrameIO struct {
 	SheetIndex int    `json:"sheet_index"`
 	SheetName  string `json:"sheet_name,omitempty"`
 }
+
+type AnimationIO struct {
+	Tagname    string        `json:"tagname"`
+	OutputName string        `json:"output_name"`
+	ClipMode   string        `json:"clip_mode,omitempty"`
+	Events     []AnimEventIO `json:"events"`
+	EndedEvent *AnimEventIO  `json:"ended_event,omitempty"`
+}
+
+type AnimEventIO struct {
+	Frame      int    `json:"frame,omitempty"`
+	EventName  string `json:"event_name"`
+	EventValue string `json:"event_value"`
+}
