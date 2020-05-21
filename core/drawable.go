@@ -25,6 +25,11 @@ type Drawable interface {
 	SetBounds(b image.Rectangle)
 }
 
+type DrawableImager interface {
+	GetImage() *ebiten.Image
+	SetImage(img *ebiten.Image)
+}
+
 const (
 	// SNSoloDrawable is the system name of a drawable without as DrawLayer component
 	SNSoloDrawable = "tau.DrawableSystem"

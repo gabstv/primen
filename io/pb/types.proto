@@ -11,6 +11,13 @@ enum ImageFilter {
   LINEAR = 2;
 }
 
+enum AnimationClipMode {
+  ONCE = 0;
+  LOOP = 1;
+  PING_PONG = 2;
+  CLAMP_FOREVER = 4;
+}
+
 message AtlasFile {
   repeated bytes images = 1;
   repeated ImageFilter filters = 2;
@@ -23,4 +30,31 @@ message Frame {
   uint32 y = 3;
   uint32 w = 4;
   uint32 h = 5;
+}
+
+message Animation {
+  repeated AnimationClip clips = 1;
+  float fps = 2;
+}
+
+message AnimationClip {
+  uint32 image = 1;
+  string name = 2;
+  float fps = 3;
+  AnimationClipMode clip_mode = 4;
+  repeated AnimFrame frames = 5;
+  AnimationEvent ended_event = 6;
+}
+
+message AnimFrame {
+  uint32 x = 1;
+  uint32 y = 2;
+  uint32 w = 3;
+  uint32 h = 4;
+  AnimationEvent event = 5;
+}
+
+message AnimationEvent {
+  string name = 1;
+  string value = 2;
 }

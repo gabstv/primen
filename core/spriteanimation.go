@@ -2,6 +2,7 @@ package core
 
 import (
 	"image"
+	"sync"
 
 	"github.com/gabstv/ecs"
 	"github.com/hajimehoshi/ebiten"
@@ -33,11 +34,6 @@ const (
 	CNSpriteAnimation     = "tau.SpriteAnimationComponent"
 )
 
-var (
-	SpriteAnimationCS     *SpriteAnimationComponentSystem     = new(SpriteAnimationComponentSystem)
-	SpriteAnimationLinkCS *SpriteAnimationLinkComponentSystem = new(SpriteAnimationLinkComponentSystem)
-)
-
 type SpriteAnimationComponentSystem struct {
 	BaseComponentSystem
 }
@@ -52,6 +48,12 @@ func (cs *SpriteAnimationComponentSystem) SystemPriority() int {
 
 func (cs *SpriteAnimationComponentSystem) SystemExec() SystemExecFn {
 	return SpriteAnimationSystemExec
+}
+
+func (cs *SpriteAnimationComponentSystem) SystemTags() []string {
+	return []string{
+		"draw",
+	}
 }
 
 func (cs *SpriteAnimationComponentSystem) Components(w *ecs.World) []*ecs.Component {
@@ -78,6 +80,112 @@ func spriteAnimationComponentDef(w *ecs.World) *ecs.Component {
 	})
 }
 
+type AnimationEventID int64
+
+type AnimationEventListeners struct {
+	nextid int64
+	l      sync.Mutex
+	m      map[string][]AnimationEventID
+	m2     map[AnimationEventID]AnimationEventFn
+}
+
+func (ae *AnimationEventListeners) ensure(group string) {
+	ae.l.Lock()
+	defer ae.l.Unlock()
+	if ae.m == nil {
+		ae.m = make(map[string][]AnimationEventID)
+	}
+	if ae.m2 == nil {
+		ae.m2 = make(map[AnimationEventID]AnimationEventFn)
+	}
+	if group != "" {
+		if ae.m[group] == nil {
+			ae.m[group] = make([]AnimationEventID, 0, 2)
+		}
+	}
+}
+
+func (ae *AnimationEventListeners) Add(name string, fn AnimationEventFn) AnimationEventID {
+	ae.ensure(name)
+	ae.l.Lock()
+	defer ae.l.Unlock()
+	ae.nextid++
+	id := AnimationEventID(ae.nextid)
+	ae.m[name] = append(ae.m[name], id)
+	ae.m2[id] = fn
+	return id
+}
+
+func (ae *AnimationEventListeners) AddCatchAll(fn AnimationEventFn) AnimationEventID {
+	return ae.Add("*", fn)
+}
+
+func (ae *AnimationEventListeners) Remove(id AnimationEventID) bool {
+	ae.ensure("")
+	ae.l.Lock()
+	defer ae.l.Unlock()
+	if _, ok := ae.m2[id]; !ok {
+		return false
+	}
+	// maybe switch to a more performat approach if there's a use case for adding/deleting
+	// a large volume of event observers on a single animation controller
+	fnd := false
+	for k, v := range ae.m {
+		if v != nil {
+			vix := -1
+			for vi, vid := range v {
+				if vid == id {
+					vix = vi
+					break
+				}
+			}
+			if vix > -1 {
+				v = append(v[:vix], v[vix+1:]...)
+				ae.m[k] = v
+				fnd = true
+				delete(ae.m2, id)
+				break
+			}
+		}
+	}
+	return fnd
+}
+
+func (ae *AnimationEventListeners) Clear() {
+	ae.l.Lock()
+	defer ae.l.Unlock()
+	ae.m = nil
+	for k := range ae.m2 {
+		ae.m2[k] = nil
+	}
+	ae.m = nil
+	ae.m2 = nil
+}
+
+func (ae *AnimationEventListeners) Dispatch(name, value string) {
+	ae.ensure("")
+	ae.l.Lock()
+	defer ae.l.Unlock()
+	x := ae.m[name]
+	if x != nil {
+		for _, id := range x {
+			if ae.m2[id] != nil {
+				go ae.m2[id](name, value)
+			}
+		}
+	}
+	x = ae.m["*"]
+	if x != nil {
+		for _, id := range x {
+			if ae.m2[id] != nil {
+				go ae.m2[id](name, value)
+			}
+		}
+	}
+}
+
+type AnimationEventFn func(name, value string)
+
 // SpriteAnimation holds the data of a sprite animation (and clips)
 type SpriteAnimation struct {
 	Enabled     bool
@@ -86,11 +194,13 @@ type SpriteAnimation struct {
 	ActiveFrame int
 	Clips       []SpriteAnimationClip
 	T           float64
+
 	// Default fps for clips with no fps specified
 	Fps float64
 
 	// caches
 	lastClip          int
+	lastImage         *ebiten.Image
 	lastPlaying       bool
 	clipMap           map[string]int
 	clipMapLen        int
@@ -105,15 +215,27 @@ func (a *SpriteAnimation) PlayClip(name string) {
 	a.nextAnimationSet = true
 }
 
+func (a *SpriteAnimation) AnimEvent(name, value string) {
+	//FIXME: implement this
+}
+
 // SpriteAnimationClip is an animation clip, like a character walk cycle.
 type SpriteAnimationClip struct {
 	// The name of an animation is not allowed to be changed during runtime
 	// but since this is part of a component (and components shouldn't have logic),
 	// it is a public member.
-	Name     string
-	Frames   []image.Rectangle
-	Fps      float64
-	ClipMode AnimClipMode
+	Name       string
+	Image      *ebiten.Image
+	Frames     []image.Rectangle
+	Events     []*SpriteAnimationEvent //TODO: link
+	Fps        float64
+	ClipMode   AnimClipMode
+	EndedEvent *SpriteAnimationEvent //TODO: link
+}
+
+type SpriteAnimationEvent struct {
+	Name  string
+	Value string
 }
 
 // SpriteAnimationSystemExec is the main function of the SpriteSystem
@@ -154,6 +276,9 @@ func spriteAnimResolvePlayClip(spranim *SpriteAnimation) {
 	spranim.ActiveFrame = 0
 	spranim.ActiveClip = index
 	spranim.reversed = false
+	if evs := spranim.Clips[index].Events; evs != nil && len(evs) > 0 && evs[0] != nil {
+		spranim.AnimEvent(evs[0].Name, evs[0].Value)
+	}
 }
 
 func spriteAnimResolveClipMap(spranim *SpriteAnimation) {
@@ -186,6 +311,7 @@ func spriteAnimResolvePlayback(globalfps, dt float64, spranim *SpriteAnimation) 
 		spranim.reversed = false
 	}
 	spranim.lastClip = spranim.ActiveClip
+	spranim.lastImage = spranim.Clips[spranim.lastClip].Image
 	spranim.lastPlaying = true
 	spranim.T += localdt * localfps
 	if spranim.T >= 1 {
@@ -200,6 +326,9 @@ func spriteAnimResolvePlayback(globalfps, dt float64, spranim *SpriteAnimation) 
 			case AnimOnce:
 				spranim.T = 0
 				spranim.Playing = false
+				if clip.EndedEvent != nil {
+					spranim.AnimEvent(clip.EndedEvent.Name, clip.EndedEvent.Value)
+				}
 			case AnimLoop:
 				spranim.T = Clamp(spranim.T-1, 0, 1)
 				spranim.ActiveFrame = 0
@@ -217,6 +346,10 @@ func spriteAnimResolvePlayback(globalfps, dt float64, spranim *SpriteAnimation) 
 		} else {
 			spranim.T = Clamp(spranim.T-1, 0, 1)
 			spranim.ActiveFrame = nextframe
+			// dispatch event!
+			if evs := clip.Events; evs != nil && len(evs) > nextframe && evs[nextframe] != nil {
+				spranim.AnimEvent(evs[nextframe].Name, evs[nextframe].Value)
+			}
 		}
 	}
 }
@@ -265,6 +398,14 @@ func SpriteAnimationLinkSystemExec(ctx Context) {
 		spr := m.Components[spritecomp].(Drawable)
 		if !spranim.Enabled {
 			continue
+		}
+		// replace image if the animation clip usaes a different one
+		if spranim.lastImage != nil {
+			if w, ok := spr.(DrawableImager); ok {
+				if w.GetImage() != spranim.lastImage {
+					w.SetImage(spranim.lastImage)
+				}
+			}
 		}
 		spr.SetBounds(spranim.Clips[spranim.ActiveClip].Frames[spranim.ActiveFrame])
 	}

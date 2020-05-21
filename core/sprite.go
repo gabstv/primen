@@ -141,3 +141,11 @@ func (s *Sprite) GetPrecomputedImage() *ebiten.Image {
 func (s *Sprite) GetPrecomputedImageDim() (width, height float64) {
 	return s.imageWidth, s.imageHeight
 }
+
+func (s *Sprite) GetImage() *ebiten.Image {
+	return s.Image
+}
+
+func (s *Sprite) SetImage(img *ebiten.Image) {
+	s.Image = img
+}
