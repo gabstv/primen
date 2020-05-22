@@ -1,0 +1,80 @@
+{
+    "sprites": [{
+            "filename": "bg1",
+            "output_name": "bg1",
+            "sheet_index": 0,
+            "sheet_name": "background.json"
+        },
+        {
+            "filename": "bg2",
+            "output_name": "bg2",
+            "sheet_index": 0,
+            "sheet_name": "background.json"
+        },
+        {
+            "filename": "bg3",
+            "output_name": "bg3",
+            "sheet_index": 0,
+            "sheet_name": "background.json"
+        },
+        {
+            "filename": "bg4",
+            "output_name": "bg4",
+            "sheet_index": 0,
+            "sheet_name": "background.json"
+        },
+        {
+            "filename": "bg5",
+            "output_name": "bg5",
+            "sheet_index": 0,
+            "sheet_name": "background.json"
+        },
+        {
+            "filename": "bg6",
+            "output_name": "bg6",
+            "sheet_index": 0,
+            "sheet_name": "background.json"
+        },
+        {
+            "filename": "bg7",
+            "output_name": "bg7",
+            "sheet_index": 0,
+            "sheet_name": "background.json"
+        },
+        {
+            "filename": "bg8",
+            "output_name": "bg8",
+            "sheet_index": 0,
+            "sheet_name": "background.json"
+        },
+        {
+            "filename": "bg9",
+            "output_name": "bg9",
+            "sheet_index": 0,
+            "sheet_name": "background.json"
+        },
+        {
+            "filename": "bg10",
+            "output_name": "bg10",
+            "sheet_index": 0,
+            "sheet_name": "background.json"
+        },
+        {
+            "filename": "bg11",
+            "output_name": "bg11",
+            "sheet_index": 0,
+            "sheet_name": "background.json"
+        },
+        {
+            "filename": "bg12",
+            "output_name": "bg12",
+            "sheet_index": 0,
+            "sheet_name": "background.json"
+        }
+    ],
+    "sprite_sheets": [
+        "background.json"
+    ],
+    "output": "output/atlas-bg.dat",
+    "image_filter": "nearest"
+}

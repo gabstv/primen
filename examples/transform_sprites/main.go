@@ -9,7 +9,8 @@ import (
 	"time"
 
 	"github.com/gabstv/ecs"
-	"github.com/gabstv/tau"
+	"github.com/gabstv/primen"
+	"github.com/gabstv/primen/core"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
@@ -30,13 +31,13 @@ type spinner struct {
 	Speed float64
 }
 
-var spinnercs = &tau.BasicCS{
+var spinnercs = &core.BasicCS{
 	SysName: "spinnercs",
-	SysExec: func(ctx tau.Context) {
+	SysExec: func(ctx core.Context) {
 		sys := ctx.System()
 		dt := ctx.DT()
 		view := sys.View()
-		tc := ctx.World().Component(tau.CNTransform)
+		tc := ctx.World().Component(core.CNTransform)
 		sc := ctx.World().Component("spinnercs")
 		scaleadd := sys.Get("scaleadd").(float64) + dt
 		sys.Set("scaleadd", scaleadd)
@@ -65,17 +66,17 @@ var spinnercs = &tau.BasicCS{
 		}
 		for _, v := range view.Matches() {
 			spin := v.Components[sc].(*spinner)
-			tr := v.Components[tc].(*tau.Transform)
+			tr := v.Components[tc].(*core.Transform)
 			tr.Angle += spin.Speed * dt * rs
 			tr.X += xs * dt
 			tr.Y += ys * dt
 			tr.ScaleY = 0.7 + math.Cos(scaleadd)/4
 		}
 	},
-	GetComponents: func(w ecs.Worlder) []*ecs.Component {
+	GetComponents: func(w *ecs.World) []*ecs.Component {
 		return []*ecs.Component{
-			w.Component(tau.CNTransform),
-			tau.UpsertComponent(w, ecs.NewComponentInput{
+			w.Component(core.CNTransform),
+			core.UpsertComponent(w, ecs.NewComponentInput{
 				Name: "spinnercs",
 			}),
 		}
@@ -88,19 +89,21 @@ var spinnercs = &tau.BasicCS{
 func main() {
 	ebimg, _, _ := ebitenutil.NewImageFromFile("img.png", ebiten.FilterDefault)
 
-	engine := tau.NewEngine(&tau.NewEngineInput{
+	engine := primen.NewEngine(&primen.NewEngineInput{
 		Title:  "Basic Transform With Sprites",
-		Width:  320,
-		Height: 240,
+		Width:  640,
+		Height: 480,
 		Scale:  2,
 	})
 
+	core.DebugDraw = true
+
 	dw := engine.Default()
-	sc := dw.Component(tau.CNSprite)
-	tc := dw.Component(tau.CNTransform)
+	sc := dw.Component(core.CNDrawable)
+	tc := dw.Component(core.CNTransform)
 	spinnercomp := spinnercs.Components(dw)[1]
 	e := dw.NewEntity()
-	t99 := &tau.Transform{
+	t99 := &core.Transform{
 		X:      320 / 2,
 		Y:      240 / 2,
 		ScaleX: 0.5,
@@ -113,24 +116,26 @@ func main() {
 	// add children
 	for i := 0; i < 10; i++ {
 		e2 := dw.NewEntity()
-		mm := tau.IM.Moved(tau.V(30, 0)).Rotated(tau.ZV, (math.Pi*2)*(float64(i)/10)).Project(tau.ZV)
-		println(mm.String())
-		dw.AddComponentToEntity(e2, tc, &tau.Transform{
-			X:      mm.X,
-			Y:      mm.Y,
+		//mm := primen.IM.Moved(primen.V(30, 0)).Rotated(primen.ZV, (math.Pi*2)*(float64(i)/10)).Project(primen.ZV)
+
+		dw.AddComponentToEntity(e2, tc, &core.Transform{
+			X:      math.Cos((math.Pi*2)*(float64(i)/10)) * 30,
+			Y:      math.Sin((math.Pi*2)*(float64(i)/10)) * 30,
 			Parent: t99,
 			ScaleX: 1,
 			ScaleY: 1,
 		})
 		ri := randomsprites[rand.Intn(4)]
-		dw.AddComponentToEntity(e2, sc, &tau.Sprite{
-			Bounds: image.Rect(ri[0], ri[1], ri[2], ri[3]),
-			Image:  ebimg,
-			ScaleX: 1,
-			ScaleY: 1,
+		dw.AddComponentToEntity(e2, sc, &core.Sprite{
+			Bounds:  image.Rect(ri[0], ri[1], ri[2], ri[3]),
+			Image:   ebimg,
+			ScaleX:  1,
+			ScaleY:  1,
+			OriginX: 0.5,
+			OriginY: 0.5,
 		})
 	}
-	tau.SetupSystem(dw, spinnercs)
+	core.SetupSystem(dw, spinnercs)
 
 	// debug system
 	ddrawsys := dw.NewSystem("", -100, func(ctx ecs.Context) {
@@ -141,7 +146,7 @@ func main() {
 		ebitenutil.DebugPrintAt(screen, "arrows = move; x, z = rotate", 0, 24)
 
 	}, spinnercomp)
-	ddrawsys.AddTag(tau.WorldTagDraw)
+	ddrawsys.AddTag(primen.WorldTagDraw)
 
 	engine.Run()
 }

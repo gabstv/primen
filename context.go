@@ -1,4 +1,4 @@
-package tau
+package primen
 
 import (
 	"context"
@@ -23,7 +23,7 @@ type ctxt struct {
 	c          context.Context
 	dt         float64
 	system     *ecs.System
-	world      ecs.WorldDicter
+	world      *ecs.World
 	engine     *Engine
 	fps        float64
 	frame      int64
@@ -55,7 +55,7 @@ func (c ctxt) System() *ecs.System {
 	return c.system
 }
 
-func (c ctxt) World() ecs.WorldDicter {
+func (c ctxt) World() *ecs.World {
 	return c.world
 }
 

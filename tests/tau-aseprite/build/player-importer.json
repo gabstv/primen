@@ -1,0 +1,56 @@
+{
+    "sprites": [{
+            "filename": "player (person) 0.aseprite",
+            "output_name": "temp_person",
+            "sheet_index": 0,
+            "sheet_name": "player.json"
+        },
+        {
+            "filename": "player (plasma) 0.aseprite",
+            "output_name": "plasma0",
+            "sheet_index": 0,
+            "sheet_name": "player.json"
+        },
+        {
+            "filename": "player (plasma) 1.aseprite",
+            "output_name": "plasma1",
+            "sheet_index": 0,
+            "sheet_name": "player.json"
+        },
+        {
+            "filename": "player (plasma) 2.aseprite",
+            "output_name": "plasma2",
+            "sheet_index": 0,
+            "sheet_name": "player.json"
+        },
+        {
+            "filename": "player (ball_front) 0.aseprite",
+            "output_name": "shell",
+            "sheet_index": 0,
+            "sheet_name": "player.json"
+        },
+        {
+            "filename": "player (bumper) 0.aseprite",
+            "output_name": "bumper",
+            "sheet_index": 0,
+            "sheet_name": "player.json"
+        },
+        {
+            "filename": "player (glass) 0.aseprite",
+            "output_name": "shell_glass",
+            "sheet_index": 0,
+            "sheet_name": "player.json"
+        },
+        {
+            "filename": "player (propulsion) 0.aseprite",
+            "output_name": "rocket",
+            "sheet_index": 0,
+            "sheet_name": "player.json"
+        }
+    ],
+    "sprite_sheets": [
+        "player.json"
+    ],
+    "output": "output/atlas-player.dat",
+    "image_filter": "nearest"
+}
