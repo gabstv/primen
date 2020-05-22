@@ -6,62 +6,31 @@ import (
 	"strconv"
 )
 
-type FileType string
-
-const (
-	FileTypeSlice FileType = "slice"
-	FileTypeMap   FileType = "map"
-)
-
+// AnimDirection represents Aseprite animation directions
 type AnimDirection string
 
 const (
-	AnimForward  AnimDirection = "forward"
-	AnimReverse  AnimDirection = "reverse"
+	// AnimForward forward animation
+	AnimForward AnimDirection = "forward"
+	// AnimReverse reverse animation
+	AnimReverse AnimDirection = "reverse"
+	// AnimPingPong goes forward and backwards endlessly
 	AnimPingPong AnimDirection = "pingpong"
 )
 
-type File interface {
-	Walk(fn func(i FrameInfo) bool)
-	Type() FileType
-	GetMetadata() Metadata
-	GetFrame(name string) (i FrameInfo, ok bool)
-}
-
-type FileMap struct {
-	Frames map[string]FrameInfo `json:"frames"`
-	Meta   Metadata             `json:"meta"`
-}
-
-func (f *FileMap) Walk(fn func(i FrameInfo) bool) {
-	for k, v := range f.Frames {
-		v2 := v
-		v2.Filename = k
-		if !fn(v2) {
-			return
-		}
-	}
-}
-
-func (f *FileMap) Type() FileType {
-	return FileTypeMap
-}
-
-func (f *FileMap) GetMetadata() Metadata {
-	return f.Meta
-}
-
-func (f *FileMap) GetFrame(name string) (i FrameInfo, ok bool) {
-	i, ok = f.Frames[name]
-	return
-}
-
-type FileSlice struct {
+// File represents an Aseprite sprite sheet file
+type File struct {
 	Frames []FrameInfo `json:"frames"`
 	Meta   Metadata    `json:"meta"`
 }
 
-func (f *FileSlice) Walk(fn func(i FrameInfo) bool) {
+// Length returns the amount of frames
+func (f *File) Length() int {
+	return len(f.Frames)
+}
+
+// Walk iterates on every FrameInfo. It stops early if fn returns false.
+func (f *File) Walk(fn func(i FrameInfo) bool) {
 	for _, v := range f.Frames {
 		if !fn(v) {
 			return
@@ -69,15 +38,27 @@ func (f *FileSlice) Walk(fn func(i FrameInfo) bool) {
 	}
 }
 
-func (f *FileSlice) Type() FileType {
-	return FileTypeSlice
-}
-
-func (f *FileSlice) GetMetadata() Metadata {
+// GetMetadata retrieves Aseprite metadata
+func (f *File) GetMetadata() Metadata {
 	return f.Meta
 }
 
-func (f *FileSlice) GetFrame(name string) (i FrameInfo, ok bool) {
+// GetFrameByIndex returns the FrameInfo at the index position. It returns false
+// if out of bounds.
+func (f *File) GetFrameByIndex(index int) (i FrameInfo, ok bool) {
+	if index < 0 {
+		return
+	}
+	if len(f.Frames) <= index {
+		return
+	}
+	i = f.Frames[index]
+	ok = true
+	return
+}
+
+// GetFrameByName returns the FrameInfo with the specified name.
+func (f *File) GetFrameByName(name string) (i FrameInfo, ok bool) {
 	for _, v := range f.Frames {
 		if v.Filename == name {
 			return v, true
@@ -96,6 +77,7 @@ type FrameInfo struct {
 	Duration         int       `json:"duration"`
 }
 
+// FrameRect is the frame bounds
 type FrameRect struct {
 	X int `json:"x"`
 	Y int `json:"y"`
@@ -122,15 +104,15 @@ type Vec2 struct {
 }
 
 type Metadata struct {
-	App       string      `json:"app"`
-	Version   string      `json:"version"`
-	Image     string      `json:"image"`
-	Format    string      `json:"format"`
-	Size      ImSize      `json:"size,omitempty"`
-	Scale     string      `json:"scale"`
-	FrameTags []FrameTag  `json:"frameTags"`
-	Layers    []Layer     `json:"layers,omitempty"`
-	Slices    interface{} `json:"slices"`
+	App       string     `json:"app"`
+	Version   string     `json:"version"`
+	Image     string     `json:"image"`
+	Format    string     `json:"format"`
+	Size      ImSize     `json:"size,omitempty"`
+	Scale     string     `json:"scale"`
+	FrameTags []FrameTag `json:"frameTags"`
+	Layers    []Layer    `json:"layers,omitempty"`
+	Slices    []Slice    `json:"slices"`
 }
 
 type Layer struct {
@@ -159,31 +141,13 @@ type SliceKeyframe struct {
 	Pivot  Vec2      `json:"pivot"`
 }
 
-func Parse(jsonb []byte) (File, error) {
-	m, merr := ParseMap(jsonb)
-	s, serr := ParseSlice(jsonb)
-	if merr != nil && serr != nil {
-		return nil, merr
-	}
-	if m != nil {
-		if s != nil {
-			if len(s.Frames) > len(m.Frames) {
-				return s, nil
-			}
-		}
-		return m, nil
-	}
-	return s, nil
-}
-
-func ParseMap(jsonb []byte) (*FileMap, error) {
-	m := &FileMap{}
-	err := json.Unmarshal(jsonb, m)
-	return m, err
-}
-
-func ParseSlice(jsonb []byte) (*FileSlice, error) {
-	m := &FileSlice{}
+// Parse an Aseprite sheet JSON file. Warning: export frams as ARRAY. Do not use
+// the Map option. JSON maps are not guaranteed to be ordered, and Primen is made
+// in Go, which doesn't preserve the order of a Map.
+// The JSON spec states that relying on key ordered maps is abad idea.
+// https://github.com/golang/go/issues/27179#issuecomment-415525033
+func Parse(jsonb []byte) (*File, error) {
+	m := &File{}
 	err := json.Unmarshal(jsonb, m)
 	return m, err
 }
