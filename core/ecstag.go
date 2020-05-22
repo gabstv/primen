@@ -5,8 +5,8 @@ import (
 )
 
 const (
-	SNTag = "tau.TagSystem"
-	CNTag = "tau.TagComponent"
+	SNTag = "primen.TagSystem"
+	CNTag = "primen.TagComponent"
 )
 
 var tagPresent = struct{}{}

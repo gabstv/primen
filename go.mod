@@ -1,4 +1,4 @@
-module github.com/gabstv/tau
+module github.com/gabstv/primen
 
 require (
 	aletheia.icu/broccoli v1.0.3 // indirect

@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/gabstv/tau"
+	"github.com/gabstv/primen"
 	"github.com/urfave/cli"
 )
 
@@ -31,7 +31,7 @@ func main() {
 }
 
 func run(c *cli.Context) error {
-	e := tau.NewEngine(&tau.NewEngineInput{
+	e := primen.NewEngine(&primen.NewEngineInput{
 		Width:     c.Int("width"),
 		Height:    c.Int("height"),
 		Scale:     1,

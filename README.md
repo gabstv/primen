@@ -1,4 +1,4 @@
-# tau
+# ![Primen](assets/primen_logo.png)
 ## WIP
 Powered by [ebiten](https://github.com/hajimehoshi/ebiten)
 

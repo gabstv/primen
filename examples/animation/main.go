@@ -9,8 +9,8 @@ import (
 	"math"
 
 	"github.com/gabstv/ecs"
-	"github.com/gabstv/tau"
-	"github.com/gabstv/tau/core"
+	"github.com/gabstv/primen"
+	"github.com/gabstv/primen/core"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
@@ -19,7 +19,7 @@ func main() {
 	ebimg, _, _ := ebitenutil.NewImageFromFile("zombie_kenney.png", ebiten.FilterDefault)
 	ppimg, _, _ := ebitenutil.NewImageFromFile("ping_pong.png", ebiten.FilterDefault)
 
-	engine := tau.NewEngine(&tau.NewEngineInput{
+	engine := primen.NewEngine(&primen.NewEngineInput{
 		Title:  "Basic Animation",
 		Width:  640,
 		Height: 480,
@@ -39,7 +39,7 @@ func main() {
 		fps := ebiten.CurrentFPS()
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%.2f fps", fps), 0, 0)
 	})
-	s0.AddTag(tau.WorldTagDraw)
+	s0.AddTag(primen.WorldTagDraw)
 
 	engine.Run()
 }

@@ -4,10 +4,10 @@ import (
 	"context"
 	"math"
 
-	"github.com/gabstv/tau"
-	"github.com/gabstv/tau/core"
-	"github.com/gabstv/tau/examples/layers/res"
-	"github.com/gabstv/tau/io"
+	"github.com/gabstv/primen"
+	"github.com/gabstv/primen/core"
+	"github.com/gabstv/primen/examples/layers/res"
+	"github.com/gabstv/primen/io"
 	"github.com/hajimehoshi/ebiten"
 )
 
@@ -30,7 +30,7 @@ func main() {
 	ctx, cf := context.WithCancel(context.Background())
 	defer cf()
 	//
-	engine := tau.NewEngine(&tau.NewEngineInput{
+	engine := primen.NewEngine(&primen.NewEngineInput{
 		Width:           640,
 		Height:          480,
 		FS:              fs,
@@ -38,7 +38,7 @@ func main() {
 		Scale:           2,
 		FixedResolution: true,
 		Resizable:       true,
-		OnReady: func(e *tau.Engine) {
+		OnReady: func(e *primen.Engine) {
 			dogamesetup(ctx, e, spbgs)
 		},
 	})
@@ -47,13 +47,13 @@ func main() {
 	}
 }
 
-func dogamesetup(ctx context.Context, engine *tau.Engine, bgs []*ebiten.Image) {
+func dogamesetup(ctx context.Context, engine *primen.Engine, bgs []*ebiten.Image) {
 	select {
 	case <-ctx.Done():
 		return
 	case <-engine.Ready():
 	}
-	spr := tau.NewSprite(engine.Default(), bgs[0], tau.Layer0, nil)
+	spr := primen.NewSprite(engine.Default(), bgs[0], primen.Layer0, nil)
 	spr.Transform.X = 100
 	spr.Transform.Y = 100
 	spr.Transform.ScaleX = .5
@@ -62,11 +62,11 @@ func dogamesetup(ctx context.Context, engine *tau.Engine, bgs []*ebiten.Image) {
 	engine.Default().AddComponentToEntity(spr.Entity(), engine.Default().Component(core.CNRotation), &core.Rotation{
 		Speed: math.Pi / 16,
 	})
-	spr2 := tau.NewSprite(engine.Default(), bgs[1], tau.Layer0, spr.Transform)
+	spr2 := primen.NewSprite(engine.Default(), bgs[1], primen.Layer0, spr.Transform)
 	spr2.Transform.X = 10
 	spr2.Transform.Y = 7
 
-	spr3 := tau.NewSprite(engine.Default(), bgs[2], tau.Layer0, spr2.Transform)
+	spr3 := primen.NewSprite(engine.Default(), bgs[2], primen.Layer0, spr2.Transform)
 	spr3.Transform.X = 16
 	spr3.Transform.Y = 16
 	spr3.Transform.ScaleX = 2

@@ -4,7 +4,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/gabstv/tau/io"
+	"github.com/gabstv/primen/io"
 )
 
 type osfs struct {

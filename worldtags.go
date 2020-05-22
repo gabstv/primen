@@ -1,4 +1,4 @@
-package tau
+package primen
 
 import "github.com/gabstv/ecs"
 

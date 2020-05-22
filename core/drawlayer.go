@@ -10,11 +10,11 @@ import (
 
 const (
 	// SNDrawLayer is the system name
-	SNDrawLayer = "tau.DrawLayerSystem"
+	SNDrawLayer = "primen.DrawLayerSystem"
 	// CNDrawLayer is the component signature name
-	CNDrawLayer = "tau.DrawLayerComponent"
+	CNDrawLayer = "primen.DrawLayerComponent"
 	// SNDrawLayerSprite is the system name
-	SNDrawLayerSprite = "tau.DrawLayerSpriteSystem"
+	SNDrawLayerSprite = "primen.DrawLayerSpriteSystem"
 )
 
 // DrawLayer component data

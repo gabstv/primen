@@ -6,9 +6,9 @@ import (
 )
 
 const (
-	SNTransform       = "tau.TransformSystem"
-	SNTransformSprite = "tau.TransformSpriteSystem"
-	CNTransform       = "tau.TransformComponent"
+	SNTransform       = "primen.TransformSystem"
+	SNTransformSprite = "primen.TransformSpriteSystem"
+	CNTransform       = "primen.TransformComponent"
 )
 
 type TransformComponentSystem struct {

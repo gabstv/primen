@@ -5,8 +5,8 @@ import (
 )
 
 const (
-	SNRotationTransform = "tau.RotationTransformSystem"
-	CNRotation          = "tau.RotationComponent"
+	SNRotationTransform = "primen.RotationTransformSystem"
+	CNRotation          = "primen.RotationComponent"
 )
 
 type RotationTransformComponentSystem struct {

@@ -6,8 +6,8 @@ import (
 	"math"
 
 	"github.com/gabstv/ecs"
-	"github.com/gabstv/tau"
-	"github.com/gabstv/tau/core"
+	"github.com/gabstv/primen"
+	"github.com/gabstv/primen/core"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
@@ -36,7 +36,7 @@ func main() {
 		panic(err)
 	}
 
-	engine := tau.NewEngine(&tau.NewEngineInput{
+	engine := primen.NewEngine(&primen.NewEngineInput{
 		Title:  "Basic Sprites",
 		Width:  640,
 		Height: 480,

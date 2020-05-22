@@ -29,9 +29,9 @@ const (
 )
 
 const (
-	SNSpriteAnimation     = "tau.SpriteAnimationSystem"
-	SNSpriteAnimationLink = "tau.SpriteAnimationLinkSystem"
-	CNSpriteAnimation     = "tau.SpriteAnimationComponent"
+	SNSpriteAnimation     = "primen.SpriteAnimationSystem"
+	SNSpriteAnimationLink = "primen.SpriteAnimationLinkSystem"
+	CNSpriteAnimation     = "primen.SpriteAnimationComponent"
 )
 
 type SpriteAnimationComponentSystem struct {

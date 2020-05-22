@@ -5,7 +5,7 @@ import (
 	"image"
 	"image/png"
 
-	"github.com/gabstv/tau/io/pb"
+	"github.com/gabstv/primen/io/pb"
 	proto "github.com/golang/protobuf/proto"
 	"github.com/hajimehoshi/ebiten"
 )

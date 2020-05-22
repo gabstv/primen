@@ -2,12 +2,12 @@ package main
 
 import (
 	"github.com/gabstv/ecs"
-	"github.com/gabstv/tau"
-	"github.com/gabstv/tau/core"
+	"github.com/gabstv/primen"
+	"github.com/gabstv/primen/core"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
 
-var engine *tau.Engine
+var engine *primen.Engine
 
 func hellocomp(w *ecs.World) *ecs.Component {
 	return core.UpsertComponent(w, ecs.NewComponentInput{
@@ -24,7 +24,7 @@ func movecomp(w *ecs.World) *ecs.Component {
 var hellocs = &core.BasicCS{
 	SysName: "hellocs_system",
 	SysExec: initEngineSystemExec,
-	SysTags: []string{tau.WorldTagDraw},
+	SysTags: []string{primen.WorldTagDraw},
 	GetComponents: func(w *ecs.World) []*ecs.Component {
 		return []*ecs.Component{
 			hellocomp(w),
@@ -35,7 +35,7 @@ var hellocs = &core.BasicCS{
 var movecs = &core.BasicCS{
 	SysName: "movecs_system",
 	SysExec: moveSysExec,
-	SysTags: []string{tau.WorldTagUpdate},
+	SysTags: []string{primen.WorldTagUpdate},
 	GetComponents: func(w *ecs.World) []*ecs.Component {
 		return []*ecs.Component{
 			movecomp(w),
@@ -47,7 +47,7 @@ var movecs = &core.BasicCS{
 const SPEED float64 = 120
 
 func main() {
-	engine = tau.NewEngine(&tau.NewEngineInput{
+	engine = primen.NewEngine(&primen.NewEngineInput{
 		Width:  640,
 		Height: 480,
 		Scale:  2,

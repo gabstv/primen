@@ -3,14 +3,14 @@ package core_test
 import (
 	"testing"
 
-	"github.com/gabstv/tau"
-	"github.com/gabstv/tau/core"
+	"github.com/gabstv/primen"
+	"github.com/gabstv/primen/core"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTagSystem(t *testing.T) {
-	e := tau.NewEngine(&tau.NewEngineInput{
+	e := primen.NewEngine(&primen.NewEngineInput{
 		Scale:  1,
 		Width:  400,
 		Height: 300,

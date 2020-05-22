@@ -1,4 +1,4 @@
-package tau
+package primen
 
 import (
 	"os"
@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/gabstv/ecs"
-	"github.com/gabstv/tau/core"
-	"github.com/gabstv/tau/io"
-	osfs "github.com/gabstv/tau/io/os"
+	"github.com/gabstv/primen/core"
+	"github.com/gabstv/primen/io"
+	osfs "github.com/gabstv/primen/io/os"
 	"github.com/hajimehoshi/ebiten"
 )
 
@@ -39,7 +39,7 @@ func (i *StepInfo) Set(lt time.Time, frame int64) {
 	i.frame = frame
 }
 
-// Engine is what controls the ECS of tau.
+// Engine is what controls the ECS of primen.
 type Engine struct {
 	updateInfo   *StepInfo
 	drawInfo     *StepInfo

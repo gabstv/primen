@@ -32,11 +32,11 @@ type DrawableImager interface {
 
 const (
 	// SNSoloDrawable is the system name of a drawable without as DrawLayer component
-	SNSoloDrawable = "tau.DrawableSystem"
+	SNSoloDrawable = "primen.DrawableSystem"
 	// SNDrawLayerDrawable is the system name of a drawable with as DrawLayer component
-	SNDrawLayerDrawable = "tau.DrawLayerDrawableSystem"
+	SNDrawLayerDrawable = "primen.DrawLayerDrawableSystem"
 	// CNDrawable is the component name of a drawable
-	CNDrawable = "tau.DrawableComponent"
+	CNDrawable = "primen.DrawableComponent"
 )
 
 // ███████╗ ██████╗ ██╗      ██████╗

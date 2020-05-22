@@ -1,7 +1,7 @@
-package tau
+package primen
 
 import (
-	"github.com/gabstv/tau/core"
+	"github.com/gabstv/primen/core"
 )
 
 // LAYERS

@@ -7,10 +7,10 @@ import (
 	"math/rand"
 
 	"github.com/gabstv/ecs"
-	"github.com/gabstv/tau"
-	"github.com/gabstv/tau/core"
-	"github.com/gabstv/tau/examples/layers/res"
-	"github.com/gabstv/tau/io"
+	"github.com/gabstv/primen"
+	"github.com/gabstv/primen/core"
+	"github.com/gabstv/primen/examples/layers/res"
+	"github.com/gabstv/primen/io"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 	"github.com/hajimehoshi/ebiten/inpututil"
@@ -43,7 +43,7 @@ func main() {
 	ctx, cf := context.WithCancel(context.Background())
 	defer cf()
 	//
-	engine := tau.NewEngine(&tau.NewEngineInput{
+	engine := primen.NewEngine(&primen.NewEngineInput{
 		Width:         640,
 		Height:        480,
 		FS:            fs,
@@ -51,7 +51,7 @@ func main() {
 		Scale:         2,
 		Resizable:     true,
 		MaxResolution: true,
-		OnReady: func(e *tau.Engine) {
+		OnReady: func(e *primen.Engine) {
 			dogamesetup(ctx, e, spbgs, spfgs)
 		},
 	})
@@ -72,10 +72,10 @@ type OrbitalMovement struct {
 	Oy          float64
 	R           float64
 	AngleR      float64
-	ChildSprite *tau.Sprite
+	ChildSprite *primen.Sprite
 }
 
-func dogamesetup(ctx context.Context, engine *tau.Engine, bgs, fgs []*ebiten.Image) {
+func dogamesetup(ctx context.Context, engine *primen.Engine, bgs, fgs []*ebiten.Image) {
 	select {
 	case <-ctx.Done():
 		return
@@ -142,7 +142,7 @@ func dogamesetup(ctx context.Context, engine *tau.Engine, bgs, fgs []*ebiten.Ima
 
 	rand.Seed(112358)
 
-	root := tau.NewTransform(engine.Default(), nil)
+	root := primen.NewTransform(engine.Default(), nil)
 	root.TauTransform.X = 320 / 2
 	root.TauTransform.Y = 240 / 2
 
@@ -156,10 +156,10 @@ func dogamesetup(ctx context.Context, engine *tau.Engine, bgs, fgs []*ebiten.Ima
 		for j := 0; j < 20; j++ {
 			//ri := rand.Intn(4)
 			rl := rand.Intn(4)
-			bgs := tau.NewSprite(engine.Default(), bgs[rl], core.LayerIndex(rl), root.TauTransform)
+			bgs := primen.NewSprite(engine.Default(), bgs[rl], core.LayerIndex(rl), root.TauTransform)
 			bgs.TauSprite.OriginX = .5
 			bgs.TauSprite.OriginY = .5
-			fgs := tau.NewSprite(engine.Default(), fgs[rl], core.LayerIndex(rl), bgs.Transform)
+			fgs := primen.NewSprite(engine.Default(), fgs[rl], core.LayerIndex(rl), bgs.Transform)
 			fgs.TauSprite.OriginX = .5
 			fgs.TauSprite.OriginY = .5
 			//fgs.Transform.Angle = -math.Pi * 0.5
@@ -193,6 +193,6 @@ func dogamesetup(ctx context.Context, engine *tau.Engine, bgs, fgs []*ebiten.Ima
 			xframes <- struct{}{}
 		}
 	})
-	s0.AddTag(tau.WorldTagDraw)
+	s0.AddTag(primen.WorldTagDraw)
 
 }

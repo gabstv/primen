@@ -1,8 +1,8 @@
-package tau
+package primen
 
 import (
 	"github.com/gabstv/ecs"
-	"github.com/gabstv/tau/core"
+	"github.com/gabstv/primen/core"
 	"github.com/hajimehoshi/ebiten"
 )
 

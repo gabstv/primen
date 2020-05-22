@@ -6,8 +6,8 @@ package core
 )
 
 const (
-	SNRepeatSprite string = "tau.RepeatSpriteSystem"
-	CNRepeatSprite string = "tau.RepeatSpriteComponent"
+	SNRepeatSprite string = "primen.RepeatSpriteSystem"
+	CNRepeatSprite string = "primen.RepeatSpriteComponent"
 )
 
 // RepeatSprite is the component data of a RepeatSpriteComponent

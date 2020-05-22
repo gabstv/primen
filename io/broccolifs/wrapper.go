@@ -2,7 +2,7 @@ package broccolifs
 
 import (
 	"aletheia.icu/broccoli/fs"
-	"github.com/gabstv/tau/io"
+	"github.com/gabstv/primen/io"
 )
 
 type ffile struct {

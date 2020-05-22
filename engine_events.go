@@ -1,6 +1,6 @@
-package tau
+package primen
 
-import "github.com/gabstv/tau/core"
+import "github.com/gabstv/primen/core"
 
 func (e *Engine) AddEventListener(eventName string, fn core.EventFn) core.EventID {
 	return e.eventManager.Register(eventName, fn)

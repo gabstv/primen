@@ -1,8 +1,8 @@
 package res
 
 import (
-	"github.com/gabstv/tau/io"
-	"github.com/gabstv/tau/io/broccolifs"
+	"github.com/gabstv/primen/io"
+	"github.com/gabstv/primen/io/broccolifs"
 )
 
 //go:generate broccoli -var=rx

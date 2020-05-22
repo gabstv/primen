@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/gabstv/ecs"
-	"github.com/gabstv/tau"
-	"github.com/gabstv/tau/core"
+	"github.com/gabstv/primen"
+	"github.com/gabstv/primen/core"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
@@ -89,7 +89,7 @@ var spinnercs = &core.BasicCS{
 func main() {
 	ebimg, _, _ := ebitenutil.NewImageFromFile("img.png", ebiten.FilterDefault)
 
-	engine := tau.NewEngine(&tau.NewEngineInput{
+	engine := primen.NewEngine(&primen.NewEngineInput{
 		Title:  "Basic Transform With Sprites",
 		Width:  640,
 		Height: 480,
@@ -116,7 +116,7 @@ func main() {
 	// add children
 	for i := 0; i < 10; i++ {
 		e2 := dw.NewEntity()
-		//mm := tau.IM.Moved(tau.V(30, 0)).Rotated(tau.ZV, (math.Pi*2)*(float64(i)/10)).Project(tau.ZV)
+		//mm := primen.IM.Moved(primen.V(30, 0)).Rotated(primen.ZV, (math.Pi*2)*(float64(i)/10)).Project(primen.ZV)
 
 		dw.AddComponentToEntity(e2, tc, &core.Transform{
 			X:      math.Cos((math.Pi*2)*(float64(i)/10)) * 30,
@@ -146,7 +146,7 @@ func main() {
 		ebitenutil.DebugPrintAt(screen, "arrows = move; x, z = rotate", 0, 24)
 
 	}, spinnercomp)
-	ddrawsys.AddTag(tau.WorldTagDraw)
+	ddrawsys.AddTag(primen.WorldTagDraw)
 
 	engine.Run()
 }

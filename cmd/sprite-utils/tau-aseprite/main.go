@@ -17,9 +17,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gabstv/tau/internal/spriteutils"
-	"github.com/gabstv/tau/io/pb"
-	"github.com/gabstv/tau/utils/aseprite"
+	"github.com/gabstv/primen/internal/spriteutils"
+	"github.com/gabstv/primen/io/pb"
+	"github.com/gabstv/primen/utils/aseprite"
 	"github.com/golang/protobuf/proto"
 	"github.com/urfave/cli"
 )

@@ -1,10 +1,10 @@
-package tau
+package primen
 
 import (
 	"errors"
 
 	"github.com/gabstv/ecs"
-	"github.com/gabstv/tau/core"
+	"github.com/gabstv/primen/core"
 )
 
 // SetFuncs adds a component with the specified functions
