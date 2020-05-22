@@ -13,6 +13,14 @@ const (
 	FileTypeMap   FileType = "map"
 )
 
+type AnimDirection string
+
+const (
+	AnimForward  AnimDirection = "forward"
+	AnimReverse  AnimDirection = "reverse"
+	AnimPingPong AnimDirection = "pingpong"
+)
+
 type File interface {
 	Walk(fn func(i FrameInfo) bool)
 	Type() FileType
@@ -108,6 +116,11 @@ type ImSize struct {
 	H int `json:"h"`
 }
 
+type Vec2 struct {
+	X int `json:"x"`
+	Y int `json:"y"`
+}
+
 type Metadata struct {
 	App       string      `json:"app"`
 	Version   string      `json:"version"`
@@ -115,7 +128,7 @@ type Metadata struct {
 	Format    string      `json:"format"`
 	Size      ImSize      `json:"size,omitempty"`
 	Scale     string      `json:"scale"`
-	FrameTags interface{} `json:"frameTags"`
+	FrameTags []FrameTag  `json:"frameTags"`
 	Layers    []Layer     `json:"layers,omitempty"`
 	Slices    interface{} `json:"slices"`
 }
@@ -124,6 +137,26 @@ type Layer struct {
 	Name      string  `json:"name"`
 	Opacity   float64 `json:"opacity"`
 	BlendMode string  `json:"blendMode"`
+}
+
+// "name": "lbar1", "from": 0, "to": 11, "direction": "forward"
+type FrameTag struct {
+	Name      string        `json:"name"`
+	From      int           `json:"from"`
+	To        int           `json:"to"`
+	Direction AnimDirection `json:"direction"`
+}
+
+type Slice struct {
+	Name  string          `json:"name"`
+	Color string          `json:"color"`
+	Keys  []SliceKeyframe `json:"keys"`
+}
+
+type SliceKeyframe struct {
+	Frame  int       `json:"frame"`
+	Bounds FrameRect `json:"bounds"`
+	Pivot  Vec2      `json:"pivot"`
 }
 
 func Parse(jsonb []byte) (File, error) {
