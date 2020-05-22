@@ -26,9 +26,18 @@ import (
 
 func main() {
 	app := cli.NewApp()
+	app.Name = "aseprimen"
+	app.Authors = []cli.Author{
+		{
+			Name:  "Gabriel Ochsenhofer",
+			Email: "gabriel.ochsenhofer <*at*> gmail [*dot*] com",
+		},
+	}
+	app.Copyright = "2020 Gabriel Ochsenhofer"
+	app.Description = "A set of utilities to import content from Aseprite."
 
 	app.Commands = []cli.Command{
-		cli.Command{
+		{
 			Name:  "atlas",
 			Usage: "Commands related to building atlases from aseprite sprite sheets",
 			Subcommands: cli.Commands{
@@ -76,7 +85,7 @@ func main() {
 				},
 			},
 		},
-		cli.Command{
+		{
 			Name:  "skel",
 			Usage: "Generate skeletons",
 			Subcommands: cli.Commands{
