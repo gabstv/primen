@@ -18,17 +18,24 @@ const (
 	FrameTags AtlasImportStrategy = "frame_tags"
 )
 
+type AtlasImporterGroup struct {
+	Templates   []AtlasImporter `json:"templates"`
+	Output      string          `json:"output,omitempty"`
+	ImageFilter string          `json:"image_filter,omitempty"`
+	MaxWidth    int             `json:"max_width"`
+	MaxHeight   int             `json:"max_height"`
+	Padding     int             `json:"padding"`
+}
+
 // AtlasImporter is a template used to import an Aseprite JSON (of a sprite sheet)
 // to Primen.
 type AtlasImporter struct {
-	ImportStrategy string        `json:"import_strategy"`
-	Animations     []AnimationIO `json:"animations"`
-	Slices         []SliceIO     `json:"slices"`
-	FrameTags      []FrameTagIO  `json:"frame_tags"`
-	Frames         []FrameIO     `json:"frames"`
-	SpriteSheets   []string      `json:"sprite_sheets"`
-	Output         string        `json:"output,omitempty"`
-	ImageFilter    string        `json:"image_filter,omitempty"`
+	ImportStrategy AtlasImportStrategy `json:"import_strategy"`
+	Animations     []AnimationIO       `json:"animations"`
+	Slices         []SliceIO           `json:"slices"`
+	FrameTags      []FrameTagIO        `json:"frame_tags"`
+	Frames         []FrameIO           `json:"frames"`
+	AsepriteSheet  string              `json:"asesprite_sheet"`
 }
 
 // FrameWithFilename returns the frame with the specified filename.
@@ -49,11 +56,9 @@ func (i AtlasImporter) FrameWithFilename(filename string) (frame FrameIO, exists
 type FrameIO struct {
 	Filename   string `json:"filename"`
 	OutputName string `json:"output_name"`
-	SheetIndex int    `json:"sheet_index"`
-	SheetName  string `json:"sheet_name,omitempty"`
 }
 
-// FrameIO is the template to import sprites by a slice.
+// SliceIO is the template to import sprites by a slice.
 type SliceIO struct {
 	Name          string `json:"name"`
 	OutputPattern string `json:"output_pattern"`
@@ -71,6 +76,7 @@ type AnimationIO struct {
 	ClipMode   string        `json:"clip_mode,omitempty"`
 	Events     []AnimEventIO `json:"events"`
 	EndedEvent *AnimEventIO  `json:"ended_event,omitempty"`
+	FPS        int           `json:"fps"`
 }
 
 type AnimEventIO struct {

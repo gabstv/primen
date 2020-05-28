@@ -1,4 +1,4 @@
-package spriteutils
+package atlaspacker
 
 import (
 	"context"

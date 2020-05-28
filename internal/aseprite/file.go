@@ -67,6 +67,16 @@ func (f *File) GetFrameByName(name string) (i FrameInfo, ok bool) {
 	return
 }
 
+func (f *File) GetSliceByName(name string) (slc Slice, index int) {
+	for i, v := range f.Meta.Slices {
+		if v.Name == name {
+			return v, i
+		}
+	}
+	index = -1
+	return
+}
+
 type FrameInfo struct {
 	Filename         string    `json:"filename"`
 	Frame            FrameRect `json:"frame"`

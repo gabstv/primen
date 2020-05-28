@@ -17,9 +17,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gabstv/primen/internal/spriteutils"
+	"github.com/gabstv/primen/internal/aseprite"
+	"github.com/gabstv/primen/internal/atlaspacker"
 	"github.com/gabstv/primen/io/pb"
-	"github.com/gabstv/primen/utils/aseprite"
 	"github.com/golang/protobuf/proto"
 	"github.com/urfave/cli"
 )
@@ -167,10 +167,10 @@ func cmdAtlasBuild(c *cli.Context) error {
 		}
 	}
 	//
-	idm := make(map[image.Image]*spriteutils.RectPackerNode)
-	idmr := make(map[*spriteutils.RectPackerNode]image.Image)
-	idmsprs := make(map[*spriteutils.RectPackerNode][]aseprite.FrameIO)
-	pkr := &spriteutils.BinTreeRectPacker{}
+	idm := make(map[image.Image]*atlaspacker.RectPackerNode)
+	idmr := make(map[*atlaspacker.RectPackerNode]image.Image)
+	idmsprs := make(map[*atlaspacker.RectPackerNode][]aseprite.FrameIO)
+	pkr := &atlaspacker.BinTreeRectPacker{}
 	for si, v := range tpl.SpriteSheets {
 		fb, err := ioutil.ReadFile(v)
 		if err != nil {
@@ -255,7 +255,7 @@ func cmdAtlasBuild(c *cli.Context) error {
 		})
 	}
 	//TODO: support border/margin etc
-	atlases, err := pkr.Pack(context.TODO(), spriteutils.PackerInput{
+	atlases, err := pkr.Pack(context.TODO(), atlaspacker.PackerInput{
 		MaxWidth:  c.Int("max-width"),
 		MaxHeight: c.Int("max-height"),
 		Padding:   c.Int("padding"),
