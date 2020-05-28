@@ -31,6 +31,8 @@ message Frame {
   uint32 y = 3;
   uint32 w = 4;
   uint32 h = 5;
+  int32 ox = 6;
+  int32 oy = 7;
 }
 
 message AnimationClip {

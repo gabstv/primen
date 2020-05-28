@@ -108,9 +108,9 @@ func importAtlasByFrames(ctx context.Context, r importByRules) error {
 			if _, ok := idm[clipim]; !ok {
 				node := r.Pkr.AddRect(clipim.Bounds())
 				idm[clipim] = node
-				r.Imptr.addSprite(frame.OutputName, node, clipim)
+				r.Imptr.addSprite(frame.OutputName, node, clipim, Vec2{})
 			} else {
-				r.Imptr.addSprite(frame.OutputName, idm[clipim], clipim)
+				r.Imptr.addSprite(frame.OutputName, idm[clipim], clipim, Vec2{})
 			}
 		}
 		return true
@@ -136,10 +136,10 @@ func importAtlasBySlices(ctx context.Context, r importByRules) error {
 			fname := getNameByPattern(slctpl.OutputPattern, slctpl.Name, i, ri, v.Frame)
 			if _, ok := idm[clipim]; !ok {
 				node := r.Pkr.AddRect(clipim.Bounds())
-				idm[clipim] = node //TODO: support pivots/offsets?
-				r.Imptr.addSprite(fname, node, clipim)
+				idm[clipim] = node
+				r.Imptr.addSprite(fname, node, clipim, v.Pivot)
 			} else {
-				r.Imptr.addSprite(fname, idm[clipim], clipim)
+				r.Imptr.addSprite(fname, idm[clipim], clipim, v.Pivot)
 			}
 		}
 	}
@@ -211,11 +211,12 @@ func newImImporter() *imImporter {
 	}
 }
 
-func (i *imImporter) addSprite(name string, node *atlaspacker.RectPackerNode, img image.Image) {
+func (i *imImporter) addSprite(name string, node *atlaspacker.RectPackerNode, img image.Image, pivot Vec2) {
 	i.sprites = append(i.sprites, imSprite{
 		Name:  name,
 		Node:  node,
 		Image: img,
+		Pivot: pivot,
 	})
 }
 
@@ -242,6 +243,7 @@ type imSprite struct {
 	Name  string
 	Node  *atlaspacker.RectPackerNode
 	Image image.Image
+	Pivot Vec2
 
 	// after the bin packer is calculated
 
