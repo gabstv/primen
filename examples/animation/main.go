@@ -58,17 +58,19 @@ func createCharacter(dw *ecs.World, spriteComp *ecs.Component, animComp *ecs.Com
 	dw.AddComponentToEntity(e, animComp, &core.SpriteAnimation{
 		Enabled: true,
 		Playing: true,
-		Clips: []core.SpriteAnimationClip{
-			core.SpriteAnimationClip{
-				Name: "default",
-				Frames: []image.Rectangle{
-					image.Rect(0, 0, 80, 110),      // 0
-					image.Rect(80, 0, 80*2, 110),   // 1
-					image.Rect(80*2, 0, 80*3, 110), // 2
-					image.Rect(80*3, 0, 80*4, 110), // 3
-					image.Rect(0, 0, 80, 110),      // 0
+		Anim: &core.SpriteAnimationDef{
+			Clips: []core.SpriteAnimationClip{
+				{
+					Name: "default",
+					Frames: []image.Rectangle{
+						image.Rect(0, 0, 80, 110),      // 0
+						image.Rect(80, 0, 80*2, 110),   // 1
+						image.Rect(80*2, 0, 80*3, 110), // 2
+						image.Rect(80*3, 0, 80*4, 110), // 3
+						image.Rect(0, 0, 80, 110),      // 0
+					},
+					ClipMode: core.AnimLoop,
 				},
-				ClipMode: core.AnimLoop,
 			},
 		},
 		Fps: 24,
@@ -89,16 +91,18 @@ func createPingPonger(dw *ecs.World, spriteComp *ecs.Component, animComp *ecs.Co
 	dw.AddComponentToEntity(e, animComp, &core.SpriteAnimation{
 		Enabled: true,
 		Playing: true,
-		Clips: []core.SpriteAnimationClip{
-			core.SpriteAnimationClip{
-				Name: "default",
-				Frames: []image.Rectangle{
-					image.Rect(8*0, 0, 8*1, 32),
-					image.Rect(8*1, 0, 8*2, 32),
-					image.Rect(8*2, 0, 8*3, 32),
-					image.Rect(8*3, 0, 8*4, 32),
+		Anim: &core.SpriteAnimationDef{
+			Clips: []core.SpriteAnimationClip{
+				{
+					Name: "default",
+					Frames: []image.Rectangle{
+						image.Rect(8*0, 0, 8*1, 32),
+						image.Rect(8*1, 0, 8*2, 32),
+						image.Rect(8*2, 0, 8*3, 32),
+						image.Rect(8*3, 0, 8*4, 32),
+					},
+					ClipMode: core.AnimPingPong,
 				},
-				ClipMode: core.AnimPingPong,
 			},
 		},
 		Fps: 24,

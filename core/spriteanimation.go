@@ -75,7 +75,7 @@ func spriteAnimationComponentDef(w *ecs.World) *ecs.Component {
 		},
 		DestructorFn: func(_ *ecs.World, entity ecs.Entity, data interface{}) {
 			sd := data.(*SpriteAnimation)
-			sd.Clips = nil
+			sd.Anim = nil
 		},
 	})
 }
@@ -192,7 +192,7 @@ type SpriteAnimation struct {
 	Playing     bool
 	ActiveClip  int
 	ActiveFrame int
-	Clips       []SpriteAnimationClip
+	Anim        *SpriteAnimationDef
 	T           float64
 
 	// Default fps for clips with no fps specified
@@ -207,6 +207,12 @@ type SpriteAnimation struct {
 	nextAnimationName string
 	nextAnimationSet  bool
 	reversed          bool
+}
+
+// SpriteAnimationDef implements Animation
+//TODO: create Animation interface (?)
+type SpriteAnimationDef struct {
+	Clips []SpriteAnimationClip
 }
 
 // PlayClip sets the animation to play a clip by name
@@ -276,25 +282,25 @@ func spriteAnimResolvePlayClip(spranim *SpriteAnimation) {
 	spranim.ActiveFrame = 0
 	spranim.ActiveClip = index
 	spranim.reversed = false
-	if evs := spranim.Clips[index].Events; evs != nil && len(evs) > 0 && evs[0] != nil {
+	if evs := spranim.Anim.Clips[index].Events; evs != nil && len(evs) > 0 && evs[0] != nil {
 		spranim.AnimEvent(evs[0].Name, evs[0].Value)
 	}
 }
 
 func spriteAnimResolveClipMap(spranim *SpriteAnimation) {
-	if spranim.clipMapLen == len(spranim.Clips) {
+	if spranim.clipMapLen == len(spranim.Anim.Clips) {
 		return
 	}
 	// rebuild cache
 	spranim.clipMap = make(map[string]int)
-	for k, v := range spranim.Clips {
+	for k, v := range spranim.Anim.Clips {
 		spranim.clipMap[v.Name] = k
 	}
-	spranim.clipMapLen = len(spranim.Clips)
+	spranim.clipMapLen = len(spranim.Anim.Clips)
 }
 
 func spriteAnimResolvePlayback(globalfps, dt float64, spranim *SpriteAnimation) {
-	clip := spranim.Clips[spranim.ActiveClip]
+	clip := spranim.Anim.Clips[spranim.ActiveClip]
 	localfps := nonzeroval(clip.Fps, spranim.Fps, globalfps)
 	localdt := (dt * localfps) / globalfps
 	if !spranim.lastPlaying {
@@ -311,7 +317,7 @@ func spriteAnimResolvePlayback(globalfps, dt float64, spranim *SpriteAnimation) 
 		spranim.reversed = false
 	}
 	spranim.lastClip = spranim.ActiveClip
-	spranim.lastImage = spranim.Clips[spranim.lastClip].Image
+	spranim.lastImage = spranim.Anim.Clips[spranim.lastClip].Image
 	spranim.lastPlaying = true
 	spranim.T += localdt * localfps
 	if spranim.T >= 1 {
@@ -407,7 +413,7 @@ func SpriteAnimationLinkSystemExec(ctx Context) {
 				}
 			}
 		}
-		spr.SetBounds(spranim.Clips[spranim.ActiveClip].Frames[spranim.ActiveFrame])
+		spr.SetBounds(spranim.Anim.Clips[spranim.ActiveClip].Frames[spranim.ActiveFrame])
 	}
 }
 

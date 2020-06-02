@@ -23,6 +23,7 @@ message AtlasFile {
   repeated ImageFilter filters = 2;
   map<string, Frame> frames = 3;
   map<string, AnimationClip> anim_clips = 4;
+  map<string, AnimationGroup> anim_groups = 5;
 }
 
 message Frame {
@@ -33,6 +34,11 @@ message Frame {
   uint32 h = 5;
   int32 ox = 6;
   int32 oy = 7;
+}
+
+message AnimationGroup {
+  string name = 1;
+  repeated string clips = 2;
 }
 
 message AnimationClip {
