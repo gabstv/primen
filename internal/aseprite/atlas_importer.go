@@ -70,8 +70,8 @@ type FrameTagIO struct {
 }
 
 type AnimationIO struct {
-	Slice      string        `json:"slice"`
-	FrameTag   string        `json:"frame_tag"`
+	Slice      string        `json:"slice,omitempty"`
+	FrameTag   string        `json:"frame_tag,omitempty"`
 	OutputName string        `json:"output_name"`
 	ClipMode   string        `json:"clip_mode,omitempty"`
 	Events     []AnimEventIO `json:"events"`
