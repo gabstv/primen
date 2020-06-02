@@ -173,7 +173,7 @@ func importAtlasBySlices(ctx context.Context, r importByRules) error {
 		}
 		//
 	}
-	return errors.New("not implemented")
+	return nil
 }
 
 func importAtlasByFrameTags(ctx context.Context, r importByRules) error {

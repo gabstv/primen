@@ -35,7 +35,7 @@
     }],
     "image_filter": "nearest",
     "max_width": 4096,
-    "max_height": 0,
+    "max_height": 4096,
     "padding": 0,
     "output": "people.dat"
 }

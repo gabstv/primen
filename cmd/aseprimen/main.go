@@ -66,6 +66,11 @@ func main() {
 					Value: 4096,
 				},
 				cli.UintFlag{
+					Name:  flagMaxHeight,
+					Usage: "Max atlas height",
+					Value: 4096,
+				},
+				cli.UintFlag{
 					Name:  flagPadding,
 					Usage: "Padding between sprites",
 					Value: 0,
@@ -82,13 +87,17 @@ func main() {
 					Usage: "Animations FPS",
 					Value: 24,
 				},
+				cli.StringFlag{
+					Name:  "atlasout",
+					Usage: "Atlas output file (eg: atlas.dat)",
+				},
 			},
 			Action: cmdTplGen(),
 		},
 		{
 			Name:      "build",
 			ShortName: "b",
-			Usage:     "build",
+			Usage:     "build an atlas using template file(s)",
 			Action:    cmdBuild(),
 			Flags: []cli.Flag{
 				cli.IntFlag{
@@ -127,12 +136,12 @@ func main() {
 					Value: 0,
 				},
 				cli.IntFlag{
-					Name:  "max-width, w",
+					Name:  "max-width",
 					Usage: "Max atlas width (pixels)",
 					Value: 0,
 				},
 				cli.IntFlag{
-					Name:  "max-height, h",
+					Name:  "max-height",
 					Usage: "Max atlas height (pixels)",
 					Value: 0,
 				},
@@ -150,17 +159,6 @@ func main() {
 	}
 }
 
-// MarginLeft   int
-// MarginRight  int
-// MarginTop    int
-// MarginBottom int
-// Padding      int
-// FixedWidth   int
-// FixedHeight  int
-// MaxWidth     int
-// MaxHeight    int
-// Count        int
-
 func cmdTplGen() func(c *cli.Context) error {
 	return func(c *cli.Context) error {
 		typestr := aseprite.AtlasImportStrategy(c.String(flagType))
@@ -176,6 +174,7 @@ func cmdTplGen() func(c *cli.Context) error {
 			MaxWidth:    int(c.Uint(flagMaxWidth)),
 			MaxHeight:   int(c.Uint(flagMaxHeight)),
 			Padding:     int(c.Uint(flagPadding)),
+			Output:      c.String("atlasout"),
 		}
 		f, err := getOutput(c, flagOutput, flagOverwrite)
 		if err != nil {
@@ -342,9 +341,11 @@ func cmdTplGen() func(c *cli.Context) error {
 func cmdBuild() func(c *cli.Context) error {
 	return func(c *cli.Context) error {
 		if !c.Args().Present() {
-			return errors.New("no teplates files specified")
+			return errors.New("no templates files specified")
 		}
-		for i, tpl := 0, c.Args().Get(0); tpl != ""; i, tpl = i+1, c.Args().Get(i) {
+		for i, tpl := 0, c.Args().Get(0); tpl != ""; i, tpl = i+1, c.Args().Get(i+1) {
+			fmt.Println("CMDBUILD", i)
+			fmt.Println(tpl)
 			tplb, err := ioutil.ReadFile(tpl)
 			if err != nil {
 				return fmt.Errorf("error reading template file %w", err)
