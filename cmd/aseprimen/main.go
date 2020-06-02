@@ -344,8 +344,6 @@ func cmdBuild() func(c *cli.Context) error {
 			return errors.New("no templates files specified")
 		}
 		for i, tpl := 0, c.Args().Get(0); tpl != ""; i, tpl = i+1, c.Args().Get(i+1) {
-			fmt.Println("CMDBUILD", i)
-			fmt.Println(tpl)
 			tplb, err := ioutil.ReadFile(tpl)
 			if err != nil {
 				return fmt.Errorf("error reading template file %w", err)
