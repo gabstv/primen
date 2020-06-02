@@ -38,7 +38,7 @@ message Frame {
 
 message AnimationGroup {
   string name = 1;
-  repeated string clips = 2;
+  map<string, string> clips = 2; // a map of <global clip name, local clip name>
 }
 
 message AnimationClip {
