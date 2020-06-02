@@ -8,13 +8,15 @@ import (
 
 // Sprite is the data of a sprite component.
 type Sprite struct {
-	X       float64
-	Y       float64
-	Angle   float64
-	ScaleX  float64
-	ScaleY  float64
-	OriginX float64
-	OriginY float64
+	X       float64 // logical X position
+	Y       float64 // logical Y position
+	Angle   float64 // radians
+	ScaleX  float64 // logical X scale (1 = 100%)
+	ScaleY  float64 // logical Y scale (1 = 100%)
+	OriginX float64 // X origin (0 = left; 0.5 = center; 1 = right)
+	OriginY float64 // Y origin (0 = top; 0.5 = middle; 1 = bottom)
+	OffsetX float64 // offset origin X (in pixels)
+	OffsetY float64 // offset origin Y (in pixels)
 
 	Bounds image.Rectangle // Bounds for drawing subimage
 
@@ -75,6 +77,7 @@ func (s *Sprite) Draw(screen *ebiten.Image, opt *ebiten.DrawImageOptions) {
 	}
 	xxg := &ebiten.GeoM{}
 	xxg.Translate(applyOrigin(s.imageWidth, s.OriginX), applyOrigin(s.imageHeight, s.OriginY))
+	xxg.Translate(s.OffsetX, s.OffsetY)
 	xxg.Concat(opt.GeoM)
 	centerM := opt.GeoM
 	opt.GeoM = *xxg

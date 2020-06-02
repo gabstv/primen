@@ -403,8 +403,8 @@ func buildAtlas(ctx context.Context, input buildAtlasInput) (*pb.AtlasFile, erro
 				H:     uint32(outClip.Bounds.H),
 				Event: outClip.Event,
 				Image: uint32(outClip.FinalImageIndex),
-				Ox:    int32(outClip.Pivot.X),
-				Oy:    int32(outClip.Pivot.Y),
+				Ox:    int32(outClip.Pivot.X * -1), //TODO: debug
+				Oy:    int32(outClip.Pivot.Y * -1),
 			})
 		}
 	}
