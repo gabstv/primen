@@ -131,8 +131,7 @@ func importAnimClip(name string, v *pb.AnimationClip, imgs []*ebiten.Image) core
 	}
 	switch v.ClipMode {
 	case pb.AnimationClipMode_PING_PONG:
-		println("TODO: implement pb.AnimationClipMode_PING_PONG")
-		//TODO: implement pb.AnimationClipMode_PING_PONG
+		cl.ClipMode = core.AnimPingPong
 	case pb.AnimationClipMode_ONCE:
 		cl.ClipMode = core.AnimOnce
 	case pb.AnimationClipMode_LOOP:
