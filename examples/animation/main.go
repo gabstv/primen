@@ -58,8 +58,8 @@ func createCharacter(dw *ecs.World, spriteComp *ecs.Component, animComp *ecs.Com
 	dw.AddComponentToEntity(e, animComp, &core.SpriteAnimation{
 		Enabled: true,
 		Playing: true,
-		Anim: &core.SpriteAnimationDef{
-			Clips: []core.SpriteAnimationClip{
+		Anim: &core.TiledAnimation{
+			Clips: []core.TiledAnimationClip{
 				{
 					Name: "default",
 					Frames: []image.Rectangle{
@@ -91,8 +91,8 @@ func createPingPonger(dw *ecs.World, spriteComp *ecs.Component, animComp *ecs.Co
 	dw.AddComponentToEntity(e, animComp, &core.SpriteAnimation{
 		Enabled: true,
 		Playing: true,
-		Anim: &core.SpriteAnimationDef{
-			Clips: []core.SpriteAnimationClip{
+		Anim: &core.TiledAnimation{
+			Clips: []core.TiledAnimationClip{
 				{
 					Name: "default",
 					Frames: []image.Rectangle{

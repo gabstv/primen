@@ -205,7 +205,7 @@ func cmdTplGen() func(c *cli.Context) error {
 						OutputPattern: "tag1_#",
 					},
 				}
-				tpl.Animations = []aseprite.AnimationIO{
+				tpl.AnimationClips = []aseprite.AnimationClipIO{
 					{
 						ClipMode:   "forward",
 						FPS:        c.Int(flagFPS),
@@ -232,7 +232,7 @@ func cmdTplGen() func(c *cli.Context) error {
 						OutputPattern: "slice1_#",
 					},
 				}
-				tpl.Animations = []aseprite.AnimationIO{
+				tpl.AnimationClips = []aseprite.AnimationClipIO{
 					{
 						ClipMode:   "forward",
 						FPS:        c.Int(flagFPS),
@@ -273,7 +273,7 @@ func cmdTplGen() func(c *cli.Context) error {
 			}
 			tpl := aseprite.AtlasImporter{
 				AsepriteSheet:  asefn,
-				Animations:     make([]aseprite.AnimationIO, 0),
+				AnimationClips: make([]aseprite.AnimationClipIO, 0),
 				FrameTags:      make([]aseprite.FrameTagIO, 0),
 				Frames:         make([]aseprite.FrameIO, 0),
 				ImportStrategy: typestr,
@@ -292,7 +292,7 @@ func cmdTplGen() func(c *cli.Context) error {
 						OutputPattern: v.Name + "#",
 					})
 					if v.From != v.To {
-						tpl.Animations = append(tpl.Animations, aseprite.AnimationIO{
+						tpl.AnimationClips = append(tpl.AnimationClips, aseprite.AnimationClipIO{
 							FrameTag:   v.Name,
 							ClipMode:   string(v.Direction),
 							FPS:        c.Int(flagFPS),
@@ -318,7 +318,7 @@ func cmdTplGen() func(c *cli.Context) error {
 						}
 					}
 					if minframe != maxframe {
-						tpl.Animations = append(tpl.Animations, aseprite.AnimationIO{
+						tpl.AnimationClips = append(tpl.AnimationClips, aseprite.AnimationClipIO{
 							ClipMode:   "forward",
 							FPS:        c.Int(flagFPS),
 							Slice:      v.Name,

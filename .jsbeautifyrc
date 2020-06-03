@@ -1,0 +1,6 @@
+{
+    "js": {
+        "brace_style": "none",
+        "keep_array_indentation": true
+    }
+}

@@ -23,9 +23,12 @@ type Drawable interface {
 	SetTransformMatrix(m ebiten.GeoM)
 	ClearTransformMatrix()
 	SetBounds(b image.Rectangle)
+	SetOffset(x, y float64)
 }
 
+// DrawableImager is a Drawable with Get and Set image funcs
 type DrawableImager interface {
+	Drawable
 	GetImage() *ebiten.Image
 	SetImage(img *ebiten.Image)
 }

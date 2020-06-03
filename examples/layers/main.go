@@ -28,16 +28,16 @@ func main() {
 		panic(err)
 	}
 	spbgs := []*ebiten.Image{
-		atlas.Get("box1"),
-		atlas.Get("box2"),
-		atlas.Get("box3"),
-		atlas.Get("box4"),
+		atlas.GetSubImage("box1"),
+		atlas.GetSubImage("box2"),
+		atlas.GetSubImage("box3"),
+		atlas.GetSubImage("box4"),
 	}
 	spfgs := []*ebiten.Image{
-		atlas.Get("l1"),
-		atlas.Get("l2"),
-		atlas.Get("l3"),
-		atlas.Get("l4"),
+		atlas.GetSubImage("l1"),
+		atlas.GetSubImage("l2"),
+		atlas.GetSubImage("l3"),
+		atlas.GetSubImage("l4"),
 	}
 	//
 	ctx, cf := context.WithCancel(context.Background())

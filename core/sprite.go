@@ -115,6 +115,11 @@ func (s *Sprite) SetBounds(b image.Rectangle) {
 	s.Bounds = b
 }
 
+func (s *Sprite) SetOffset(x, y float64) {
+	s.OffsetX = x
+	s.OffsetY = y
+}
+
 func (s *Sprite) Destroy() {
 	s.Image = nil
 	s.Options = nil

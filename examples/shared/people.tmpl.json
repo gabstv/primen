@@ -1,41 +1,65 @@
 {
-    "templates": [{
-        "import_strategy": "default",
-        "animations": [{
-                "slice": "boy1",
-                "output_name": "boy1",
-                "clip_mode": "forward",
-                "events": null,
-                "fps": 24
-            },
-            {
-                "slice": "girl1",
-                "output_name": "girl1",
-                "clip_mode": "forward",
-                "events": null,
-                "fps": 24
-            }
-        ],
-        "slices": [{
-                "name": "boy1",
-                "output_pattern": "boy1#"
-            },
-            {
-                "name": "girl1",
-                "output_pattern": "girl1#"
-            },
-            {
-                "name": "Slice 3",
-                "output_pattern": "Slice 3#"
-            }
-        ],
-        "frame_tags": [],
-        "frames": [],
-        "asesprite_sheet": "people_slices.json"
-    }],
+    "templates": [
+        {
+            "import_strategy": "default",
+            "animation_clips": [
+                {
+                    "slice": "boy1",
+                    "output_name": "boy1",
+                    "clip_mode": "forward",
+                    "events": null,
+                    "fps": 24
+                },
+                {
+                    "slice": "girl1",
+                    "output_name": "girl1",
+                    "clip_mode": "forward",
+                    "events": null,
+                    "fps": 24
+                }
+            ],
+            "slices": [
+                {
+                    "name": "boy1",
+                    "output_pattern": "boy1#"
+                },
+                {
+                    "name": "girl1",
+                    "output_pattern": "girl1#"
+                },
+                {
+                    "name": "Slice 3",
+                    "output_pattern": "Slice 3#"
+                }
+            ],
+            "frame_tags": [],
+            "frames": [],
+            "asesprite_sheet": "people_slices.json"
+        }
+    ],
     "image_filter": "nearest",
     "max_width": 4096,
     "max_height": 4096,
     "padding": 0,
-    "output": "people.dat"
+    "output": "people.dat",
+    "animations": [
+        {
+            "name": "boy",
+            "clips": [
+                {
+                    "global_name": "boy1",
+                    "local_name": "idle"
+                }
+            ]
+        },
+        {
+            "name": "girl",
+            "clips": [
+                {
+                    "global_name": "girl1",
+                    "local_name": "idle"
+                }
+            ]
+        }
+    ]
 }

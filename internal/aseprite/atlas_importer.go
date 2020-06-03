@@ -25,13 +25,14 @@ type AtlasImporterGroup struct {
 	MaxWidth    int             `json:"max_width"`
 	MaxHeight   int             `json:"max_height"`
 	Padding     int             `json:"padding"`
+	Animations  []Animation     `json:"animations"`
 }
 
 // AtlasImporter is a template used to import an Aseprite JSON (of a sprite sheet)
 // to Primen.
 type AtlasImporter struct {
 	ImportStrategy AtlasImportStrategy `json:"import_strategy"`
-	Animations     []AnimationIO       `json:"animations"`
+	AnimationClips []AnimationClipIO   `json:"animation_clips"`
 	Slices         []SliceIO           `json:"slices"`
 	FrameTags      []FrameTagIO        `json:"frame_tags"`
 	Frames         []FrameIO           `json:"frames"`
@@ -69,7 +70,17 @@ type FrameTagIO struct {
 	OutputPattern string `json:"output_pattern"`
 }
 
-type AnimationIO struct {
+type Animation struct {
+	Name  string        `json:"name"`
+	Clips []AnimClipDef `json:"clips"`
+}
+
+type AnimClipDef struct {
+	GlobalName string `json:"global_name"`
+	LocalName  string `json:"local_name"`
+}
+
+type AnimationClipIO struct {
 	Slice      string        `json:"slice,omitempty"`
 	FrameTag   string        `json:"frame_tag,omitempty"`
 	OutputName string        `json:"output_name"`

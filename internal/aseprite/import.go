@@ -46,12 +46,19 @@ func Import(ctx context.Context, input ImportInput) (*pb.AtlasFile, error) {
 			}
 		}
 	}
-	return buildAtlas(ctx, buildAtlasInput{
+	file, err := buildAtlas(ctx, buildAtlasInput{
 		PackerI: input.PackerI,
 		Filter:  input.Template.ImageFilter,
 		Im:      impkr,
 		Pkr:     pkr,
 	})
+	if err != nil {
+		return nil, err
+	}
+	if err := wrapAnimations(ctx, file, *input.Template); err != nil {
+		return nil, err
+	}
+	return file, nil
 }
 
 func importAtlas(ctx context.Context, tpl AtlasImporter, ase AsepriteInput, pkr *atlaspacker.BinTreeRectPacker, imptr *imImporter) error {
@@ -143,7 +150,7 @@ func importAtlasBySlices(ctx context.Context, r importByRules) error {
 			}
 		}
 	}
-	for _, animtpl := range r.Template.Animations {
+	for _, animtpl := range r.Template.AnimationClips {
 		rslc, ri := r.FrameData.GetSliceByName(animtpl.Slice)
 		if ri == -1 {
 			//TODO: dont fail if not strict
@@ -411,6 +418,24 @@ func buildAtlas(ctx context.Context, input buildAtlasInput) (*pb.AtlasFile, erro
 	return file, nil
 }
 
+func wrapAnimations(ctx context.Context, file *pb.AtlasFile, g AtlasImporterGroup) error {
+	file.AnimGroups = make(map[string]*pb.AnimationGroup)
+	for _, a := range g.Animations {
+		g := &pb.AnimationGroup{
+			Name:  a.Name,
+			Clips: make(map[string]string),
+		}
+		for _, item := range a.Clips {
+			if file.AnimClips == nil || file.AnimClips[item.GlobalName] == nil {
+				return errors.New("animation clip " + item.GlobalName + " not found")
+			}
+			g.Clips[item.GlobalName] = item.LocalName
+		}
+		file.AnimGroups[a.Name] = g
+	}
+	return nil
+}
+
 func getStrategy(tpl AtlasImporter) AtlasImportStrategy {
 	if tpl.ImportStrategy == Default {
 		if len(tpl.Slices) > 0 {
@@ -453,6 +478,7 @@ func getNameByPattern(pattern, name string, posindex, nindex, frame int) string 
 	v = strings.Replace(v, "{#n}", strconv.Itoa(nindex), -1)
 	v = strings.Replace(v, "{#f}", strconv.Itoa(frame), -1)
 	v = strings.Replace(v, "{#frame}", strconv.Itoa(frame), -1)
+	v = strings.Replace(v, "#", strconv.Itoa(posindex), -1)
 	return v
 }
 
