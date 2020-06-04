@@ -57,8 +57,8 @@ func dogamesetup(ctx context.Context, engine *primen.Engine, bgs []*ebiten.Image
 	spr.Transform.X = 100
 	spr.Transform.Y = 100
 	spr.Transform.ScaleX = .5
-	spr.TauSprite.OriginX = .5
-	spr.TauSprite.OriginY = .5
+	spr.CoreSprite.OriginX = .5
+	spr.CoreSprite.OriginY = .5
 	engine.Default().AddComponentToEntity(spr.Entity(), engine.Default().Component(core.CNRotation), &core.Rotation{
 		Speed: math.Pi / 16,
 	})

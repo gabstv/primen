@@ -2,12 +2,14 @@ package main
 
 import (
 	"io/ioutil"
+	"math"
 	"os"
 
 	"github.com/gabstv/ecs"
 	"github.com/gabstv/primen"
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/io"
+	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 	"github.com/urfave/cli"
 )
@@ -32,6 +34,7 @@ func main() {
 			Resizable: true,
 			OnReady:   buildReady(c),
 			Title:     "PRIMEN - Atlas Preview",
+			Scale:     ebiten.DeviceScaleFactor(),
 		})
 		return engine.Run()
 	}
@@ -42,6 +45,7 @@ func main() {
 }
 
 func buildReady(c *cli.Context) func(e *primen.Engine) {
+	core.DebugDraw = true
 	fn := c.Args().First()
 	if fn == "" {
 		return errready("No atlas file specified")
@@ -57,8 +61,15 @@ func buildReady(c *cli.Context) func(e *primen.Engine) {
 	println(ff)
 	return func(e *primen.Engine) {
 		println("hey")
-		for _, a := range ff.GetAnimations() {
+		for i, a := range ff.GetAnimations() {
 			println(a.Name)
+			lbl := e.NewLabel(nil, primen.Layer0, nil)
+			lbl.SetText("Animation:\n" + a.Name)
+			lbl.SetPos(50+(10*float64(i)), 50+(100*float64(i)))
+			lbl.SetAngle((math.Pi / 4) * float64(i))
+			//lbl.SetArea(200, 100)
+			lbl.SetFilter(ebiten.FilterLinear)
+			//lbl.SetScale2(1 / ebiten.DeviceScaleFactor())
 		}
 	}
 }

@@ -8,15 +8,15 @@ import (
 
 type Sprite struct {
 	*WorldItem
-	TauSprite *core.Sprite
-	Transform *core.Transform
-	DrawLayer *core.DrawLayer
+	CoreSprite *core.Sprite
+	Transform  *core.Transform
+	DrawLayer  *core.DrawLayer
 }
 
 func NewSprite(w *ecs.World, im *ebiten.Image, layer core.LayerIndex, parent *core.Transform) *Sprite {
 	spr := &Sprite{}
 	spr.WorldItem = newWorldItem(w.NewEntity(), w)
-	spr.TauSprite = &core.Sprite{
+	spr.CoreSprite = &core.Sprite{
 		ScaleX: 1,
 		ScaleY: 1,
 		Bounds: im.Bounds(),
@@ -31,7 +31,7 @@ func NewSprite(w *ecs.World, im *ebiten.Image, layer core.LayerIndex, parent *co
 		ScaleX: 1,
 		ScaleY: 1,
 	}
-	if err := w.AddComponentToEntity(spr.entity, w.Component(core.CNDrawable), spr.TauSprite); err != nil {
+	if err := w.AddComponentToEntity(spr.entity, w.Component(core.CNDrawable), spr.CoreSprite); err != nil {
 		panic(err)
 	}
 	if err := w.AddComponentToEntity(spr.entity, w.Component(core.CNDrawLayer), spr.DrawLayer); err != nil {

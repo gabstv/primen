@@ -128,8 +128,8 @@ func dogamesetup(ctx context.Context, engine *primen.Engine, bgs, fgs []*ebiten.
 					drawlayer.Layer = core.LayerIndex(newlayer)
 					sprite.Image = bgs[newlayer]
 					sprite.Bounds = sprite.Image.Bounds()
-					movecomp.ChildSprite.TauSprite.Image = fgs[newlayer]
-					movecomp.ChildSprite.TauSprite.Bounds = fgs[newlayer].Bounds()
+					movecomp.ChildSprite.CoreSprite.Image = fgs[newlayer]
+					movecomp.ChildSprite.CoreSprite.Bounds = fgs[newlayer].Bounds()
 					movecomp.ChildSprite.DrawLayer.Layer = core.LayerIndex(newlayer)
 					ctx.Engine().DispatchEvent("act_of_nature", match.Entity)
 				}
@@ -157,11 +157,11 @@ func dogamesetup(ctx context.Context, engine *primen.Engine, bgs, fgs []*ebiten.
 			//ri := rand.Intn(4)
 			rl := rand.Intn(4)
 			bgs := primen.NewSprite(engine.Default(), bgs[rl], core.LayerIndex(rl), root.TauTransform)
-			bgs.TauSprite.OriginX = .5
-			bgs.TauSprite.OriginY = .5
+			bgs.CoreSprite.OriginX = .5
+			bgs.CoreSprite.OriginY = .5
 			fgs := primen.NewSprite(engine.Default(), fgs[rl], core.LayerIndex(rl), bgs.Transform)
-			fgs.TauSprite.OriginX = .5
-			fgs.TauSprite.OriginY = .5
+			fgs.CoreSprite.OriginX = .5
+			fgs.CoreSprite.OriginY = .5
 			//fgs.Transform.Angle = -math.Pi * 0.5
 			mvc := &OrbitalMovement{
 				Dx:          float64(i+1)*30 + rand.Float64()*10,

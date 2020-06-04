@@ -38,6 +38,7 @@ type Sprite struct {
 	customMatrix    bool
 }
 
+// Update does some computation before drawing
 func (s *Sprite) Update(ctx Context) {
 	if s.lastImage != s.Image {
 		w, h := s.Image.Size()
@@ -63,6 +64,7 @@ func (s *Sprite) Update(ctx Context) {
 	}
 }
 
+// Draw is called by the Drawable systems
 func (s *Sprite) Draw(screen *ebiten.Image, opt *ebiten.DrawImageOptions) {
 	if s.DrawDisabled {
 		return
@@ -102,6 +104,7 @@ func (s *Sprite) Draw(screen *ebiten.Image, opt *ebiten.DrawImageOptions) {
 	opt.GeoM = prevGeo
 }
 
+// SetTransformMatrix is used by TransformSystem to set a custom transform
 func (s *Sprite) SetTransformMatrix(m ebiten.GeoM) {
 	s.transformMatrix = m
 	s.customMatrix = true
@@ -133,6 +136,7 @@ func (s *Sprite) IsDisabled() bool {
 	return s.DrawDisabled
 }
 
+// Size returns the real size of the Sprite
 func (s *Sprite) Size() (w, h float64) {
 	return s.imageWidth, s.imageHeight
 }

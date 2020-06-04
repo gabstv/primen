@@ -57,7 +57,7 @@ type Engine struct {
 	ebiOutsideH  int
 	ebiLogicalW  int
 	ebiLogicalH  int
-	ebiScale     int
+	ebiScale     float64
 	ebiFixed     bool
 	eventManager *core.EventManager
 }
@@ -66,7 +66,7 @@ type Engine struct {
 type NewEngineInput struct {
 	Width             int             // main window width
 	Height            int             // main wndow height
-	Scale             int             // pixel scale (default: 1)
+	Scale             float64         // pixel scale (default: 1)
 	TransparentScreen bool            // transparent screen
 	Maximized         bool            // start window maximized
 	Floating          bool            // always on top of all windows
@@ -83,7 +83,7 @@ type NewEngineInput struct {
 type EngineOptions struct {
 	Width               int
 	Height              int
-	Scale               int
+	Scale               float64
 	Title               string
 	IsFullscreen        bool
 	IsResizable         bool
@@ -146,8 +146,11 @@ func NewEngine(v *NewEngineInput) *Engine {
 		}
 	}
 	// assign the default systems and controllers
-
-	iw, ih := getLogicalSize(v.Width, v.Height, v.Scale, v.Width/v.Scale, v.Height/v.Scale, v.FixedResolution)
+	calcW, calcH := int(float64(v.Width)*v.Scale), int(float64(v.Height)*v.Scale)
+	if v.FixedResolution {
+		calcW, calcH = v.Width, v.Height
+	}
+	iw, ih := getLogicalSize(v.Width, v.Height, v.Scale, calcW, calcH, v.FixedResolution)
 
 	e := &Engine{
 		updateInfo:   &StepInfo{},
@@ -362,12 +365,12 @@ func (e *Engine) Draw(screen *ebiten.Image) {
 	}
 }
 
-func getLogicalSize(outw, outh, scale, inw, inh int, fixed bool) (w, h int) {
+func getLogicalSize(outw, outh int, scale float64, inw, inh int, fixed bool) (w, h int) {
 	if fixed {
 		return inw, inh
 	}
 	if scale <= 0 {
 		return outw, outh
 	}
-	return outw / scale, outh / scale
+	return int(float64(outw) * scale), int(float64(outh) * scale)
 }
