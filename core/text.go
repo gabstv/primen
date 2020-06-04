@@ -18,24 +18,41 @@ type Label struct {
 	Filter       ebiten.Filter
 	DrawDisabled bool // if true, the DrawableSystem will not draw this
 	//
-	X       float64 // logical X position
-	Y       float64 // logical Y position
-	Angle   float64 // radians
-	ScaleX  float64 // logical X scale (1 = 100%)
-	ScaleY  float64 // logical Y scale (1 = 100%)
-	OriginX float64 // X origin (0 = left; 0.5 = center; 1 = right)
-	OriginY float64 // Y origin (0 = top; 0.5 = middle; 1 = bottom)
+	X           float64 // logical X position
+	Y           float64 // logical Y position
+	Angle       float64 // radians
+	ScaleX      float64 // logical X scale (1 = 100%)
+	ScaleY      float64 // logical Y scale (1 = 100%)
+	OriginX     float64 // X origin (0 = left; 0.5 = center; 1 = right)
+	OriginY     float64 // Y origin (0 = top; 0.5 = middle; 1 = bottom)
+	OffsetX     float64 // Text rendering offset X (pixel unit)
+	OffsetY     float64 // Text rendering offset Y (pixel unit)
+	FaceOffsetX int     // Text rendering offset X (pixel unit)
+	FaceOffsetY int     // Text rendering offset Y (pixel unit)
 	//
 	Options *ebiten.DrawImageOptions
 	//
 
-	base     *ebiten.Image
-	notdirty bool
-	lastText string
-	realSize image.Point
+	base       *ebiten.Image
+	lastBounds image.Rectangle
+	lastFilter ebiten.Filter
+	notdirty   bool
+	lastText   string
+	realSize   image.Point
 	//
 	transformMatrix ebiten.GeoM
 	customMatrix    bool
+}
+
+// FontFaceHeight returns the font height
+func (l *Label) FontFaceHeight() int {
+	return l.validFontFace().Metrics().Height.Round()
+}
+
+// ResetTextOffset sets the text offset to default (0, l.FontFaceHeight())
+func (l *Label) ResetTextOffset() {
+	l.FaceOffsetX = 0
+	l.FaceOffsetY = l.FontFaceHeight()
 }
 
 func (l *Label) dirty() bool {
@@ -80,9 +97,7 @@ func (l *Label) compute() {
 		if l.lastText == "" {
 			l.base.Fill(color.Transparent)
 		}
-		b, _, _ := ff.GlyphBounds([]rune(l.lastText)[0])
-		char0height := (b.Max.Y - b.Min.Y).Ceil()
-		text.Draw(l.base, l.Text, ff, 0, char0height+1, l.Color)
+		text.Draw(l.base, l.Text, ff, l.FaceOffsetX, l.FaceOffsetY, l.Color)
 		l.realSize = text.MeasureString(l.Text, ff)
 	}
 	l.setNotDirty()
@@ -92,8 +107,13 @@ func (l *Label) computeFixedArea() {
 	if !l.dirty() {
 		return
 	}
-	l.base, _ = ebiten.NewImage(l.Area.X, l.Area.Y, l.Filter)
-	return
+	if l.base == nil || l.lastFilter != l.Filter || l.base.Bounds().Eq(l.lastBounds) {
+		l.base, _ = ebiten.NewImage(l.Area.X, l.Area.Y, l.Filter)
+	} else {
+		_ = l.base.Fill(color.Transparent)
+	}
+	l.lastFilter = l.Filter
+	l.lastBounds = l.base.Bounds()
 }
 
 func (l *Label) computeDynamicArea() {
@@ -102,10 +122,13 @@ func (l *Label) computeDynamicArea() {
 	}
 	ff := l.validFontFace()
 	p := text.MeasureString(l.Text, ff)
-	aa, bb := font.BoundString(ff, l.Text)
-	_ = aa
-	_ = bb
-	l.base, _ = ebiten.NewImage(p.X, p.Y, l.Filter)
+	if l.base == nil || l.lastFilter != l.Filter || l.base.Bounds().Eq(l.lastBounds) {
+		l.base, _ = ebiten.NewImage(p.X, p.Y, l.Filter)
+	} else {
+		_ = l.base.Fill(color.Transparent)
+	}
+	l.lastFilter = l.Filter
+	l.lastBounds = l.base.Bounds()
 }
 
 // implements drawable
@@ -130,7 +153,7 @@ func (l *Label) Draw(screen *ebiten.Image, opt *ebiten.DrawImageOptions) {
 	}
 	xxg := &ebiten.GeoM{}
 	xxg.Translate(applyOrigin(float64(l.realSize.X), l.OriginX), applyOrigin(float64(l.realSize.Y), l.OriginY))
-	//xxg.Translate(l.OffsetX, l.OffsetY) //TODO: check if offset is required for label
+	xxg.Translate(l.OffsetX, l.OffsetY)
 	xxg.Concat(opt.GeoM)
 	centerM := opt.GeoM
 	opt.GeoM = *xxg

@@ -27,6 +27,7 @@ func NewLabel(w *ecs.World, fontFace font.Face, layer Layer, parent TransformGet
 		Face:   fontFace,
 		Filter: ebiten.FilterDefault,
 	}
+	lbl.label.ResetTextOffset()
 	lbl.drawLayer = &core.DrawLayer{
 		Layer:  layer,
 		ZIndex: core.ZIndexTop,
@@ -68,4 +69,14 @@ func (l *Label) SetArea(w, h int) {
 func (l *Label) SetFilter(filter ebiten.Filter) {
 	l.label.Filter = filter
 	l.label.SetDirty()
+}
+
+// SetOrigin sets the label origin reference
+//
+// 0, 0 is top left
+//
+// 1, 1 is bottom right
+func (l *Label) SetOrigin(ox, oy float64) {
+	l.label.OriginX = ox
+	l.label.OriginY = oy
 }
