@@ -2,7 +2,6 @@ package main
 
 import (
 	"io/ioutil"
-	"math"
 	"os"
 
 	"github.com/gabstv/ecs"
@@ -12,6 +11,11 @@ import (
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 	"github.com/urfave/cli"
+)
+
+var (
+	colorTitle = primen.ColorFromHex("#f1c40f")
+	colorItem  = primen.ColorFromHex("ecf0f1")
 )
 
 func main() {
@@ -60,19 +64,13 @@ func buildReady(c *cli.Context) func(e *primen.Engine) {
 	}
 	println(ff)
 	return func(e *primen.Engine) {
-		println("hey")
-		for i, a := range ff.GetAnimations() {
-			println(a.Name)
-			lbl := e.NewLabel(nil, primen.Layer0, nil)
-			lbl.SetText("Animation:\n" + a.Name)
-			lbl.SetPos(150+(10*float64(i)), 50+(100*float64(i)))
-			lbl.SetAngle((math.Pi / 4) * float64(i))
-			lbl.SetOrigin(.5, .5)
-			//lbl.SetArea(200, 100)
-			lbl.SetFilter(ebiten.FilterLinear)
-			//lbl.SetScale2(1 / ebiten.DeviceScaleFactor())
-		}
+		_ = loadAtlas(e, ff)
 	}
+}
+
+func loadAtlas(e *primen.Engine, atlas *io.Atlas) *AtlasPreviewer {
+	//TODO: remove older one if present (to allow load multiple)
+	return newAtlasPreviewer(e, atlas)
 }
 
 func errready(v string) func(e *primen.Engine) {
@@ -80,5 +78,61 @@ func errready(v string) func(e *primen.Engine) {
 		primen.SetDrawFuncs(e.Default(), e.Default().NewEntity(), nil, func(ctx core.Context, e ecs.Entity) {
 			ebitenutil.DebugPrint(ctx.Screen(), v)
 		}, nil)
+	}
+}
+
+type AtlasPreviewer struct {
+	e        *primen.Engine
+	itemList *AtlasItemList
+	atlas    *io.Atlas
+}
+
+func (p *AtlasPreviewer) Destroy() {
+	p.itemList.Destroy()
+	p.itemList = nil
+}
+
+func newAtlasPreviewer(e *primen.Engine, atlas *io.Atlas) *AtlasPreviewer {
+	p := &AtlasPreviewer{
+		e:     e,
+		atlas: atlas,
+	}
+	p.itemList = newAtlasItemList(p)
+	return p
+}
+
+type AtlasItemList struct {
+	tr *primen.Transform
+}
+
+func (al *AtlasItemList) Destroy() {
+	primen.Destroy(al.tr)
+	al.tr = nil
+}
+
+func newAtlasItemList(parent *AtlasPreviewer) *AtlasItemList {
+	atlas := parent.atlas
+	pp := primen.NewTransform(parent.e.Root(nil))
+	pp.SetPos(10, 10)
+	nexty := 0.0
+	// animations
+	{
+		lbl := primen.NewLabel(pp, nil, primen.Layer1)
+		lbl.SetColor(colorTitle)
+		lbl.SetText("Animations:")
+		lbl.SetY(nexty)
+		_, yp := lbl.ComputedSize()
+		nexty += float64(yp) + 10
+		for _, animg := range atlas.GetAnimations() {
+			li := primen.NewLabel(pp, nil, primen.Layer1)
+			li.SetColor(colorItem)
+			li.SetY(nexty)
+			li.SetText(animg.Name)
+			_, yp = li.ComputedSize()
+			nexty += float64(yp) + 10
+		}
+	}
+	return &AtlasItemList{
+		tr: pp,
 	}
 }

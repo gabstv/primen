@@ -142,9 +142,9 @@ func dogamesetup(ctx context.Context, engine *primen.Engine, bgs, fgs []*ebiten.
 
 	rand.Seed(112358)
 
-	root := primen.NewTransform(engine.Default(), nil)
-	root.TauTransform.X = 320 / 2
-	root.TauTransform.Y = 240 / 2
+	root := primen.NewTransform(engine.Root(nil))
+	root.SetX(320 / 2)
+	root.SetY(240 / 2)
 
 	root.UpsertFns(func(ctx core.Context, e ecs.Entity) {
 		t := ctx.World().Component(core.CNTransform).Data(e).(*core.Transform)
@@ -156,10 +156,10 @@ func dogamesetup(ctx context.Context, engine *primen.Engine, bgs, fgs []*ebiten.
 		for j := 0; j < 20; j++ {
 			//ri := rand.Intn(4)
 			rl := rand.Intn(4)
-			bgs := primen.NewSprite(engine.Default(), bgs[rl], core.LayerIndex(rl), root.TauTransform)
+			bgs := primen.NewSprite(root, bgs[rl], core.LayerIndex(rl))
 			bgs.CoreSprite.OriginX = .5
 			bgs.CoreSprite.OriginY = .5
-			fgs := primen.NewSprite(engine.Default(), fgs[rl], core.LayerIndex(rl), bgs.Transform)
+			fgs := primen.NewSprite(bgs, fgs[rl], core.LayerIndex(rl))
 			fgs.CoreSprite.OriginX = .5
 			fgs.CoreSprite.OriginY = .5
 			//fgs.Transform.Angle = -math.Pi * 0.5

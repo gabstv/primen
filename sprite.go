@@ -1,21 +1,23 @@
 package primen
 
 import (
-	"github.com/gabstv/ecs"
 	"github.com/gabstv/primen/core"
 	"github.com/hajimehoshi/ebiten"
 )
 
 type Sprite struct {
 	*WorldItem
+	*TransformItem
 	CoreSprite *core.Sprite
-	Transform  *core.Transform
 	DrawLayer  *core.DrawLayer
 }
 
-func NewSprite(w *ecs.World, im *ebiten.Image, layer core.LayerIndex, parent *core.Transform) *Sprite {
+func NewSprite(parent WorldTransform, im *ebiten.Image, layer Layer) *Sprite {
+	w := parent.World()
+	e := w.NewEntity()
 	spr := &Sprite{}
-	spr.WorldItem = newWorldItem(w.NewEntity(), w)
+	spr.WorldItem = newWorldItem(e, w)
+	spr.TransformItem = newTransformItem(e, parent)
 	spr.CoreSprite = &core.Sprite{
 		ScaleX: 1,
 		ScaleY: 1,
@@ -26,18 +28,10 @@ func NewSprite(w *ecs.World, im *ebiten.Image, layer core.LayerIndex, parent *co
 		Layer:  layer,
 		ZIndex: core.ZIndexTop,
 	}
-	spr.Transform = &core.Transform{
-		Parent: parent,
-		ScaleX: 1,
-		ScaleY: 1,
-	}
 	if err := w.AddComponentToEntity(spr.entity, w.Component(core.CNDrawable), spr.CoreSprite); err != nil {
 		panic(err)
 	}
 	if err := w.AddComponentToEntity(spr.entity, w.Component(core.CNDrawLayer), spr.DrawLayer); err != nil {
-		panic(err)
-	}
-	if err := w.AddComponentToEntity(spr.entity, w.Component(core.CNTransform), spr.Transform); err != nil {
 		panic(err)
 	}
 	return spr

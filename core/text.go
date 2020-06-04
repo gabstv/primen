@@ -44,6 +44,10 @@ type Label struct {
 	customMatrix    bool
 }
 
+func (l *Label) ComputedSize() image.Point {
+	return text.MeasureString(l.Text, l.validFontFace())
+}
+
 // FontFaceHeight returns the font height
 func (l *Label) FontFaceHeight() int {
 	return l.validFontFace().Metrics().Height.Round()

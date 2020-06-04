@@ -4,7 +4,6 @@ import (
 	"image"
 	"image/color"
 
-	"github.com/gabstv/ecs"
 	"github.com/gabstv/primen/core"
 	"github.com/hajimehoshi/ebiten"
 	"golang.org/x/image/font"
@@ -17,9 +16,11 @@ type Label struct {
 	drawLayer *core.DrawLayer
 }
 
-func NewLabel(w *ecs.World, fontFace font.Face, layer Layer, parent TransformGetter) *Label {
+func NewLabel(parent WorldTransform, fontFace font.Face, layer Layer) *Label {
 	lbl := &Label{}
-	lbl.WorldItem = newWorldItem(w.NewEntity(), w)
+	w := parent.World()
+	e := w.NewEntity()
+	lbl.WorldItem = newWorldItem(e, w)
 	lbl.label = &core.Label{
 		ScaleX: 1,
 		ScaleY: 1,
@@ -32,7 +33,7 @@ func NewLabel(w *ecs.World, fontFace font.Face, layer Layer, parent TransformGet
 		Layer:  layer,
 		ZIndex: core.ZIndexTop,
 	}
-	lbl.TransformItem = newTransformItem(lbl.entity, lbl.world, parent)
+	lbl.TransformItem = newTransformItem(e, parent)
 	if err := w.AddComponentToEntity(lbl.entity, w.Component(core.CNDrawable), lbl.label); err != nil {
 		panic(err)
 	}
@@ -40,10 +41,6 @@ func NewLabel(w *ecs.World, fontFace font.Face, layer Layer, parent TransformGet
 		panic(err)
 	}
 	return lbl
-}
-
-func (e *Engine) NewLabel(fontFace font.Face, layer Layer, parent TransformGetter) *Label {
-	return NewLabel(e.Default(), fontFace, layer, parent)
 }
 
 func (l *Label) SetText(t string) {
@@ -79,4 +76,14 @@ func (l *Label) SetFilter(filter ebiten.Filter) {
 func (l *Label) SetOrigin(ox, oy float64) {
 	l.label.OriginX = ox
 	l.label.OriginY = oy
+}
+
+func (l *Label) ComputedSize() (w, h int) {
+	p := l.label.ComputedSize()
+	return p.X, p.Y
+}
+
+func (l *Label) SetColor(c color.Color) {
+	l.label.Color = c
+	l.label.SetDirty()
 }

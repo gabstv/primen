@@ -1,9 +1,30 @@
 package primen
 
 import (
+	"sync"
+
 	"github.com/gabstv/ecs"
 	"github.com/gabstv/primen/core"
 )
+
+type Object interface {
+	Entity() ecs.Entity
+	World() *ecs.World
+}
+
+type ObjectContainer interface {
+	Children() []Object
+}
+
+// Destroy an object
+func Destroy(obj Object) bool {
+	if v, ok := obj.(ObjectContainer); ok {
+		for _, child := range v.Children() {
+			_ = Destroy(child)
+		}
+	}
+	return obj.World().RemoveEntity(obj.Entity())
+}
 
 type WorldItem struct {
 	entity ecs.Entity
@@ -49,6 +70,11 @@ type TransformGetter interface {
 	GetCoreTransform() *core.Transform
 }
 
+type WorldTransform interface {
+	TransformGetter
+	World() *ecs.World
+}
+
 type TransformSetter interface {
 	SetParent(parent TransformGetter)
 }
@@ -60,16 +86,21 @@ type Transformer interface {
 
 type TransformItem struct {
 	transform *core.Transform
+	children  []Object
+	childrenm sync.Mutex
 }
 
-func newTransformItem(e ecs.Entity, w *ecs.World, parent TransformGetter) *TransformItem {
+func newTransformItem(e ecs.Entity, parent WorldTransform) *TransformItem {
+	if parent == nil {
+		panic("parent can't be nil. Use e.Root(nil) if this object need to be at root")
+	}
 	t := &TransformItem{
 		transform: core.NewTransform(),
 	}
 	if parent != nil {
 		t.transform.Parent = parent.GetCoreTransform()
 	}
-	if err := w.AddComponentToEntity(e, w.Component(core.CNTransform), t.transform); err != nil {
+	if err := parent.World().AddComponentToEntity(e, parent.World().Component(core.CNTransform), t.transform); err != nil {
 		panic(err)
 	}
 	return t
@@ -108,4 +139,25 @@ func (t *TransformItem) SetScale2(s float64) {
 
 func (t *TransformItem) SetAngle(radians float64) {
 	t.transform.Angle = radians
+}
+
+type engineWT struct {
+	w *ecs.World
+}
+
+func (wt *engineWT) GetCoreTransform() *core.Transform {
+	return nil
+}
+
+func (wt *engineWT) World() *ecs.World {
+	return wt.w
+}
+
+func (e *Engine) Root(w *ecs.World) WorldTransform {
+	if w == nil {
+		w = e.Default()
+	}
+	return &engineWT{
+		w: w,
+	}
 }
