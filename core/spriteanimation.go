@@ -84,6 +84,19 @@ type SpriteAnimation struct {
 func (a *SpriteAnimation) PlayClip(name string) {
 	a.nextAnimationName = name
 	a.nextAnimationSet = true
+	a.Playing = true
+}
+
+// PlayClipIndex plays a clip at index i
+func (a *SpriteAnimation) PlayClipIndex(i int) {
+	if i < 0 {
+		return
+	}
+	if a.Anim.Count() <= i {
+		return
+	}
+	a.nextAnimationName = a.Anim.GetClip(i).GetName()
+	a.nextAnimationSet = true
 }
 
 func (a *SpriteAnimation) AnimEvent(name, value string) {
