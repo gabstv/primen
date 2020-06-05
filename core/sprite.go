@@ -160,4 +160,5 @@ func (s *Sprite) GetImage() *ebiten.Image {
 
 func (s *Sprite) SetImage(img *ebiten.Image) {
 	s.Image = img
+	s.lastSubImage = nil
 }

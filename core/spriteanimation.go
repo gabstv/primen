@@ -97,6 +97,7 @@ func (a *SpriteAnimation) PlayClipIndex(i int) {
 	}
 	a.nextAnimationName = a.Anim.GetClip(i).GetName()
 	a.nextAnimationSet = true
+	a.Playing = true
 }
 
 func (a *SpriteAnimation) AnimEvent(name, value string) {
