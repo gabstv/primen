@@ -116,7 +116,7 @@ func (p *AtlasPreviewer) createCanvas() {
 func (p *AtlasPreviewer) setupAnim(name string) {
 	p.resetCanvas()
 	p.createCanvas()
-	p.canvas.SetScale2(2 * ebiten.DeviceScaleFactor())
+	p.canvas.SetScale2(8 * ebiten.DeviceScaleFactor())
 	anim := p.atlas.GetAnimation(name)
 	title := primen.NewLabel(p.titler, nil, uiLayer)
 	title.SetText("Animation: " + name)
