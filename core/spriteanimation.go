@@ -274,7 +274,6 @@ func SpriteAnimationLinkSystemExec(ctx Context) {
 				}
 			}
 		}
-		spr.SetBounds(spranim.Anim.GetClipRect(spranim.ActiveClip, spranim.ActiveFrame))
 		spr.SetOffset(spranim.Anim.GetClipOffset(spranim.ActiveClip, spranim.ActiveFrame))
 	}
 }

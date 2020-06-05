@@ -1,8 +1,6 @@
 package core
 
 import (
-	"image"
-
 	"github.com/hajimehoshi/ebiten"
 )
 
@@ -17,9 +15,6 @@ type Sprite struct {
 	OriginY float64 // Y origin (0 = top; 0.5 = middle; 1 = bottom)
 	OffsetX float64 // offset origin X (in pixels)
 	OffsetY float64 // offset origin Y (in pixels)
-
-	Bounds image.Rectangle // Bounds for drawing subimage
-
 	Options *ebiten.DrawImageOptions
 	Image   *ebiten.Image
 
@@ -29,10 +24,6 @@ type Sprite struct {
 	// changes, the imageWidth and ImageHeight needs to be recalculated.
 	imageWidth  float64 // last calculated image width
 	imageHeight float64 // last calculated image height
-
-	imageBounds  image.Rectangle
-	lastBounds   image.Rectangle
-	lastSubImage *ebiten.Image
 	//
 	transformMatrix ebiten.GeoM
 	customMatrix    bool
@@ -45,22 +36,6 @@ func (s *Sprite) Update(ctx Context) {
 		s.imageWidth = float64(w)
 		s.imageHeight = float64(h)
 		s.lastImage = s.Image
-		// redo subimage
-		s.lastBounds = image.Rect(0, 0, 0, 0)
-		s.imageBounds = s.Image.Bounds()
-	}
-	if s.lastBounds != s.Bounds {
-		s.lastBounds = s.Bounds
-		if s.imageBounds.Min.Eq(s.Bounds.Min) && s.imageBounds.Max.Eq(s.Bounds.Max) {
-			s.imageWidth = float64(s.Bounds.Dx())
-			s.imageHeight = float64(s.Bounds.Dy())
-			s.lastSubImage = nil
-		} else {
-			s.lastSubImage = s.Image.SubImage(s.lastBounds).(*ebiten.Image)
-			w, h := s.lastSubImage.Size()
-			s.imageWidth = float64(w)
-			s.imageHeight = float64(h)
-		}
 	}
 }
 
@@ -84,11 +59,7 @@ func (s *Sprite) Draw(screen *ebiten.Image, opt *ebiten.DrawImageOptions) {
 	centerM := opt.GeoM
 	opt.GeoM = *xxg
 
-	if s.lastSubImage != nil {
-		screen.DrawImage(s.lastSubImage, opt)
-	} else {
-		screen.DrawImage(s.Image, opt)
-	}
+	screen.DrawImage(s.Image, opt)
 	if DebugDraw {
 		x0, y0 := 0.0, 0.0
 		x1, y1 := x0+s.imageWidth, y0
@@ -112,10 +83,6 @@ func (s *Sprite) SetTransformMatrix(m ebiten.GeoM) {
 
 func (s *Sprite) ClearTransformMatrix() {
 	s.customMatrix = false
-}
-
-func (s *Sprite) SetBounds(b image.Rectangle) {
-	s.Bounds = b
 }
 
 func (s *Sprite) SetOffset(x, y float64) {
@@ -142,10 +109,9 @@ func (s *Sprite) Size() (w, h float64) {
 }
 
 // GetPrecomputedImage returns the last precomputed image
+//
+// TODO: remove
 func (s *Sprite) GetPrecomputedImage() *ebiten.Image {
-	if s.lastSubImage != nil {
-		return s.lastSubImage
-	}
 	return s.lastImage
 }
 
@@ -160,5 +126,4 @@ func (s *Sprite) GetImage() *ebiten.Image {
 
 func (s *Sprite) SetImage(img *ebiten.Image) {
 	s.Image = img
-	s.lastSubImage = nil
 }

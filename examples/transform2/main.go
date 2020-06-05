@@ -35,7 +35,7 @@ func main() {
 		Height:          480,
 		FS:              fs,
 		Title:           "New Transform Test",
-		Scale:           2,
+		Scale:           0.5,
 		FixedResolution: true,
 		Resizable:       true,
 		OnReady: func(e *primen.Engine) {

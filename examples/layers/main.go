@@ -48,7 +48,7 @@ func main() {
 		Height:        480,
 		FS:            fs,
 		Title:         "Layers Test",
-		Scale:         2,
+		Scale:         0.5,
 		Resizable:     true,
 		MaxResolution: true,
 		OnReady: func(e *primen.Engine) {
@@ -127,9 +127,7 @@ func dogamesetup(ctx context.Context, engine *primen.Engine, bgs, fgs []*ebiten.
 					newlayer := rand.Intn(4)
 					drawlayer.Layer = core.LayerIndex(newlayer)
 					sprite.Image = bgs[newlayer]
-					sprite.Bounds = sprite.Image.Bounds()
 					movecomp.ChildSprite.CoreSprite.Image = fgs[newlayer]
-					movecomp.ChildSprite.CoreSprite.Bounds = fgs[newlayer].Bounds()
 					movecomp.ChildSprite.DrawLayer.Layer = core.LayerIndex(newlayer)
 					ctx.Engine().DispatchEvent("act_of_nature", match.Entity)
 				}

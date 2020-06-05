@@ -47,13 +47,12 @@ func main() {
 func createCharacter(dw *ecs.World, spriteComp *ecs.Component, animComp *ecs.Component, ebimg *ebiten.Image) {
 	e := dw.NewEntity()
 	dw.AddComponentToEntity(e, spriteComp, &core.Sprite{
-		Image:  ebimg,
+		Image:  ebimg.SubImage(image.Rect(0, 0, 80, 110)).(*ebiten.Image),
 		X:      300,
 		Y:      200,
 		Angle:  0,
 		ScaleX: 1,
 		ScaleY: 1,
-		Bounds: image.Rect(0, 0, 80, 110),
 	})
 	dw.AddComponentToEntity(e, animComp, &core.SpriteAnimation{
 		Enabled: true,
@@ -61,7 +60,8 @@ func createCharacter(dw *ecs.World, spriteComp *ecs.Component, animComp *ecs.Com
 		Anim: &core.TiledAnimation{
 			Clips: []core.TiledAnimationClip{
 				{
-					Name: "default",
+					Image: ebimg,
+					Name:  "default",
 					Frames: []image.Rectangle{
 						image.Rect(0, 0, 80, 110),      // 0
 						image.Rect(80, 0, 80*2, 110),   // 1
@@ -80,13 +80,12 @@ func createCharacter(dw *ecs.World, spriteComp *ecs.Component, animComp *ecs.Com
 func createPingPonger(dw *ecs.World, spriteComp *ecs.Component, animComp *ecs.Component, ebimg *ebiten.Image) {
 	e := dw.NewEntity()
 	dw.AddComponentToEntity(e, spriteComp, &core.Sprite{
-		Image:  ebimg,
+		Image:  ebimg.SubImage(image.Rect(0, 0, 8, 32)).(*ebiten.Image),
 		X:      370,
 		Y:      180,
 		Angle:  math.Pi / 4,
 		ScaleX: 1,
 		ScaleY: 1,
-		Bounds: image.Rect(0, 0, 8, 32),
 	})
 	dw.AddComponentToEntity(e, animComp, &core.SpriteAnimation{
 		Enabled: true,
@@ -94,7 +93,8 @@ func createPingPonger(dw *ecs.World, spriteComp *ecs.Component, animComp *ecs.Co
 		Anim: &core.TiledAnimation{
 			Clips: []core.TiledAnimationClip{
 				{
-					Name: "default",
+					Name:  "default",
+					Image: ebimg,
 					Frames: []image.Rectangle{
 						image.Rect(8*0, 0, 8*1, 32),
 						image.Rect(8*1, 0, 8*2, 32),
