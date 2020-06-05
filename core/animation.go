@@ -281,7 +281,7 @@ func (c TiledAnimationClip) GetFPS() float64 {
 }
 
 func (c TiledAnimationClip) GetImage(frame int) *ebiten.Image {
-	return c.Image
+	return c.Image.SubImage(c.Frames[frame]).(*ebiten.Image)
 }
 
 func (c TiledAnimationClip) GetFrameCount() int {

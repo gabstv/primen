@@ -208,10 +208,7 @@ func (l *Label) ClearTransformMatrix() {
 	l.customMatrix = false
 }
 
-func (l *Label) SetBounds(b image.Rectangle) {
-	// noop for label
-}
-
 func (l *Label) SetOffset(x, y float64) {
-	// noop for label
+	l.OffsetX = x
+	l.OffsetY = y
 }

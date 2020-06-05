@@ -27,7 +27,6 @@ func NewSprite(parent WorldTransform, im *ebiten.Image, layer Layer) *Sprite {
 	spr.CoreSprite = &core.Sprite{
 		ScaleX: 1,
 		ScaleY: 1,
-		Bounds: im.Bounds(),
 		Image:  im,
 	}
 	spr.DrawLayer = &core.DrawLayer{

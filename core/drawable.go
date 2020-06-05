@@ -1,8 +1,6 @@
 package core
 
 import (
-	"image"
-
 	"github.com/gabstv/ecs"
 	"github.com/hajimehoshi/ebiten"
 )
@@ -22,7 +20,6 @@ type Drawable interface {
 	Size() (w, h float64)
 	SetTransformMatrix(m ebiten.GeoM)
 	ClearTransformMatrix()
-	SetBounds(b image.Rectangle)
 	SetOffset(x, y float64)
 }
 

@@ -93,7 +93,7 @@ func main() {
 		Title:  "Basic Transform With Sprites",
 		Width:  640,
 		Height: 480,
-		Scale:  2,
+		Scale:  0.5,
 	})
 
 	core.DebugDraw = true
@@ -127,8 +127,8 @@ func main() {
 		})
 		ri := randomsprites[rand.Intn(4)]
 		dw.AddComponentToEntity(e2, sc, &core.Sprite{
-			Bounds:  image.Rect(ri[0], ri[1], ri[2], ri[3]),
-			Image:   ebimg,
+			//Bounds:  image.Rect(ri[0], ri[1], ri[2], ri[3]),
+			Image:   ebimg.SubImage(image.Rect(ri[0], ri[1], ri[2], ri[3])).(*ebiten.Image),
 			ScaleX:  1,
 			ScaleY:  1,
 			OriginX: 0.5,
