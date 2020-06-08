@@ -8,6 +8,7 @@ import (
 	"image"
 	"image/draw"
 	"image/png"
+	"io/ioutil"
 	"strconv"
 	"strings"
 
@@ -29,10 +30,11 @@ type AsepriteInput struct {
 
 func Import(ctx context.Context, input ImportInput) (*pb.AtlasFile, error) {
 	outputf := &pb.AtlasFile{
-		Images:    make([][]byte, 0),
-		Filters:   make([]pb.ImageFilter, 0),
-		Frames:    make(map[string]*pb.Frame),
-		AnimClips: make(map[string]*pb.AnimationClip),
+		Images:     make([][]byte, 0),
+		Filters:    make([]pb.ImageFilter, 0),
+		Frames:     make(map[string]*pb.Frame),
+		Clips:      make(map[string]*pb.AnimationClip),
+		Animations: make(map[string]*pb.Animation),
 	}
 	impkr := newImImporter()
 	pkr := &atlaspacker.BinTreeRectPacker{}
@@ -51,11 +53,10 @@ func Import(ctx context.Context, input ImportInput) (*pb.AtlasFile, error) {
 		Filter:  input.Template.ImageFilter,
 		Im:      impkr,
 		Pkr:     pkr,
+		Clips:   input.Template.Clips,
+		Anims:   input.Template.Animations,
 	})
 	if err != nil {
-		return nil, err
-	}
-	if err := wrapAnimations(ctx, file, *input.Template); err != nil {
 		return nil, err
 	}
 	return file, nil
@@ -66,13 +67,7 @@ func importAtlas(ctx context.Context, tpl AtlasImporter, ase AsepriteInput, pkr 
 	if err != nil {
 		return fmt.Errorf("error decoding png image: %w", err)
 	}
-	//idm := make(map[image.Image]*atlaspacker.RectPackerNode)
-	//idmr := make(map[*atlaspacker.RectPackerNode]image.Image)
 	//
-	strat := getStrategy(tpl)
-	if err := isValidForStrat(tpl, strat); err != nil {
-		return err
-	}
 	rules := importByRules{
 		Template:  tpl,
 		Filename:  ase.Filename,
@@ -81,15 +76,7 @@ func importAtlas(ctx context.Context, tpl AtlasImporter, ase AsepriteInput, pkr 
 		Pkr:       pkr,
 		Imptr:     imptr,
 	}
-	switch strat {
-	case Slices:
-		return importAtlasBySlices(ctx, rules)
-	case FrameTags:
-		return importAtlasByFrameTags(ctx, rules)
-	case Frames:
-		return importAtlasByFrames(ctx, rules)
-	}
-	panic("invalid strategy should be detected at isValidForStrat")
+	return importAtlasByFrames(ctx, rules)
 }
 
 type importByRules struct {
@@ -107,191 +94,27 @@ func importAtlasByFrames(ctx context.Context, r importByRules) error {
 	imbank := &atlasIMCache{}
 	r.FrameData.Walk(func(i FrameInfo) bool {
 		if frame, ok := r.Template.FrameWithFilename(i.Filename); ok {
-			if frame.OutputName == "" {
-				// no way to import a frame without Output name
-				return true
-			}
 			clipim := imbank.getSubImage(r.Img, i.Frame)
 			if _, ok := idm[clipim]; !ok {
 				node := r.Pkr.AddRect(clipim.Bounds())
 				idm[clipim] = node
-				r.Imptr.addSprite(frame.OutputName, node, clipim, Vec2{})
+				r.Imptr.addSprite(i.Filename, node, clipim, frame.Pivot)
 			} else {
-				r.Imptr.addSprite(frame.OutputName, idm[clipim], clipim, Vec2{})
+				r.Imptr.addSprite(i.Filename, idm[clipim], clipim, frame.Pivot)
+			}
+		} else if r.Template.ExportUndefinedFrames {
+			clipim := imbank.getSubImage(r.Img, i.Frame)
+			if _, ok := idm[clipim]; !ok {
+				node := r.Pkr.AddRect(clipim.Bounds())
+				idm[clipim] = node
+				r.Imptr.addSprite(i.Filename, node, clipim, Vec2{})
+			} else {
+				r.Imptr.addSprite(i.Filename, idm[clipim], clipim, Vec2{})
 			}
 		}
 		return true
 	})
 	return nil
-}
-
-func importAtlasBySlices(ctx context.Context, r importByRules) error {
-	idm := make(map[image.Image]*atlaspacker.RectPackerNode)
-	//r.Template.
-	imbank := &atlasIMCache{}
-	//
-	// get lone slices!
-	for _, slctpl := range r.Template.Slices {
-		// get slice from aseprite
-		rslc, ri := r.FrameData.GetSliceByName(slctpl.Name)
-		if ri == -1 {
-			//TODO: dont fail if not strict
-			return fmt.Errorf("tplimporter: missing slice '%v'", slctpl.Name)
-		}
-		for i, v := range rslc.Keys {
-			clipim := imbank.getSubImage(r.Img, v.Bounds)
-			fname := getNameByPattern(slctpl.OutputPattern, slctpl.Name, i, ri, v.Frame)
-			if _, ok := idm[clipim]; !ok {
-				node := r.Pkr.AddRect(clipim.Bounds())
-				idm[clipim] = node
-				r.Imptr.addSprite(fname, node, clipim, v.Pivot)
-			} else {
-				r.Imptr.addSprite(fname, idm[clipim], clipim, v.Pivot)
-			}
-		}
-	}
-	for _, animtpl := range r.Template.AnimationClips {
-		rslc, ri := r.FrameData.GetSliceByName(animtpl.Slice)
-		if ri == -1 {
-			//TODO: dont fail if not strict
-			return fmt.Errorf("tplimporter: animation -> missing slice '%v'", animtpl.Slice)
-		}
-		//
-		clip := r.Imptr.addAnimClip(animtpl.OutputName, importClipMode(animtpl.ClipMode))
-		clip.Fps = animtpl.FPS
-		//
-		for _, v := range rslc.Keys {
-			clipim := imbank.getSubImage(r.Img, v.Bounds)
-			//fname := getNameByPattern(slctpl.OutputPattern, slctpl.Name, i, ri, v.Frame)
-			if _, ok := idm[clipim]; !ok {
-				node := r.Pkr.AddRect(clipim.Bounds())
-				idm[clipim] = node //TODO: support pivots/offsets?
-				//r.Imptr.addSprite(fname, node, clipim)
-				clip.AddFrame(node, clipim, v.Pivot, animtpl.Events)
-			} else {
-				clip.AddFrame(idm[clipim], clipim, v.Pivot, animtpl.Events)
-			}
-			if animtpl.EndedEvent != nil {
-				clip.EndEvent = &pb.AnimationEvent{
-					Name:  animtpl.EndedEvent.EventName,
-					Value: animtpl.EndedEvent.EventValue,
-				}
-			}
-		}
-		//
-	}
-	return nil
-}
-
-func importAtlasByFrameTags(ctx context.Context, r importByRules) error {
-	return errors.New("not implemented")
-}
-
-// this is not concurrent safe
-type atlasIMCache struct {
-	m map[string]image.Image
-}
-
-// imget
-func (c *atlasIMCache) getSubImage(src image.Image, rect FrameRect) image.Image {
-	if c.m == nil {
-		c.m = make(map[string]image.Image)
-	}
-	if img, ok := c.m[rect.String()]; ok {
-		return img
-	}
-	subim := image.NewRGBA(image.Rect(0, 0, rect.W, rect.H))
-	draw.Draw(subim, subim.Bounds(), src, rect.ToRect().Min, draw.Src)
-	c.m[rect.String()] = subim
-	return subim
-}
-
-type imImporter struct {
-	sprites []imSprite
-	clips   []*imAnimClip
-}
-
-func newImImporter() *imImporter {
-	return &imImporter{
-		sprites: make([]imSprite, 0, 16),
-		clips:   make([]*imAnimClip, 0, 8),
-	}
-}
-
-func (i *imImporter) addSprite(name string, node *atlaspacker.RectPackerNode, img image.Image, pivot Vec2) {
-	i.sprites = append(i.sprites, imSprite{
-		Name:  name,
-		Node:  node,
-		Image: img,
-		Pivot: pivot,
-	})
-}
-
-func (i *imImporter) Sprites() []imSprite {
-	return i.sprites
-}
-
-func (i *imImporter) AnimClips() []*imAnimClip {
-	return i.clips
-}
-
-func (i *imImporter) addAnimClip(name string, clipMode pb.AnimationClipMode) *imAnimClip {
-	v := &imAnimClip{
-		Name:     name,
-		Frames:   make([]*imAnimClipFrame, 0),
-		ClipMode: clipMode,
-		//FIXME: more stuff
-	}
-	i.clips = append(i.clips, v)
-	return v
-}
-
-type imSprite struct {
-	Name  string
-	Node  *atlaspacker.RectPackerNode
-	Image image.Image
-	Pivot Vec2
-
-	// after the bin packer is calculated
-
-	FinalRect       FrameRect
-	FinalImageIndex int
-}
-
-type imAnimClip struct {
-	Name     string
-	Fps      int
-	Frames   []*imAnimClipFrame
-	EndEvent *pb.AnimationEvent
-	ClipMode pb.AnimationClipMode
-}
-
-func (c *imAnimClip) AddFrame(node *atlaspacker.RectPackerNode, img image.Image, pivot Vec2, events []AnimEventIO) *imAnimClipFrame {
-	f := &imAnimClipFrame{
-		Raw:   node,
-		Pivot: pivot,
-		Img:   img,
-	}
-	nexti := len(c.Frames)
-	for _, v := range events {
-		if v.Frame == nexti {
-			f.Event = &pb.AnimationEvent{
-				Name:  v.EventName,
-				Value: v.EventValue,
-			}
-		}
-	}
-	c.Frames = append(c.Frames, f)
-	return f
-}
-
-type imAnimClipFrame struct {
-	Raw             *atlaspacker.RectPackerNode
-	Img             image.Image
-	Bounds          FrameRect
-	FinalImageIndex int
-	Pivot           Vec2
-	Event           *pb.AnimationEvent
 }
 
 func getFilter(v string) pb.ImageFilter {
@@ -310,6 +133,8 @@ type buildAtlasInput struct {
 	Pkr     *atlaspacker.BinTreeRectPacker
 	Im      *imImporter
 	Filter  string
+	Clips   []AnimationClip
+	Anims   []Animation
 }
 
 func buildAtlas(ctx context.Context, input buildAtlasInput) (*pb.AtlasFile, error) {
@@ -317,10 +142,11 @@ func buildAtlas(ctx context.Context, input buildAtlasInput) (*pb.AtlasFile, erro
 	pkr := input.Pkr
 	im := input.Im
 	file := &pb.AtlasFile{
-		Images:    make([][]byte, 0),
-		Filters:   make([]pb.ImageFilter, 0),
-		Frames:    make(map[string]*pb.Frame),
-		AnimClips: make(map[string]*pb.AnimationClip),
+		Images:     make([][]byte, 0),
+		Filters:    make([]pb.ImageFilter, 0),
+		Frames:     make(map[string]*pb.Frame),
+		Clips:      make(map[string]*pb.AnimationClip),
+		Animations: make(map[string]*pb.Animation),
 	}
 	if pki.MaxWidth <= 0 {
 		pki.MaxWidth = 4096
@@ -333,61 +159,41 @@ func buildAtlas(ctx context.Context, input buildAtlasInput) (*pb.AtlasFile, erro
 		return nil, err
 	}
 	xsprites := im.Sprites()
-	xclips := im.AnimClips()
-	anims := make(map[string]*pb.AnimationClip)
+	//anims := make(map[string]*pb.AnimationClip)
 	for i, atlas := range atlases {
+		nodemap := make(map[*atlaspacker.RectPackerNode]int)
+		for i, v := range atlas.Nodes {
+			nodemap[v] = i
+		}
 		outimg := image.NewRGBA(image.Rect(0, 0, atlas.Width, atlas.Height))
 		frames := make(map[string]*pb.Frame)
 		for _, spr := range xsprites {
-			for _, nn := range atlas.Nodes {
-				if nn == spr.Node {
-					spr.FinalRect = FrameRect{
-						X: nn.X,
-						Y: nn.Y,
-						W: nn.Width,
-						H: nn.Height,
-					}
-					spr.FinalImageIndex = i
-					//TODO: prevent from drawing twice (if nn was already done)
-					draw.Draw(outimg, nn.R(), spr.Image, image.ZP, draw.Over)
-					frames[spr.Name] = &pb.Frame{
-						Image: uint32(i),
-						X:     uint32(nn.X),
-						Y:     uint32(nn.Y),
-						W:     uint32(nn.Width),
-						H:     uint32(nn.Height),
-					}
-				}
+			_, nodeok := nodemap[spr.Node]
+			if !nodeok {
+				continue
 			}
-		}
-		for _, clip := range xclips {
-			//TODO: handle animation sprite fragmentation
-			outclip := anims[clip.Name]
-			if outclip == nil {
-				outclip = &pb.AnimationClip{
-					ClipMode:   clip.ClipMode,
-					Fps:        float32(clip.Fps),
-					EndedEvent: clip.EndEvent,
-					Name:       clip.Name,
-					Frames:     make([]*pb.AnimFrame, 0),
-				}
-				file.AnimClips[clip.Name] = outclip
+			spr.FinalRect = FrameRect{
+				X: spr.Node.X,
+				Y: spr.Node.Y,
+				W: spr.Node.Width,
+				H: spr.Node.Height,
 			}
-			anims[outclip.Name] = outclip
-			for _, clipFrame := range clip.Frames {
-				for _, nn := range atlas.Nodes {
-					if nn == clipFrame.Raw {
-						clipFrame.Bounds = FrameRect{
-							X: nn.X,
-							Y: nn.Y,
-							W: nn.Width,
-							H: nn.Height,
-						}
-						clipFrame.FinalImageIndex = i
-						//TODO: prevent from drawing twice (if nn was already done)
-						draw.Draw(outimg, nn.R(), clipFrame.Img, image.ZP, draw.Over)
-					}
-				}
+			spr.FinalImageIndex = i
+			//TODO: prevent from drawing twice (if nn was already done)
+			if pki.Debug {
+				dbuf := new(bytes.Buffer)
+				_ = png.Encode(dbuf, spr.Image)
+				ioutil.WriteFile("xsprites_"+spr.Name+".png", dbuf.Bytes(), 0644)
+			}
+			draw.Draw(outimg, spr.Node.R(), spr.Image, image.ZP, draw.Over)
+			frames[spr.Name] = &pb.Frame{
+				Image: uint32(i),
+				X:     uint32(spr.Node.X),
+				Y:     uint32(spr.Node.Y),
+				W:     uint32(spr.Node.Width),
+				H:     uint32(spr.Node.Height),
+				Ox:    int32(spr.Pivot.X * -1),
+				Oy:    int32(spr.Pivot.Y * -1),
 			}
 		}
 		file.Filters = append(file.Filters, getFilter(input.Filter))
@@ -399,76 +205,68 @@ func buildAtlas(ctx context.Context, input buildAtlasInput) (*pb.AtlasFile, erro
 			return nil, err
 		}
 		file.Images = append(file.Images, buf.Bytes())
-	}
-	// put animation clips in the right order
-	for _, clip := range xclips {
-		for _, outClip := range clip.Frames {
-			file.AnimClips[clip.Name].Frames = append(file.AnimClips[clip.Name].Frames, &pb.AnimFrame{
-				X:     uint32(outClip.Bounds.X),
-				Y:     uint32(outClip.Bounds.Y),
-				W:     uint32(outClip.Bounds.W),
-				H:     uint32(outClip.Bounds.H),
-				Event: outClip.Event,
-				Image: uint32(outClip.FinalImageIndex),
-				Ox:    int32(outClip.Pivot.X * -1), //TODO: debug
-				Oy:    int32(outClip.Pivot.Y * -1),
-			})
+		if pki.Debug {
+			ioutil.WriteFile("atlas_"+strconv.Itoa(i)+".png", buf.Bytes(), 0644)
 		}
+	}
+	// put animations and solo clips
+	for _, clip := range input.Clips {
+		pbclip, err := getClip(file, clip)
+		if err != nil {
+			return nil, err
+		}
+		file.Clips[pbclip.Name] = pbclip
+	}
+	for _, anim := range input.Anims {
+		pbanim := &pb.Animation{
+			Name:  anim.Name,
+			Clips: make([]*pb.AnimationClip, 0, len(anim.Clips)),
+		}
+		for _, clip := range anim.Clips {
+			pbclip, err := getClip(file, clip)
+			if err != nil {
+				return nil, err
+			}
+			pbanim.Clips = append(pbanim.Clips, pbclip)
+		}
+		file.Animations[pbanim.Name] = pbanim
 	}
 	return file, nil
 }
 
-func wrapAnimations(ctx context.Context, file *pb.AtlasFile, g AtlasImporterGroup) error {
-	file.AnimGroups = make(map[string]*pb.AnimationGroup)
-	for _, a := range g.Animations {
-		g := &pb.AnimationGroup{
-			Name:  a.Name,
-			Clips: make(map[string]string),
+func getClip(file *pb.AtlasFile, clip AnimationClip) (*pb.AnimationClip, error) {
+	pbclip := &pb.AnimationClip{
+		Name:     clip.Name,
+		ClipMode: importClipMode(clip.ClipMode),
+		Fps:      float32(clip.FPS),
+		Frames:   make([]*pb.AnimFrame, 0),
+	}
+	if clip.EndedEvent != nil {
+		pbclip.EndedEvent = &pb.AnimationEvent{
+			Name:  clip.EndedEvent.EventName,
+			Value: clip.EndedEvent.EventValue,
 		}
-		for _, item := range a.Clips {
-			if file.AnimClips == nil || file.AnimClips[item.GlobalName] == nil {
-				return errors.New("animation clip " + item.GlobalName + " not found")
+	}
+	evmap := make(map[int]*AnimEventIO)
+	for _, v := range clip.Events {
+		evmap[v.Frame] = &v
+	}
+	for fi, fv := range clip.Frames {
+		if file.Frames[fv] == nil {
+			return nil, errors.New("frame not found: " + fv)
+		}
+		f := &pb.AnimFrame{
+			FrameName: fv,
+		}
+		if v := evmap[fi]; v != nil {
+			f.Event = &pb.AnimationEvent{
+				Name:  v.EventName,
+				Value: v.EventValue,
 			}
-			g.Clips[item.GlobalName] = item.LocalName
 		}
-		file.AnimGroups[a.Name] = g
+		pbclip.Frames = append(pbclip.Frames, f)
 	}
-	return nil
-}
-
-func getStrategy(tpl AtlasImporter) AtlasImportStrategy {
-	if tpl.ImportStrategy == Default {
-		if len(tpl.Slices) > 0 {
-			return Slices
-		}
-		if len(tpl.FrameTags) > 0 {
-			return FrameTags
-		}
-		return Frames
-	}
-	return tpl.ImportStrategy
-}
-
-func isValidForStrat(tpl AtlasImporter, s AtlasImportStrategy) error {
-	if s == Default {
-		panic("isValidForStrat != Default")
-	}
-	switch s {
-	case Slices:
-		if len(tpl.Slices) < 1 {
-			return fmt.Errorf("%s: chosen strategy is Slices, but AtlasImporter -> Slices is empty", tpl.AsepriteSheet)
-		}
-		return nil
-	case FrameTags:
-		if len(tpl.FrameTags) < 1 {
-			return fmt.Errorf("%s: chosen strategy is FrameTags, but AtlasImporter -> FrameTags is empty", tpl.AsepriteSheet)
-		}
-	case Frames:
-		if len(tpl.Frames) < 1 {
-			return fmt.Errorf("%s: chosen strategy is Frames, but AtlasImporter -> Frames is empty", tpl.AsepriteSheet)
-		}
-	}
-	return fmt.Errorf("%s: unknown import strategy %s", tpl.AsepriteSheet, s)
+	return pbclip, nil
 }
 
 func getNameByPattern(pattern, name string, posindex, nindex, frame int) string {
@@ -497,4 +295,62 @@ func importClipMode(aclipmode string) pb.AnimationClipMode {
 		return pb.AnimationClipMode_CLAMP_FOREVER
 	}
 	return pb.AnimationClipMode_ONCE
+}
+
+// . . .-. .   .-. .-. .-.   .-. . . .-. .-. .-.
+// |-| |-  |   |-' |-  |(     |   |  |-' |-  `-.
+// ' ` `-' `-' '   `-' ' '    '   `  '   `-' `-'
+
+type imImporter struct {
+	sprites []imSprite
+}
+
+func newImImporter() *imImporter {
+	return &imImporter{
+		sprites: make([]imSprite, 0, 16),
+	}
+}
+
+func (i *imImporter) addSprite(name string, node *atlaspacker.RectPackerNode, img image.Image, pivot Vec2) {
+	i.sprites = append(i.sprites, imSprite{
+		Name:  name,
+		Node:  node,
+		Image: img,
+		Pivot: pivot,
+	})
+}
+
+func (i *imImporter) Sprites() []imSprite {
+	return i.sprites
+}
+
+type imSprite struct {
+	Name  string
+	Node  *atlaspacker.RectPackerNode
+	Image image.Image
+	Pivot Vec2
+
+	// after the bin packer is calculated
+
+	FinalRect       FrameRect
+	FinalImageIndex int
+}
+
+// this is not concurrent safe
+type atlasIMCache struct {
+	m map[string]image.Image
+}
+
+// imget
+func (c *atlasIMCache) getSubImage(src image.Image, rect FrameRect) image.Image {
+	if c.m == nil {
+		c.m = make(map[string]image.Image)
+	}
+	if img, ok := c.m[rect.String()]; ok {
+		return img
+	}
+	subim := image.NewRGBA(image.Rect(0, 0, rect.W, rect.H))
+	draw.Draw(subim, subim.Bounds(), src, rect.ToRect().Min, draw.Over)
+	c.m[rect.String()] = subim
+	return subim
 }

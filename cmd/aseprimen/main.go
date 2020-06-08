@@ -150,6 +150,9 @@ func main() {
 					Usage: "Max atlas count",
 					Value: 0,
 				},
+				cli.BoolFlag{
+					Name: "debug",
+				},
 			},
 		},
 	}
@@ -161,13 +164,6 @@ func main() {
 
 func cmdTplGen() func(c *cli.Context) error {
 	return func(c *cli.Context) error {
-		typestr := aseprite.AtlasImportStrategy(c.String(flagType))
-		switch typestr {
-		case aseprite.Slices, aseprite.Frames, aseprite.FrameTags, aseprite.Default:
-			// ok
-		default:
-			return errors.New("invalid type")
-		}
 		inputFiles := c.StringSlice(flagSheet)
 		outfile := aseprite.AtlasImporterGroup{
 			ImageFilter: c.String(flagImageFilter),
@@ -184,73 +180,36 @@ func cmdTplGen() func(c *cli.Context) error {
 		if len(inputFiles) < 1 {
 			// generate generic template
 			tpl := aseprite.AtlasImporter{
-				ImportStrategy: typestr,
 				Frames: []aseprite.FrameIO{
 					{
-						Filename:   "example.png",
-						OutputName: "example",
+						Filename: "sprite1",
+						Pivot:    aseprite.Vec2{2, 3},
+					},
+					{
+						Filename: "sprite2",
+						Pivot:    aseprite.Vec2{2, 3},
 					},
 				},
 				AsepriteSheet: "asepritesheet.json",
 			}
-			switch typestr {
-			case aseprite.Default, aseprite.Frames:
-				outfile.Templates = []aseprite.AtlasImporter{
-					tpl,
-				}
-			case aseprite.FrameTags:
-				tpl.FrameTags = []aseprite.FrameTagIO{
-					{
-						Name:          "tag1",
-						OutputPattern: "tag1_#",
-					},
-				}
-				tpl.AnimationClips = []aseprite.AnimationClipIO{
-					{
-						ClipMode:   "forward",
-						FPS:        c.Int(flagFPS),
-						FrameTag:   "tag1",
-						OutputName: "walking",
-						Events: []aseprite.AnimEventIO{
-							{
-								Frame:      0,
-								EventName:  "x_begin",
-								EventValue: "marco",
+			outfile.Templates = []aseprite.AtlasImporter{
+				tpl,
+			}
+			outfile.Animations = []aseprite.Animation{
+				{
+					Name: "person",
+					Clips: []aseprite.AnimationClip{
+						{
+							Name:     "idle",
+							ClipMode: "loop",
+							FPS:      12,
+							Frames: []string{
+								"sprite1",
+								"sprite2",
 							},
 						},
-						EndedEvent: &aseprite.AnimEventIO{
-							EventName:  "x_end",
-							EventValue: "polo",
-						},
 					},
-				}
-			case aseprite.Slices:
-				tpl.Frames = []aseprite.FrameIO{}
-				tpl.Slices = []aseprite.SliceIO{
-					{
-						Name:          "slice1",
-						OutputPattern: "slice1_#",
-					},
-				}
-				tpl.AnimationClips = []aseprite.AnimationClipIO{
-					{
-						ClipMode:   "forward",
-						FPS:        c.Int(flagFPS),
-						Slice:      "slice1",
-						OutputName: "walking",
-						Events: []aseprite.AnimEventIO{
-							{
-								Frame:      0,
-								EventName:  "x_begin",
-								EventValue: "marco",
-							},
-						},
-						EndedEvent: &aseprite.AnimEventIO{
-							EventName:  "x_end",
-							EventValue: "polo",
-						},
-					},
-				}
+				},
 			}
 			d, _ := json.MarshalIndent(outfile, "", "    ")
 			rdr := bytes.NewReader(d)
@@ -272,60 +231,14 @@ func cmdTplGen() func(c *cli.Context) error {
 				continue
 			}
 			tpl := aseprite.AtlasImporter{
-				AsepriteSheet:  asefn,
-				AnimationClips: make([]aseprite.AnimationClipIO, 0),
-				FrameTags:      make([]aseprite.FrameTagIO, 0),
-				Frames:         make([]aseprite.FrameIO, 0),
-				ImportStrategy: typestr,
-				Slices:         make([]aseprite.SliceIO, 0),
+				AsepriteSheet:         asefn,
+				Frames:                make([]aseprite.FrameIO, 0),
+				ExportUndefinedFrames: true,
 			}
-			if (typestr == aseprite.Default && len(inf.Meta.Slices) == 0) || (typestr != aseprite.Slices && typestr != aseprite.Default) {
-				for _, v := range inf.Frames {
-					tpl.Frames = append(tpl.Frames, aseprite.FrameIO{
-						Filename:   v.Filename,
-						OutputName: v.Filename,
-					})
-				}
-				for _, v := range inf.Meta.FrameTags {
-					tpl.FrameTags = append(tpl.FrameTags, aseprite.FrameTagIO{
-						Name:          v.Name,
-						OutputPattern: v.Name + "#",
-					})
-					if v.From != v.To {
-						tpl.AnimationClips = append(tpl.AnimationClips, aseprite.AnimationClipIO{
-							FrameTag:   v.Name,
-							ClipMode:   string(v.Direction),
-							FPS:        c.Int(flagFPS),
-							OutputName: v.Name,
-						})
-					}
-				}
-			}
-			if typestr == aseprite.Default || typestr == aseprite.Slices {
-				for _, v := range inf.Meta.Slices {
-					tpl.Slices = append(tpl.Slices, aseprite.SliceIO{
-						Name:          v.Name,
-						OutputPattern: v.Name + "#",
-					})
-					minframe := -1
-					maxframe := -1
-					for _, vkey := range v.Keys {
-						if minframe == -1 || minframe > vkey.Frame {
-							minframe = vkey.Frame
-						}
-						if vkey.Frame > maxframe {
-							maxframe = vkey.Frame
-						}
-					}
-					if minframe != maxframe {
-						tpl.AnimationClips = append(tpl.AnimationClips, aseprite.AnimationClipIO{
-							ClipMode:   "forward",
-							FPS:        c.Int(flagFPS),
-							Slice:      v.Name,
-							OutputName: v.Name,
-						})
-					}
-				}
+			for _, v := range inf.Frames {
+				tpl.Frames = append(tpl.Frames, aseprite.FrameIO{
+					Filename: v.Filename,
+				})
 			}
 			outfile.Templates = append(outfile.Templates, tpl)
 		}
@@ -370,6 +283,7 @@ func cmdBuild() func(c *cli.Context) error {
 					MaxWidth:     c.Int("max-width"),
 					MaxHeight:    c.Int("max-height"),
 					Count:        c.Int("count"),
+					Debug:        c.Bool("debug"),
 				},
 				Source: src,
 			})

@@ -20,10 +20,10 @@ func main() {
 		panic(err)
 	}
 	spbgs := []*ebiten.Image{
-		atlas.GetSubImage("box1"),
-		atlas.GetSubImage("box2"),
-		atlas.GetSubImage("box3"),
-		atlas.GetSubImage("box4"),
+		atlas.GetSubImage("box1").Image,
+		atlas.GetSubImage("box2").Image,
+		atlas.GetSubImage("box3").Image,
+		atlas.GetSubImage("box4").Image,
 	}
 	core.DebugDraw = true
 	//

@@ -163,7 +163,7 @@ func spriteAnimResolveClipMap(spranim *SpriteAnimation) {
 func spriteAnimResolvePlayback(globalfps, dt float64, spranim *SpriteAnimation) {
 	clip := spranim.Anim.GetClip(spranim.ActiveClip)
 	localfps := nonzeroval(clip.GetFPS(), spranim.Fps, globalfps)
-	localdt := (dt * localfps) / globalfps
+	localdt := dt //(dt * localfps) / globalfps
 	if !spranim.lastPlaying {
 		// the animation was stopped on the last iteration
 		if spranim.lastClip == spranim.ActiveClip {
@@ -266,15 +266,15 @@ func SpriteAnimationLinkSystemExec(ctx Context) {
 		if !spranim.Enabled {
 			continue
 		}
-		// replace image if the animation clip usaes a different one
+		// replace image if the animation clip uses a different one
 		if spranim.lastImage != nil {
 			if w, ok := spr.(DrawableImager); ok {
 				if w.GetImage() != spranim.lastImage {
 					w.SetImage(spranim.lastImage)
+					spr.SetOffset(spranim.Anim.GetClipOffset(spranim.ActiveClip, spranim.ActiveFrame))
 				}
 			}
 		}
-		spr.SetOffset(spranim.Anim.GetClipOffset(spranim.ActiveClip, spranim.ActiveFrame))
 	}
 }
 

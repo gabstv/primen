@@ -24,6 +24,18 @@
             "program": "${workspaceFolder}/examples/animation/main.go"
         },
         {
+            "name": "Debug Aseprimen (build)",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "cwd": "${workspaceFolder}/examples/shared",
+            "program": "${workspaceFolder}/cmd/aseprimen/main.go",
+            "args": [
+                "build",
+                "people.tmpl.json"
+            ]
+        },
+        {
             "name": "Launch",
             "type": "go",
             "request": "launch",
