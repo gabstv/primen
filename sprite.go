@@ -14,8 +14,8 @@ var (
 type Sprite struct {
 	*WorldItem
 	*TransformItem
-	CoreSprite *core.Sprite
-	DrawLayer  *core.DrawLayer
+	sprite    *core.Sprite
+	drawLayer *core.DrawLayer
 }
 
 func NewSprite(parent WorldTransform, im *ebiten.Image, layer Layer) *Sprite {
@@ -24,22 +24,44 @@ func NewSprite(parent WorldTransform, im *ebiten.Image, layer Layer) *Sprite {
 	spr := &Sprite{}
 	spr.WorldItem = newWorldItem(e, w)
 	spr.TransformItem = newTransformItem(e, parent)
-	spr.CoreSprite = &core.Sprite{
+	spr.sprite = &core.Sprite{
 		ScaleX: 1,
 		ScaleY: 1,
 		Image:  im,
 	}
-	spr.DrawLayer = &core.DrawLayer{
+	spr.drawLayer = &core.DrawLayer{
 		Layer:  layer,
 		ZIndex: core.ZIndexTop,
 	}
-	if err := w.AddComponentToEntity(spr.entity, w.Component(core.CNDrawable), spr.CoreSprite); err != nil {
+	if err := w.AddComponentToEntity(spr.entity, w.Component(core.CNDrawable), spr.sprite); err != nil {
 		panic(err)
 	}
-	if err := w.AddComponentToEntity(spr.entity, w.Component(core.CNDrawLayer), spr.DrawLayer); err != nil {
+	if err := w.AddComponentToEntity(spr.entity, w.Component(core.CNDrawLayer), spr.drawLayer); err != nil {
 		panic(err)
 	}
 	return spr
+}
+
+func (s *Sprite) SetOffset(x, y float64) {
+	s.sprite.OffsetX = x
+	s.sprite.OffsetY = y
+}
+
+func (s *Sprite) SetOffsetX(x float64) {
+	s.sprite.OffsetX = x
+}
+
+func (s *Sprite) SetOffsetY(y float64) {
+	s.sprite.OffsetY = y
+}
+
+func (s *Sprite) SetOrigin(ox, oy float64) {
+	s.sprite.OriginX = ox
+	s.sprite.OriginY = oy
+}
+
+func (s *Sprite) SetImage(img *ebiten.Image) {
+	s.sprite.SetImage(img)
 }
 
 type Animation = core.Animation

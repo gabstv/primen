@@ -127,8 +127,8 @@ func dogamesetup(ctx context.Context, engine *primen.Engine, bgs, fgs []*ebiten.
 					newlayer := rand.Intn(4)
 					drawlayer.Layer = core.LayerIndex(newlayer)
 					sprite.Image = bgs[newlayer]
-					movecomp.ChildSprite.CoreSprite.Image = fgs[newlayer]
-					movecomp.ChildSprite.DrawLayer.Layer = core.LayerIndex(newlayer)
+					movecomp.ChildSprite.SetImage(fgs[newlayer])
+					movecomp.ChildSprite.drawLayer.Layer = core.LayerIndex(newlayer)
 					ctx.Engine().DispatchEvent("act_of_nature", match.Entity)
 				}
 			}
@@ -155,11 +155,11 @@ func dogamesetup(ctx context.Context, engine *primen.Engine, bgs, fgs []*ebiten.
 			//ri := rand.Intn(4)
 			rl := rand.Intn(4)
 			bgs := primen.NewSprite(root, bgs[rl], core.LayerIndex(rl))
-			bgs.CoreSprite.OriginX = .5
-			bgs.CoreSprite.OriginY = .5
+			bgs.sprite.OriginX = .5
+			bgs.sprite.OriginY = .5
 			fgs := primen.NewSprite(bgs, fgs[rl], core.LayerIndex(rl))
-			fgs.CoreSprite.OriginX = .5
-			fgs.CoreSprite.OriginY = .5
+			fgs.sprite.OriginX = .5
+			fgs.sprite.OriginY = .5
 			//fgs.Transform.Angle = -math.Pi * 0.5
 			mvc := &OrbitalMovement{
 				Dx:          float64(i+1)*30 + rand.Float64()*10,
