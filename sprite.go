@@ -14,8 +14,8 @@ var (
 type Sprite struct {
 	*WorldItem
 	*TransformItem
-	sprite    *core.Sprite
-	drawLayer *core.DrawLayer
+	*DrawLayerItem
+	sprite *core.Sprite
 }
 
 func NewSprite(parent WorldTransform, im *ebiten.Image, layer Layer) *Sprite {
@@ -24,6 +24,7 @@ func NewSprite(parent WorldTransform, im *ebiten.Image, layer Layer) *Sprite {
 	spr := &Sprite{}
 	spr.WorldItem = newWorldItem(e, w)
 	spr.TransformItem = newTransformItem(e, parent)
+	spr.DrawLayerItem = newDrawLayerItem(e, w)
 	spr.sprite = &core.Sprite{
 		ScaleX: 1,
 		ScaleY: 1,
@@ -34,9 +35,6 @@ func NewSprite(parent WorldTransform, im *ebiten.Image, layer Layer) *Sprite {
 		ZIndex: core.ZIndexTop,
 	}
 	if err := w.AddComponentToEntity(spr.entity, w.Component(core.CNDrawable), spr.sprite); err != nil {
-		panic(err)
-	}
-	if err := w.AddComponentToEntity(spr.entity, w.Component(core.CNDrawLayer), spr.drawLayer); err != nil {
 		panic(err)
 	}
 	return spr
