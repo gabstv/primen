@@ -47,28 +47,30 @@ func main() {
 func createCharacter(dw *ecs.World, spriteComp *ecs.Component, animComp *ecs.Component, ebimg *ebiten.Image) {
 	e := dw.NewEntity()
 	dw.AddComponentToEntity(e, spriteComp, &core.Sprite{
-		Image:  ebimg,
+		Image:  ebimg.SubImage(image.Rect(0, 0, 80, 110)).(*ebiten.Image),
 		X:      300,
 		Y:      200,
 		Angle:  0,
 		ScaleX: 1,
 		ScaleY: 1,
-		Bounds: image.Rect(0, 0, 80, 110),
 	})
 	dw.AddComponentToEntity(e, animComp, &core.SpriteAnimation{
 		Enabled: true,
 		Playing: true,
-		Clips: []core.SpriteAnimationClip{
-			core.SpriteAnimationClip{
-				Name: "default",
-				Frames: []image.Rectangle{
-					image.Rect(0, 0, 80, 110),      // 0
-					image.Rect(80, 0, 80*2, 110),   // 1
-					image.Rect(80*2, 0, 80*3, 110), // 2
-					image.Rect(80*3, 0, 80*4, 110), // 3
-					image.Rect(0, 0, 80, 110),      // 0
+		Anim: &core.TiledAnimation{
+			Clips: []core.TiledAnimationClip{
+				{
+					Image: ebimg,
+					Name:  "default",
+					Frames: []image.Rectangle{
+						image.Rect(0, 0, 80, 110),      // 0
+						image.Rect(80, 0, 80*2, 110),   // 1
+						image.Rect(80*2, 0, 80*3, 110), // 2
+						image.Rect(80*3, 0, 80*4, 110), // 3
+						image.Rect(0, 0, 80, 110),      // 0
+					},
+					ClipMode: core.AnimLoop,
 				},
-				ClipMode: core.AnimLoop,
 			},
 		},
 		Fps: 24,
@@ -78,27 +80,29 @@ func createCharacter(dw *ecs.World, spriteComp *ecs.Component, animComp *ecs.Com
 func createPingPonger(dw *ecs.World, spriteComp *ecs.Component, animComp *ecs.Component, ebimg *ebiten.Image) {
 	e := dw.NewEntity()
 	dw.AddComponentToEntity(e, spriteComp, &core.Sprite{
-		Image:  ebimg,
+		Image:  ebimg.SubImage(image.Rect(0, 0, 8, 32)).(*ebiten.Image),
 		X:      370,
 		Y:      180,
 		Angle:  math.Pi / 4,
 		ScaleX: 1,
 		ScaleY: 1,
-		Bounds: image.Rect(0, 0, 8, 32),
 	})
 	dw.AddComponentToEntity(e, animComp, &core.SpriteAnimation{
 		Enabled: true,
 		Playing: true,
-		Clips: []core.SpriteAnimationClip{
-			core.SpriteAnimationClip{
-				Name: "default",
-				Frames: []image.Rectangle{
-					image.Rect(8*0, 0, 8*1, 32),
-					image.Rect(8*1, 0, 8*2, 32),
-					image.Rect(8*2, 0, 8*3, 32),
-					image.Rect(8*3, 0, 8*4, 32),
+		Anim: &core.TiledAnimation{
+			Clips: []core.TiledAnimationClip{
+				{
+					Name:  "default",
+					Image: ebimg,
+					Frames: []image.Rectangle{
+						image.Rect(8*0, 0, 8*1, 32),
+						image.Rect(8*1, 0, 8*2, 32),
+						image.Rect(8*2, 0, 8*3, 32),
+						image.Rect(8*3, 0, 8*4, 32),
+					},
+					ClipMode: core.AnimPingPong,
 				},
-				ClipMode: core.AnimPingPong,
 			},
 		},
 		Fps: 24,

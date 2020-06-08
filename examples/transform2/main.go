@@ -20,10 +20,10 @@ func main() {
 		panic(err)
 	}
 	spbgs := []*ebiten.Image{
-		atlas.Get("box1"),
-		atlas.Get("box2"),
-		atlas.Get("box3"),
-		atlas.Get("box4"),
+		atlas.GetSubImage("box1").Image,
+		atlas.GetSubImage("box2").Image,
+		atlas.GetSubImage("box3").Image,
+		atlas.GetSubImage("box4").Image,
 	}
 	core.DebugDraw = true
 	//
@@ -35,7 +35,7 @@ func main() {
 		Height:          480,
 		FS:              fs,
 		Title:           "New Transform Test",
-		Scale:           2,
+		Scale:           0.5,
 		FixedResolution: true,
 		Resizable:       true,
 		OnReady: func(e *primen.Engine) {
@@ -53,21 +53,19 @@ func dogamesetup(ctx context.Context, engine *primen.Engine, bgs []*ebiten.Image
 		return
 	case <-engine.Ready():
 	}
-	spr := primen.NewSprite(engine.Default(), bgs[0], primen.Layer0, nil)
-	spr.Transform.X = 100
-	spr.Transform.Y = 100
-	spr.Transform.ScaleX = .5
-	spr.TauSprite.OriginX = .5
-	spr.TauSprite.OriginY = .5
+	spr := primen.NewSprite(engine.Root(nil), bgs[0], primen.Layer0)
+	spr.SetX(100)
+	spr.SetY(100)
+	spr.SetScale(.5, 1)
+	spr.CoreSprite.OriginX = .5
+	spr.CoreSprite.OriginY = .5
 	engine.Default().AddComponentToEntity(spr.Entity(), engine.Default().Component(core.CNRotation), &core.Rotation{
 		Speed: math.Pi / 16,
 	})
-	spr2 := primen.NewSprite(engine.Default(), bgs[1], primen.Layer0, spr.Transform)
-	spr2.Transform.X = 10
-	spr2.Transform.Y = 7
+	spr2 := primen.NewSprite(spr, bgs[1], primen.Layer0)
+	spr2.SetPos(10, 7)
 
-	spr3 := primen.NewSprite(engine.Default(), bgs[2], primen.Layer0, spr2.Transform)
-	spr3.Transform.X = 16
-	spr3.Transform.Y = 16
-	spr3.Transform.ScaleX = 2
+	spr3 := primen.NewSprite(spr2, bgs[2], primen.Layer0)
+	spr3.SetPos(16, 16)
+	spr3.SetScale(2, 1)
 }

@@ -23,14 +23,13 @@ func getFile(t *testing.T, name string) []byte {
 func TestParse(t *testing.T) {
 	x, err := Parse(getFile(t, "player.json"))
 	assert.NoError(t, err)
-	assert.Equal(t, FileTypeMap, x.Type())
 	assert.Equal(t, "1", x.GetMetadata().Scale)
 	assert.Equal(t, "RGBA8888", x.GetMetadata().Format)
 
 	playerimg, _, err := image.Decode(bytes.NewReader(getFile(t, x.GetMetadata().Image)))
 	assert.NoError(t, err)
 
-	fi, ok := x.GetFrame("player (person) 0.aseprite")
+	fi, ok := x.GetFrameByName("player (person) 0.aseprite")
 	assert.True(t, ok)
 	c1 := color.RGBA{
 		A: 255,
@@ -45,5 +44,4 @@ func TestParse(t *testing.T) {
 
 	x, err = Parse(getFile(t, "background.json"))
 	assert.NoError(t, err)
-	assert.Equal(t, FileTypeSlice, x.Type())
 }

@@ -47,7 +47,7 @@ func main() {
 	sc := dw.Component(core.CNDrawable)
 	e := dw.NewEntity()
 	dw.AddComponentToEntity(e, sc, &core.Sprite{
-		Image:   ebimg,
+		Image:   ebimg.SubImage(image.Rect(0, 0, 16, 16)).(*ebiten.Image),
 		X:       64,
 		Y:       64,
 		Angle:   math.Pi / 2,
@@ -55,11 +55,10 @@ func main() {
 		ScaleY:  1,
 		OriginX: 0.5,
 		OriginY: 0.5,
-		Bounds:  image.Rect(0, 0, 16, 16),
 	})
 	e2 := dw.NewEntity()
 	dw.AddComponentToEntity(e2, sc, &core.Sprite{
-		Image:   ebimg,
+		Image:   ebimg.SubImage(image.Rect(16, 16, 32, 32)).(*ebiten.Image),
 		X:       128,
 		Y:       64,
 		Angle:   0,
@@ -67,7 +66,6 @@ func main() {
 		ScaleY:  2,
 		OriginX: 0,
 		OriginY: 0,
-		Bounds:  image.Rect(16, 16, 32, 32),
 	})
 
 	core.SetupSystem(dw, anglecs)

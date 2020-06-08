@@ -1,4 +1,4 @@
-package spriteutils
+package atlaspacker
 
 import (
 	"context"
@@ -9,27 +9,27 @@ import (
 
 func TestSort(t *testing.T) {
 	nodes := []*RectPackerNode{
-		&RectPackerNode{
+		{
 			Width:  10,
 			Height: 10,
 			id:     1,
 		},
-		&RectPackerNode{
+		{
 			Width:  40,
 			Height: 10,
 			id:     2,
 		},
-		&RectPackerNode{
+		{
 			Width:  10,
 			Height: 100,
 			id:     3,
 		},
-		&RectPackerNode{
+		{
 			Width:  60,
 			Height: 30,
 			id:     4,
 		},
-		&RectPackerNode{
+		{
 			Width:  80,
 			Height: 40,
 			id:     5,

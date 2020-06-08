@@ -1,26 +1,15 @@
 package primen
 
-import (
-	"github.com/gabstv/ecs"
-	"github.com/gabstv/primen/core"
-)
-
 type Transform struct {
 	*WorldItem
-	TauTransform *core.Transform
+	*TransformItem
 }
 
-func NewTransform(w *ecs.World, parent *core.Transform) *Transform {
+func NewTransform(parent WorldTransform) *Transform {
+	e := parent.World().NewEntity()
 	tr := &Transform{
-		WorldItem: newWorldItem(w.NewEntity(), w),
-	}
-	tr.TauTransform = &core.Transform{
-		Parent: parent,
-		ScaleX: 1,
-		ScaleY: 1,
-	}
-	if err := w.AddComponentToEntity(tr.entity, w.Component(core.CNTransform), tr.TauTransform); err != nil {
-		panic(err)
+		WorldItem:     newWorldItem(e, parent.World()),
+		TransformItem: newTransformItem(e, parent),
 	}
 	return tr
 }

@@ -57,22 +57,23 @@ type Engine struct {
 	ebiOutsideH  int
 	ebiLogicalW  int
 	ebiLogicalH  int
-	ebiScale     int
-	ebiFixed     bool
+	ebiScale     float64
 	eventManager *core.EventManager
 }
 
 // NewEngineInput is the input data of NewEngine
 type NewEngineInput struct {
 	Width             int             // main window width
-	Height            int             // main wndow height
-	Scale             int             // pixel scale (default: 1)
+	Height            int             // main window height
+	Scale             float64         // pixel scale (default: 1)
 	TransparentScreen bool            // transparent screen
 	Maximized         bool            // start window maximized
 	Floating          bool            // always on top of all windows
 	Fullscreen        bool            // start in fullscreen
 	Resizable         bool            // is window resizable?
 	FixedResolution   bool            // fixed logical screen resolution
+	FixedWidth        int             // fixed logical screen resolution
+	FixedHeight       int             // fixed logical screen resolution
 	MaxResolution     bool            // set width/height to max resolution
 	Title             string          // window title
 	FS                io.Filesystem   // TODO: drop this
@@ -83,7 +84,7 @@ type NewEngineInput struct {
 type EngineOptions struct {
 	Width               int
 	Height              int
-	Scale               int
+	Scale               float64
 	Title               string
 	IsFullscreen        bool
 	IsResizable         bool
@@ -91,6 +92,7 @@ type EngineOptions struct {
 	IsTransparentScreen bool
 	IsFloating          bool
 	IsMaximized         bool
+	IsFixedResolution   bool
 }
 
 // Options will create a EngineOptions struct to be used in
@@ -107,6 +109,7 @@ func (i *NewEngineInput) Options() EngineOptions {
 		IsMaxResolution:     i.MaxResolution,
 		IsTransparentScreen: i.TransparentScreen,
 		IsFloating:          i.Floating,
+		IsFixedResolution:   i.FixedResolution,
 	}
 	return opt
 }
@@ -132,7 +135,7 @@ func NewEngine(v *NewEngineInput) *Engine {
 			Floating:          false,
 		}
 	} else {
-		if v.Scale < 1 {
+		if v.Scale <= 0 {
 			v.Scale = 1
 		}
 		if v.Width <= 0 {
@@ -146,8 +149,17 @@ func NewEngine(v *NewEngineInput) *Engine {
 		}
 	}
 	// assign the default systems and controllers
-
-	iw, ih := getLogicalSize(v.Width, v.Height, v.Scale, v.Width/v.Scale, v.Height/v.Scale, v.FixedResolution)
+	calcW, calcH := int(float64(v.Width)*v.Scale), int(float64(v.Height)*v.Scale)
+	//if v.FixedResolution {
+	//	calcW, calcH = v.Width, v.Height
+	//}
+	iw, ih := getLogicalSize(v.Width, v.Height, v.Scale, calcW, calcH, v.FixedResolution)
+	if v.FixedWidth != 0 {
+		iw = v.FixedWidth
+	}
+	if v.FixedHeight != 0 {
+		ih = v.FixedHeight
+	}
 
 	e := &Engine{
 		updateInfo:   &StepInfo{},
@@ -156,7 +168,6 @@ func NewEngine(v *NewEngineInput) *Engine {
 		f:            v.FS,
 		donech:       make(chan struct{}),
 		ready:        v.OnReady,
-		ebiFixed:     v.FixedResolution,
 		ebiLogicalW:  iw,
 		ebiLogicalH:  ih,
 		ebiOutsideW:  v.Width,
@@ -169,7 +180,7 @@ func NewEngine(v *NewEngineInput) *Engine {
 	dw := core.NewWorld(e)
 
 	e.worlds = []worldContainer{
-		worldContainer{
+		{
 			priority: 0,
 			world:    dw,
 		},
@@ -305,7 +316,7 @@ func (e *Engine) Layout(outsideWidth, outsideHeight int) (int, int) {
 	pow, poh := e.ebiOutsideW, e.ebiOutsideH
 	piw, pih := e.ebiLogicalW, e.ebiLogicalH
 	pscale := e.ebiScale
-	pfixed := e.ebiFixed
+	pfixed := e.options.IsFixedResolution
 	e.ebilock.RUnlock()
 	niw, nih := getLogicalSize(outsideWidth, outsideHeight, pscale, piw, pih, pfixed)
 	if outsideWidth == pow && outsideHeight == poh && piw == niw && pih == nih {
@@ -362,12 +373,13 @@ func (e *Engine) Draw(screen *ebiten.Image) {
 	}
 }
 
-func getLogicalSize(outw, outh, scale, inw, inh int, fixed bool) (w, h int) {
-	if fixed {
-		return inw, inh
-	}
+func getLogicalSize(outw, outh int, scale float64, inw, inh int, fixed bool) (w, h int) {
 	if scale <= 0 {
 		return outw, outh
 	}
-	return outw / scale, outh / scale
+	if fixed {
+		return inw, inh
+		//return int(float64(inw) * scale), int(float64(inh) * scale)
+	}
+	return int(float64(outw) * scale), int(float64(outh) * scale)
 }

@@ -22,6 +22,8 @@ message AtlasFile {
   repeated bytes images = 1;
   repeated ImageFilter filters = 2;
   map<string, Frame> frames = 3;
+  map<string, AnimationClip> clips = 4;
+  map<string, Animation> animations = 5;
 }
 
 message Frame {
@@ -30,28 +32,26 @@ message Frame {
   uint32 y = 3;
   uint32 w = 4;
   uint32 h = 5;
+  int32 ox = 6;
+  int32 oy = 7;
 }
 
 message Animation {
-  repeated AnimationClip clips = 1;
-  float fps = 2;
+  string name = 1;
+  repeated AnimationClip clips = 2;
 }
 
 message AnimationClip {
-  uint32 image = 1;
-  string name = 2;
-  float fps = 3;
-  AnimationClipMode clip_mode = 4;
-  repeated AnimFrame frames = 5;
-  AnimationEvent ended_event = 6;
+  string name = 1;
+  float fps = 2;
+  AnimationClipMode clip_mode = 3;
+  repeated AnimFrame frames = 4;
+  AnimationEvent ended_event = 5;
 }
 
 message AnimFrame {
-  uint32 x = 1;
-  uint32 y = 2;
-  uint32 w = 3;
-  uint32 h = 4;
-  AnimationEvent event = 5;
+  string frame_name = 1;
+  AnimationEvent event = 2;
 }
 
 message AnimationEvent {

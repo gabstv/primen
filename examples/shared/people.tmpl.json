@@ -1,0 +1,91 @@
+{
+    "templates": [
+        {
+            "frames": [
+                {
+                    "filename": "girl_idle0",
+                    "pivot": {
+                        "x": 3,
+                        "y": 15
+                    }
+                },
+                {
+                    "filename": "girl_idle1",
+                    "pivot": {
+                        "x": 3,
+                        "y": 13
+                    }
+                },
+                {
+                    "filename": "girl_idle2",
+                    "pivot": {
+                        "x": 3,
+                        "y": 14
+                    }
+                },
+                {
+                    "filename": "boy_idle0",
+                    "pivot": {
+                        "x": 3,
+                        "y": 13
+                    }
+                },
+                {
+                    "filename": "boy_idle1",
+                    "pivot": {
+                        "x": 3,
+                        "y": 11
+                    }
+                },
+                {
+                    "filename": "boy_idle2",
+                    "pivot": {
+                        "x": 3,
+                        "y": 12
+                    }
+                },
+                {
+                    "filename": "grass0"
+                }
+            ],
+            "asesprite_sheet": "people_slices.json",
+            "export_undefined_frames": false
+        }
+    ],
+    "output": "people.dat",
+    "image_filter": "nearest",
+    "max_width": 4096,
+    "max_height": 4096,
+    "padding": 0,
+    "animations": [
+        {
+            "name": "girl",
+            "clips": [
+                {
+                    "name": "idle",
+                    "clip_mode": "ping_pong",
+                    "frames": ["girl_idle0", "girl_idle1", "girl_idle2"],
+                    "events": [
+                        {
+                            "frame": 1,
+                            "event_name": "middle",
+                            "event_value": ""
+                        }
+                    ],
+                    "fps": 12
+                }
+            ]
+        },
+        {
+            "name": "boy",
+            "clips": [
+                {
+                    "name": "idle",
+                    "clip_mode": "loop",
+                    "frames": ["boy_idle0", "boy_idle1", "boy_idle2"],
+                    "fps": 1
+                }
+            ]
+        }
+    ]
+}

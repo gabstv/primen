@@ -1,23 +1,20 @@
 package core
 
 import (
-	"image"
-
 	"github.com/hajimehoshi/ebiten"
 )
 
 // Sprite is the data of a sprite component.
 type Sprite struct {
-	X       float64
-	Y       float64
-	Angle   float64
-	ScaleX  float64
-	ScaleY  float64
-	OriginX float64
-	OriginY float64
-
-	Bounds image.Rectangle // Bounds for drawing subimage
-
+	X       float64 // logical X position
+	Y       float64 // logical Y position
+	Angle   float64 // radians
+	ScaleX  float64 // logical X scale (1 = 100%)
+	ScaleY  float64 // logical Y scale (1 = 100%)
+	OriginX float64 // X origin (0 = left; 0.5 = center; 1 = right)
+	OriginY float64 // Y origin (0 = top; 0.5 = middle; 1 = bottom)
+	OffsetX float64 // offset origin X (in pixels)
+	OffsetY float64 // offset origin Y (in pixels)
 	Options *ebiten.DrawImageOptions
 	Image   *ebiten.Image
 
@@ -27,40 +24,22 @@ type Sprite struct {
 	// changes, the imageWidth and ImageHeight needs to be recalculated.
 	imageWidth  float64 // last calculated image width
 	imageHeight float64 // last calculated image height
-
-	imageBounds  image.Rectangle
-	lastBounds   image.Rectangle
-	lastSubImage *ebiten.Image
 	//
 	transformMatrix ebiten.GeoM
 	customMatrix    bool
 }
 
+// Update does some computation before drawing
 func (s *Sprite) Update(ctx Context) {
 	if s.lastImage != s.Image {
 		w, h := s.Image.Size()
 		s.imageWidth = float64(w)
 		s.imageHeight = float64(h)
 		s.lastImage = s.Image
-		// redo subimage
-		s.lastBounds = image.Rect(0, 0, 0, 0)
-		s.imageBounds = s.Image.Bounds()
-	}
-	if s.lastBounds != s.Bounds {
-		s.lastBounds = s.Bounds
-		if s.imageBounds.Min.Eq(s.Bounds.Min) && s.imageBounds.Max.Eq(s.Bounds.Max) {
-			s.imageWidth = float64(s.Bounds.Dx())
-			s.imageHeight = float64(s.Bounds.Dy())
-			s.lastSubImage = nil
-		} else {
-			s.lastSubImage = s.Image.SubImage(s.lastBounds).(*ebiten.Image)
-			w, h := s.lastSubImage.Size()
-			s.imageWidth = float64(w)
-			s.imageHeight = float64(h)
-		}
 	}
 }
 
+// Draw is called by the Drawable systems
 func (s *Sprite) Draw(screen *ebiten.Image, opt *ebiten.DrawImageOptions) {
 	if s.DrawDisabled {
 		return
@@ -75,15 +54,12 @@ func (s *Sprite) Draw(screen *ebiten.Image, opt *ebiten.DrawImageOptions) {
 	}
 	xxg := &ebiten.GeoM{}
 	xxg.Translate(applyOrigin(s.imageWidth, s.OriginX), applyOrigin(s.imageHeight, s.OriginY))
+	xxg.Translate(s.OffsetX, s.OffsetY)
 	xxg.Concat(opt.GeoM)
 	centerM := opt.GeoM
 	opt.GeoM = *xxg
 
-	if s.lastSubImage != nil {
-		screen.DrawImage(s.lastSubImage, opt)
-	} else {
-		screen.DrawImage(s.Image, opt)
-	}
+	screen.DrawImage(s.Image, opt)
 	if DebugDraw {
 		x0, y0 := 0.0, 0.0
 		x1, y1 := x0+s.imageWidth, y0
@@ -99,6 +75,7 @@ func (s *Sprite) Draw(screen *ebiten.Image, opt *ebiten.DrawImageOptions) {
 	opt.GeoM = prevGeo
 }
 
+// SetTransformMatrix is used by TransformSystem to set a custom transform
 func (s *Sprite) SetTransformMatrix(m ebiten.GeoM) {
 	s.transformMatrix = m
 	s.customMatrix = true
@@ -108,8 +85,9 @@ func (s *Sprite) ClearTransformMatrix() {
 	s.customMatrix = false
 }
 
-func (s *Sprite) SetBounds(b image.Rectangle) {
-	s.Bounds = b
+func (s *Sprite) SetOffset(x, y float64) {
+	s.OffsetX = x
+	s.OffsetY = y
 }
 
 func (s *Sprite) Destroy() {
@@ -125,15 +103,15 @@ func (s *Sprite) IsDisabled() bool {
 	return s.DrawDisabled
 }
 
+// Size returns the real size of the Sprite
 func (s *Sprite) Size() (w, h float64) {
 	return s.imageWidth, s.imageHeight
 }
 
 // GetPrecomputedImage returns the last precomputed image
+//
+// TODO: remove
 func (s *Sprite) GetPrecomputedImage() *ebiten.Image {
-	if s.lastSubImage != nil {
-		return s.lastSubImage
-	}
 	return s.lastImage
 }
 

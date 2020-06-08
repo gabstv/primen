@@ -50,7 +50,7 @@ func main() {
 	engine = primen.NewEngine(&primen.NewEngineInput{
 		Width:  640,
 		Height: 480,
-		Scale:  2,
+		Scale:  1,
 		Title:  "Hello, World!",
 	})
 	// add components and systems

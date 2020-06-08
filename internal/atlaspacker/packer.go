@@ -1,4 +1,4 @@
-package spriteutils
+package atlaspacker
 
 import (
 	"context"
@@ -25,6 +25,7 @@ type PackerInput struct {
 	MaxWidth     int
 	MaxHeight    int
 	Count        int
+	Debug        bool
 }
 
 type PackerAtlas struct {
