@@ -16,12 +16,15 @@ import (
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 	"github.com/hajimehoshi/ebiten/inpututil"
+	// "github.com/pkg/profile" // enable line 27
 )
 
 var movementPaused = false
 var xframes = make(chan struct{}, 30)
 
 func main() {
+	ebiten.SetRunnableInBackground(true)
+	//defer profile.Start(profile.MemProfile).Stop()
 	fs := res.FS()
 	container := io.NewContainer(context.TODO(), fs)
 	<-container.Load("public/atlas.dat")

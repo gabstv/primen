@@ -150,7 +150,7 @@ func TransformSpriteSystemExec(ctx Context) {
 		t := m.Components[transformgetter].(*Transform)
 		// transform is already resolved because the TransformSystem executed first
 		d := m.Components[drawablegetter].(Drawable)
-		d.SetTransformMatrix(t.m)
+		d.SetTransformMatrix(GeoM2(t.m))
 	}
 }
 
@@ -171,7 +171,6 @@ func resolveTransformM2(t *Transform, tick uint64) ebiten.GeoM {
 	xb.Concat(parent)
 	t.m = *xb
 	t.lastTick = tick
-	//t.mAngle = pangle + t.Angle
 	return t.m
 }
 func resolveTransformM(t *Transform, tick uint64) (ebiten.GeoM, float64) {
@@ -186,12 +185,8 @@ func resolveTransformM(t *Transform, tick uint64) (ebiten.GeoM, float64) {
 	xb := &base
 
 	xb.Rotate(pangle)
-	// gx, gy := xb.Element(0, 2), xb.Element(1, 2)
-	// xb.SetElement(0, 2, 0)
-	// xb.SetElement(1, 2, 0)
 	xb.Scale(t.ScaleX, t.ScaleY)
 	xb.Rotate(t.Angle)
-	// xb.Translate(gx+t.X, gy+t.Y)
 	xb.Translate(t.X, t.Y)
 	t.m = *xb
 	t.lastTick = tick

@@ -30,8 +30,6 @@ type Label struct {
 	FaceOffsetX int     // Text rendering offset X (pixel unit)
 	FaceOffsetY int     // Text rendering offset Y (pixel unit)
 	//
-	Options *ebiten.DrawImageOptions
-	//
 
 	base       *ebiten.Image
 	lastBounds image.Rectangle
@@ -40,8 +38,7 @@ type Label struct {
 	lastText   string
 	realSize   image.Point
 	//
-	transformMatrix ebiten.GeoM
-	customMatrix    bool
+	transformMatrix GeoMatrix
 }
 
 func (l *Label) ComputedSize() image.Point {
@@ -143,50 +140,66 @@ func (l *Label) Update(ctx Context) {
 }
 
 // Draw is called by the Drawable systems
-func (l *Label) Draw(screen *ebiten.Image, opt *ebiten.DrawImageOptions) {
+func (l *Label) Draw(renderer DrawManager) {
 	if l.DrawDisabled {
 		return
 	}
-	prevGeo := opt.GeoM
-	if l.customMatrix {
-		opt.GeoM = l.transformMatrix
-	} else {
-		opt.GeoM.Scale(l.ScaleX, l.ScaleY)
-		opt.GeoM.Rotate(l.Angle)
-		opt.GeoM.Translate(l.X, l.Y)
+	g := l.transformMatrix
+	if g == nil {
+		g = GeoM().Scale(l.ScaleX, l.ScaleY).Rotate(l.Angle).Translate(l.X, l.Y)
 	}
-	xxg := &ebiten.GeoM{}
-	xxg.Translate(applyOrigin(float64(l.realSize.X), l.OriginX), applyOrigin(float64(l.realSize.Y), l.OriginY))
-	xxg.Translate(l.OffsetX, l.OffsetY)
-	xxg.Concat(opt.GeoM)
-	centerM := opt.GeoM
-	opt.GeoM = *xxg
-
-	// finally draw text
-	screen.DrawImage(l.base, opt)
+	lg := GeoM().Translate(applyOrigin(float64(l.realSize.X), l.OriginX), applyOrigin(float64(l.realSize.Y), l.OriginY))
+	lg.Translate(l.OffsetX, l.OffsetY)
+	lg.Concat(*g.M())
+	renderer.DrawImageG(l.base, lg)
 	if DebugDraw {
 		x0, y0 := 0.0, 0.0
 		x1, y1 := x0+float64(l.realSize.X), y0
 		x2, y2 := x1, y1+float64(l.realSize.Y)
 		x3, y3 := x2-float64(l.realSize.X), y2
-		debugLineM(screen, opt.GeoM, x0, y0, x1, y1, debugBoundsColor)
-		debugLineM(screen, opt.GeoM, x1, y1, x2, y2, debugBoundsColor)
-		debugLineM(screen, opt.GeoM, x2, y2, x3, y3, debugBoundsColor)
-		debugLineM(screen, opt.GeoM, x3, y3, x0, y0, debugBoundsColor)
-		debugLineM(screen, centerM, -4, 0, 4, 0, debugPivotColor)
-		debugLineM(screen, centerM, 0, -4, 0, 4, debugPivotColor)
+		debugLineM(renderer.Screen(), *lg.M(), x0, y0, x1, y1, debugBoundsColor)
+		debugLineM(renderer.Screen(), *lg.M(), x1, y1, x2, y2, debugBoundsColor)
+		debugLineM(renderer.Screen(), *lg.M(), x2, y2, x3, y3, debugBoundsColor)
+		debugLineM(renderer.Screen(), *lg.M(), x3, y3, x0, y0, debugBoundsColor)
+		debugLineM(renderer.Screen(), *g.M(), -4, 0, 4, 0, debugPivotColor)
+		debugLineM(renderer.Screen(), *g.M(), 0, -4, 0, 4, debugPivotColor)
 	}
-	opt.GeoM = prevGeo
+	// prevGeo := opt.GeoM
+	// if l.customMatrix {
+	// 	opt.GeoM = l.transformMatrix
+	// } else {
+	// 	opt.GeoM.Scale(l.ScaleX, l.ScaleY)
+	// 	opt.GeoM.Rotate(l.Angle)
+	// 	opt.GeoM.Translate(l.X, l.Y)
+	// }
+	// xxg := &ebiten.GeoM{}
+	// xxg.Translate(applyOrigin(float64(l.realSize.X), l.OriginX), applyOrigin(float64(l.realSize.Y), l.OriginY))
+	// xxg.Translate(l.OffsetX, l.OffsetY)
+	// xxg.Concat(opt.GeoM)
+	// centerM := opt.GeoM
+	// opt.GeoM = *xxg
+
+	// // finally draw text
+	// screen.DrawImage(l.base, opt)
+	// if DebugDraw {
+	// 	x0, y0 := 0.0, 0.0
+	// 	x1, y1 := x0+float64(l.realSize.X), y0
+	// 	x2, y2 := x1, y1+float64(l.realSize.Y)
+	// 	x3, y3 := x2-float64(l.realSize.X), y2
+	// 	debugLineM(screen, opt.GeoM, x0, y0, x1, y1, debugBoundsColor)
+	// 	debugLineM(screen, opt.GeoM, x1, y1, x2, y2, debugBoundsColor)
+	// 	debugLineM(screen, opt.GeoM, x2, y2, x3, y3, debugBoundsColor)
+	// 	debugLineM(screen, opt.GeoM, x3, y3, x0, y0, debugBoundsColor)
+	// 	debugLineM(screen, centerM, -4, 0, 4, 0, debugPivotColor)
+	// 	debugLineM(screen, centerM, 0, -4, 0, 4, debugPivotColor)
+	// }
+	// opt.GeoM = prevGeo
 }
 
 func (l *Label) Destroy() {
 	l.base = nil
 	l.SetDirty()
-	l.Options = nil
-}
-
-func (l *Label) DrawImageOptions() *ebiten.DrawImageOptions {
-	return l.Options
+	l.transformMatrix = nil
 }
 
 func (l *Label) IsDisabled() bool {
@@ -199,16 +212,17 @@ func (l *Label) Size() (w, h float64) {
 }
 
 // SetTransformMatrix is used by TransformSystem to set a custom transform
-func (l *Label) SetTransformMatrix(m ebiten.GeoM) {
+func (l *Label) SetTransformMatrix(m GeoMatrix) {
 	l.transformMatrix = m
-	l.customMatrix = true
 }
 
 func (l *Label) ClearTransformMatrix() {
-	l.customMatrix = false
+	l.transformMatrix = nil
 }
 
 func (l *Label) SetOffset(x, y float64) {
 	l.OffsetX = x
 	l.OffsetY = y
 }
+
+var _ Drawable = &Label{}
