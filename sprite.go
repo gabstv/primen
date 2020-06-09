@@ -30,10 +30,6 @@ func NewSprite(parent WorldTransform, im *ebiten.Image, layer Layer) *Sprite {
 		ScaleY: 1,
 		Image:  im,
 	}
-	spr.drawLayer = &core.DrawLayer{
-		Layer:  layer,
-		ZIndex: core.ZIndexTop,
-	}
 	if err := w.AddComponentToEntity(spr.entity, w.Component(core.CNDrawable), spr.sprite); err != nil {
 		panic(err)
 	}
