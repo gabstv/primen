@@ -151,7 +151,7 @@ func (l *Label) Draw(renderer DrawManager) {
 	lg := GeoM().Translate(applyOrigin(float64(l.realSize.X), l.OriginX), applyOrigin(float64(l.realSize.Y), l.OriginY))
 	lg.Translate(l.OffsetX, l.OffsetY)
 	lg.Concat(*g.M())
-	renderer.DrawImageG(l.base, lg)
+	renderer.DrawImage(l.base, lg)
 	if DebugDraw {
 		x0, y0 := 0.0, 0.0
 		x1, y1 := x0+float64(l.realSize.X), y0

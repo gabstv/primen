@@ -66,7 +66,7 @@ func (t *TileSet) Draw(renderer DrawManager) {
 		x := i % t.CSize.X
 		tilem.Reset().Translate(float64(x)*t.CellWidth, float64(y)*t.CellHeight)
 		tilem.Concat(*lg.M())
-		renderer.DrawImageG(t.DB[p], tilem)
+		renderer.DrawImage(t.DB[p], tilem)
 	}
 	// if s.DrawDisabled {
 	// 	return
