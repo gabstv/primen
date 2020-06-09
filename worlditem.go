@@ -198,7 +198,7 @@ func newDrawLayerItem(e ecs.Entity, w *ecs.World) *DrawLayerItem {
 	l := &DrawLayerItem{
 		drawLayer: &core.DrawLayer{},
 	}
-	if err := w.AddComponentToEntity(e, w.Component(core.CNTransform), l.drawLayer); err != nil {
+	if err := w.AddComponentToEntity(e, w.Component(core.CNDrawLayer), l.drawLayer); err != nil {
 		panic(err)
 	}
 	return l
