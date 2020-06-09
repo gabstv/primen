@@ -58,6 +58,23 @@ func (s *Sprite) SetImage(img *ebiten.Image) {
 	s.sprite.SetImage(img)
 }
 
+func (s *Sprite) SetColorTint(c color.Color) {
+	s.sprite.SetColorTint(c)
+}
+
+// SetColorHue rotates the Hue (in radians)
+func (s *Sprite) SetColorHue(theta float64) {
+	s.sprite.SetColorHue(theta)
+}
+
+func (s *Sprite) ClearColorTransform() {
+	s.sprite.ClearColorTransform()
+}
+
+func (s *Sprite) SetCompositeMode(mode ebiten.CompositeMode) {
+	s.sprite.SetCompositeMode(mode)
+}
+
 type Animation = core.Animation
 
 type AnimatedSprite struct {
