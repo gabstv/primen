@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/gabstv/ecs"
-	"github.com/hajimehoshi/ebiten"
 )
 
 // Context is the context passed to every system update function.
@@ -15,8 +14,7 @@ type Context interface {
 	FPS() float64
 	Frame() int64
 	IsDrawingSkipped() bool
-	DefaultDrawImageOptions() *ebiten.DrawImageOptions
-	Screen() *ebiten.Image
+	Renderer() DrawManager
 }
 
 type Engine interface {
@@ -45,7 +43,7 @@ type ctxt struct {
 	fps        float64
 	frame      int64
 	drwskipped bool
-	imopt      *ebiten.DrawImageOptions
+	drawM      DrawManager
 }
 
 func (c ctxt) Deadline() (deadline time.Time, ok bool) {
@@ -92,10 +90,6 @@ func (c ctxt) IsDrawingSkipped() bool {
 	return c.drwskipped
 }
 
-func (c ctxt) DefaultDrawImageOptions() *ebiten.DrawImageOptions {
-	return c.imopt
-}
-
-func (c ctxt) Screen() *ebiten.Image {
-	return c.world.Get("screen").(*ebiten.Image)
+func (c ctxt) Renderer() DrawManager {
+	return c.drawM
 }

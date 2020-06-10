@@ -77,7 +77,7 @@ func loadAtlas(e *primen.Engine, atlas *io.Atlas) *AtlasPreviewer {
 func errready(v string) func(e *primen.Engine) {
 	return func(e *primen.Engine) {
 		primen.SetDrawFuncs(e.Default(), e.Default().NewEntity(), nil, func(ctx core.Context, e ecs.Entity) {
-			ebitenutil.DebugPrint(ctx.Screen(), v)
+			ebitenutil.DebugPrint(ctx.Renderer().Screen(), v)
 		}, nil)
 	}
 }

@@ -331,6 +331,13 @@ func (e *Engine) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return niw, nih
 }
 
+func (e *Engine) SetScreenScale(scale float64) {
+	if scale <= 0 {
+		return
+	}
+	e.ebiScale = scale
+}
+
 func (e *Engine) Update(screen *ebiten.Image) error {
 	lastt, lastf := e.updateInfo.Get()
 	now := time.Now()

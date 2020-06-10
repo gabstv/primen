@@ -1,3 +1,5 @@
+// +build example
+
 package main
 
 // https://www.kenney.nl/assets/platformer-characters-1

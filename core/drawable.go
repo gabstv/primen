@@ -13,12 +13,11 @@ const (
 // Drawable is the basis of all ebiten drawable items (sprites, texts, shapes)
 type Drawable interface {
 	Update(ctx Context)
-	Draw(screen *ebiten.Image, opt *ebiten.DrawImageOptions)
+	Draw(m DrawManager)
 	Destroy()
-	DrawImageOptions() *ebiten.DrawImageOptions
 	IsDisabled() bool
 	Size() (w, h float64)
-	SetTransformMatrix(m ebiten.GeoM)
+	SetTransformMatrix(m GeoMatrix)
 	ClearTransformMatrix()
 	SetOffset(x, y float64)
 }
@@ -107,23 +106,17 @@ func (cs *SoloDrawableComponentSystem) SystemTags() []string {
 
 // soloDrawableComponentSystemExec is the main function of the SoloDrawableComponentSystem
 func soloDrawableComponentSystemExec(ctx Context) {
-	screen := ctx.Screen()
+	renderer := ctx.Renderer()
 	v := ctx.System().View()
-	world := v.World()
 	matches := v.Matches()
 	comp := ctx.World().Component(CNDrawable)
-	defaultopts := world.Get(DefaultImageOptions).(*ebiten.DrawImageOptions)
 	for _, m := range matches {
 		drawable := m.Components[comp].(Drawable)
 		drawable.Update(ctx)
 		if drawable.IsDisabled() {
 			continue
 		}
-		opt := drawable.DrawImageOptions()
-		if opt == nil {
-			opt = defaultopts
-		}
-		drawable.Draw(screen, opt)
+		drawable.Draw(renderer)
 	}
 }
 
@@ -183,10 +176,9 @@ func (cs *DrawLayerDrawableComponentSystem) Components(w *ecs.World) []*ecs.Comp
 // drawLayerDrawableSystemExec is the main function of the DrawLayerSystem
 func drawLayerDrawableSystemExec(ctx Context) {
 	world := ctx.World()
-	screen := ctx.Screen()
+	renderer := ctx.Renderer()
 	layers := world.System(SNDrawLayer).Get("layers").(*drawLayerDrawers).All()
 	dwgetter := world.Component(CNDrawable)
-	defaultopts := world.Get(DefaultImageOptions).(*ebiten.DrawImageOptions)
 	for _, layer := range layers {
 		layer.Items.Each(func(key ecs.Entity, value SLVal) bool {
 			cache := value.(*drawLayerItemCache)
@@ -197,11 +189,7 @@ func drawLayerDrawableSystemExec(ctx Context) {
 			if cache.Drawable.IsDisabled() {
 				return true
 			}
-			opt := cache.Drawable.DrawImageOptions()
-			if opt == nil {
-				opt = defaultopts
-			}
-			cache.Drawable.Draw(screen, opt)
+			cache.Drawable.Draw(renderer)
 			return true
 		})
 	}

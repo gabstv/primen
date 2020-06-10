@@ -42,7 +42,9 @@
             "mode": "auto",
             "program": "${fileDirname}",
             "env": {},
-            "args": []
+            "args": [
+            ],
+            "buildFlags": "-tags example this_doesnt_work_yet"
         }
     ]
 }

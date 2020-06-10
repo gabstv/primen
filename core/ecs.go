@@ -137,7 +137,7 @@ func NewWorld(e Engine) *ecs.World {
 			fps:        ebiten.CurrentFPS(),
 			frame:      e.UpdateFrame(),
 			drwskipped: ebiten.IsDrawingSkipped(),
-			imopt:      w.Get(DefaultImageOptions).(*ebiten.DrawImageOptions),
+			drawM:      newDrawManager(w),
 		}
 	})
 	w.Set(DefaultImageOptions, &ebiten.DrawImageOptions{})

@@ -1,23 +1,23 @@
 package core
 
 import (
+	"image/color"
+
 	"github.com/hajimehoshi/ebiten"
 )
 
 // Sprite is the data of a sprite component.
 type Sprite struct {
-	X       float64 // logical X position
-	Y       float64 // logical Y position
-	Angle   float64 // radians
-	ScaleX  float64 // logical X scale (1 = 100%)
-	ScaleY  float64 // logical Y scale (1 = 100%)
-	OriginX float64 // X origin (0 = left; 0.5 = center; 1 = right)
-	OriginY float64 // Y origin (0 = top; 0.5 = middle; 1 = bottom)
-	OffsetX float64 // offset origin X (in pixels)
-	OffsetY float64 // offset origin Y (in pixels)
-	Options *ebiten.DrawImageOptions
-	Image   *ebiten.Image
-
+	X            float64 // logical X position
+	Y            float64 // logical Y position
+	Angle        float64 // radians
+	ScaleX       float64 // logical X scale (1 = 100%)
+	ScaleY       float64 // logical Y scale (1 = 100%)
+	OriginX      float64 // X origin (0 = left; 0.5 = center; 1 = right)
+	OriginY      float64 // Y origin (0 = top; 0.5 = middle; 1 = bottom)
+	OffsetX      float64 // offset origin X (in pixels)
+	OffsetY      float64 // offset origin Y (in pixels)
+	Image        *ebiten.Image
 	DrawDisabled bool // if true, the SpriteSystem will not draw this
 
 	lastImage *ebiten.Image // lastImage exists to keep track of the public Image field, if it
@@ -25,8 +25,26 @@ type Sprite struct {
 	imageWidth  float64 // last calculated image width
 	imageHeight float64 // last calculated image height
 	//
-	transformMatrix ebiten.GeoM
-	customMatrix    bool
+	transformMatrix GeoMatrix
+	localMatrix     GeoMatrix
+	localColor      ColorMatrix
+	compositeMode   *ebiten.CompositeMode
+}
+
+func (s *Sprite) SetColorTint(c color.Color) {
+	s.localColor = ColorTint(c)
+}
+
+func (s *Sprite) SetColorHue(theta float64) {
+	s.localColor = ColorM().RotateHue(theta)
+}
+
+func (s *Sprite) ClearColorTransform() {
+	s.localColor = nil
+}
+
+func (s *Sprite) SetCompositeMode(mode ebiten.CompositeMode) {
+	s.compositeMode = &mode
 }
 
 // Update does some computation before drawing
@@ -37,52 +55,58 @@ func (s *Sprite) Update(ctx Context) {
 		s.imageHeight = float64(h)
 		s.lastImage = s.Image
 	}
+	if s.localMatrix == nil {
+		s.localMatrix = GeoM()
+	}
+	s.localMatrix.Reset()
 }
 
 // Draw is called by the Drawable systems
-func (s *Sprite) Draw(screen *ebiten.Image, opt *ebiten.DrawImageOptions) {
+func (s *Sprite) Draw(renderer DrawManager) {
 	if s.DrawDisabled {
 		return
 	}
-	prevGeo := opt.GeoM
-	if s.customMatrix {
-		opt.GeoM = s.transformMatrix
-	} else {
-		opt.GeoM.Scale(s.ScaleX, s.ScaleY)
-		opt.GeoM.Rotate(s.Angle)
-		opt.GeoM.Translate(s.X, s.Y)
+	g := s.transformMatrix
+	if g == nil {
+		g = GeoM().Scale(s.ScaleX, s.ScaleY).Rotate(s.Angle).Translate(s.X, s.Y)
 	}
-	xxg := &ebiten.GeoM{}
-	xxg.Translate(applyOrigin(s.imageWidth, s.OriginX), applyOrigin(s.imageHeight, s.OriginY))
-	xxg.Translate(s.OffsetX, s.OffsetY)
-	xxg.Concat(opt.GeoM)
-	centerM := opt.GeoM
-	opt.GeoM = *xxg
-
-	screen.DrawImage(s.Image, opt)
+	s.localMatrix.Translate(applyOrigin(s.imageWidth, s.OriginX), applyOrigin(s.imageHeight, s.OriginY))
+	s.localMatrix.Translate(s.OffsetX, s.OffsetY)
+	s.localMatrix.Concat(*g.M())
+	if s.localColor != nil {
+		if s.compositeMode != nil {
+			renderer.DrawImageCComp(s.Image, s.localMatrix, s.localColor, *s.compositeMode)
+		} else {
+			renderer.DrawImageC(s.Image, s.localMatrix, s.localColor)
+		}
+	} else {
+		if s.compositeMode != nil {
+			renderer.DrawImageComp(s.Image, s.localMatrix, *s.compositeMode)
+		} else {
+			renderer.DrawImage(s.Image, s.localMatrix)
+		}
+	}
 	if DebugDraw {
 		x0, y0 := 0.0, 0.0
 		x1, y1 := x0+s.imageWidth, y0
 		x2, y2 := x1, y1+s.imageHeight
 		x3, y3 := x2-s.imageWidth, y2
-		debugLineM(screen, opt.GeoM, x0, y0, x1, y1, debugBoundsColor)
-		debugLineM(screen, opt.GeoM, x1, y1, x2, y2, debugBoundsColor)
-		debugLineM(screen, opt.GeoM, x2, y2, x3, y3, debugBoundsColor)
-		debugLineM(screen, opt.GeoM, x3, y3, x0, y0, debugBoundsColor)
-		debugLineM(screen, centerM, -4, 0, 4, 0, debugPivotColor)
-		debugLineM(screen, centerM, 0, -4, 0, 4, debugPivotColor)
+		debugLineM(renderer.Screen(), *s.localMatrix.M(), x0, y0, x1, y1, debugBoundsColor)
+		debugLineM(renderer.Screen(), *s.localMatrix.M(), x1, y1, x2, y2, debugBoundsColor)
+		debugLineM(renderer.Screen(), *s.localMatrix.M(), x2, y2, x3, y3, debugBoundsColor)
+		debugLineM(renderer.Screen(), *s.localMatrix.M(), x3, y3, x0, y0, debugBoundsColor)
+		debugLineM(renderer.Screen(), *g.M(), -4, 0, 4, 0, debugPivotColor)
+		debugLineM(renderer.Screen(), *g.M(), 0, -4, 0, 4, debugPivotColor)
 	}
-	opt.GeoM = prevGeo
 }
 
 // SetTransformMatrix is used by TransformSystem to set a custom transform
-func (s *Sprite) SetTransformMatrix(m ebiten.GeoM) {
+func (s *Sprite) SetTransformMatrix(m GeoMatrix) {
 	s.transformMatrix = m
-	s.customMatrix = true
 }
 
 func (s *Sprite) ClearTransformMatrix() {
-	s.customMatrix = false
+	s.transformMatrix = nil
 }
 
 func (s *Sprite) SetOffset(x, y float64) {
@@ -92,11 +116,8 @@ func (s *Sprite) SetOffset(x, y float64) {
 
 func (s *Sprite) Destroy() {
 	s.Image = nil
-	s.Options = nil
-}
-
-func (s *Sprite) DrawImageOptions() *ebiten.DrawImageOptions {
-	return s.Options
+	s.transformMatrix = nil
+	s.localMatrix = nil
 }
 
 func (s *Sprite) IsDisabled() bool {
@@ -127,3 +148,5 @@ func (s *Sprite) GetImage() *ebiten.Image {
 func (s *Sprite) SetImage(img *ebiten.Image) {
 	s.Image = img
 }
+
+var _ Drawable = &Sprite{}
