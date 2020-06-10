@@ -102,6 +102,27 @@ func (wi *WorldItem) UpsertFns(beforefn, fn, afterfn core.UpdateFn) bool {
 	return true
 }
 
+// UpsertDrawFns upserts the core.DrawFn component to this object's entity
+func (wi *WorldItem) UpsertDrawFns(beforefn, fn, afterfn core.DrawFn) bool {
+	if vi := wi.world.Component(core.CNDrawFunc).Data(wi.entity); vi != nil {
+		if v, ok := vi.(*core.DrawFunc); ok {
+			v.BeforeFn = beforefn
+			v.Fn = fn
+			v.AfterFn = afterfn
+		}
+		return false
+	}
+	if err := wi.world.AddComponentToEntity(wi.entity, wi.world.Component(core.CNDrawFunc), &core.DrawFunc{
+		BeforeFn: beforefn,
+		Fn:       fn,
+		AfterFn:  afterfn,
+	}); err != nil {
+		println(err)
+		return false
+	}
+	return true
+}
+
 // TransformItem implements Transformer
 type TransformItem struct {
 	transform *core.Transform
@@ -146,6 +167,16 @@ func (t *TransformItem) SetX(x float64) {
 	t.transform.X = x
 }
 
+// X gets the x position of the transform
+func (t *TransformItem) X() float64 {
+	return t.transform.X
+}
+
+// Y gets the y position of the transform
+func (t *TransformItem) Y() float64 {
+	return t.transform.Y
+}
+
 // SetY sets the Y position of the transform
 func (t *TransformItem) SetY(y float64) {
 	t.transform.Y = y
@@ -163,9 +194,18 @@ func (t *TransformItem) SetScale2(s float64) {
 	t.transform.ScaleY = s
 }
 
+func (t *TransformItem) Scale() (x, y float64) {
+	return t.transform.ScaleX, t.transform.ScaleY
+}
+
 // SetAngle sets the local angle (in radians) of the transform
 func (t *TransformItem) SetAngle(radians float64) {
 	t.transform.Angle = radians
+}
+
+// Angle gets the local angle (in radians) of the transform
+func (t *TransformItem) Angle() (radians float64) {
+	return t.transform.Angle
 }
 
 type engineWT struct {

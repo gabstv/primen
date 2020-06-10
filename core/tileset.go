@@ -68,33 +68,11 @@ func (t *TileSet) Draw(renderer DrawManager) {
 		tilem.Concat(*lg.M())
 		renderer.DrawImage(t.DB[p], tilem)
 	}
-	// if s.DrawDisabled {
-	// 	return
-	// }
-	// prevGeo := opt.GeoM
-	// if s.customMatrix {
-	// 	opt.GeoM = s.transformMatrix
-	// } else {
-	// 	opt.GeoM.Scale(s.ScaleX, s.ScaleY)
-	// 	opt.GeoM.Rotate(s.Angle)
-	// 	opt.GeoM.Translate(s.X, s.Y)
-	// }
-	// xxg := &ebiten.GeoM{}
-	// xxg.Translate(applyOrigin(t.CellWidth*float64(t.Size.X), s.OriginX), applyOrigin(t.CellHeight*float64(t.Size.Y), s.OriginY))
-	// xxg.Translate(s.OffsetX, s.OffsetY)
-	// xxg.Concat(opt.GeoM)
-	// centerM := opt.GeoM
-	// opt.GeoM = *xxg
-	// //
-	// // todo
-
-	// //
-	// opt.GeoM = prevGeo
 }
 
 // Destroy Drawable implementation
 func (t *TileSet) Destroy() {
-
+	//TODO: implement
 }
 
 // IsDisabled Drawable implementation
@@ -108,16 +86,17 @@ func (t *TileSet) Size() (w, h float64) {
 }
 
 // SetTransformMatrix Drawable implementation
-func (t *TileSet) SetTransformMatrix(m ebiten.GeoM) {
-
+func (t *TileSet) SetTransformMatrix(m GeoMatrix) {
+	t.transformMatrix = m
 }
 
 // ClearTransformMatrix Drawable implementation
 func (t *TileSet) ClearTransformMatrix() {
-
+	t.transformMatrix = nil
 }
 
 // SetOffset Drawable implementation
 func (t *TileSet) SetOffset(x, y float64) {
-
+	t.OffsetX = x
+	t.OffsetY = y
 }
