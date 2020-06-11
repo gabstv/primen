@@ -7,7 +7,7 @@ import (
 )
 
 // TileSet is a drawable that efficiently draws tiles in a 2d array
-type TileSet struct {
+type TileMap struct {
 	X            float64 // logical X position
 	Y            float64 // logical Y position
 	Angle        float64 // radians
@@ -37,7 +37,7 @@ type TileSet struct {
 // ╚═════╝  ╚═╝  ╚═╝ ╚═╝  ╚═╝  ╚══╝╚══╝  ╚═╝  ╚═╝ ╚═════╝  ╚══════╝ ╚══════╝
 
 // Update Drawable implementation
-func (t *TileSet) Update(ctx Context) {
+func (t *TileMap) Update(ctx Context) {
 	if t.DB == nil {
 		t.isValid = false
 	}
@@ -48,7 +48,7 @@ func (t *TileSet) Update(ctx Context) {
 }
 
 // Draw Drawable implementation
-func (t *TileSet) Draw(renderer DrawManager) {
+func (t *TileMap) Draw(renderer DrawManager) {
 	g := t.transformMatrix
 	if g == nil {
 		g = GeoM().Scale(t.ScaleX, t.ScaleY).Rotate(t.Angle).Translate(t.X, t.Y)
@@ -71,32 +71,32 @@ func (t *TileSet) Draw(renderer DrawManager) {
 }
 
 // Destroy Drawable implementation
-func (t *TileSet) Destroy() {
+func (t *TileMap) Destroy() {
 	//TODO: implement
 }
 
 // IsDisabled Drawable implementation
-func (t *TileSet) IsDisabled() bool {
+func (t *TileMap) IsDisabled() bool {
 	return t.DrawDisabled
 }
 
 // Size Drawable implementation
-func (t *TileSet) Size() (w, h float64) {
+func (t *TileMap) Size() (w, h float64) {
 	return t.CellWidth * float64(t.CSize.X), t.CellHeight * float64(t.CSize.Y)
 }
 
 // SetTransformMatrix Drawable implementation
-func (t *TileSet) SetTransformMatrix(m GeoMatrix) {
+func (t *TileMap) SetTransformMatrix(m GeoMatrix) {
 	t.transformMatrix = m
 }
 
 // ClearTransformMatrix Drawable implementation
-func (t *TileSet) ClearTransformMatrix() {
+func (t *TileMap) ClearTransformMatrix() {
 	t.transformMatrix = nil
 }
 
 // SetOffset Drawable implementation
-func (t *TileSet) SetOffset(x, y float64) {
+func (t *TileMap) SetOffset(x, y float64) {
 	t.OffsetX = x
 	t.OffsetY = y
 }
