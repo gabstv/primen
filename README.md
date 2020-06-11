@@ -7,5 +7,5 @@ I'm developing this project along with a game, so the features are being added a
 
 ### Planned Integrations
 
-* https://github.com/d5/tengo
+* https://github.com/dop251/goja
 * https://github.com/jakecoffman/cp
