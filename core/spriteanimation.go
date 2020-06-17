@@ -1,61 +1,61 @@
 package core
 
 import (
-	"github.com/gabstv/ecs"
+	"github.com/gabstv/ecs/v2"
 	"github.com/hajimehoshi/ebiten"
 )
 
-const (
-	SNSpriteAnimation     = "primen.SpriteAnimationSystem"
-	SNSpriteAnimationLink = "primen.SpriteAnimationLinkSystem"
-	CNSpriteAnimation     = "primen.SpriteAnimationComponent"
-)
+// const (
+// 	SNSpriteAnimation     = "primen.SpriteAnimationSystem"
+// 	SNSpriteAnimationLink = "primen.SpriteAnimationLinkSystem"
+// 	CNSpriteAnimation     = "primen.SpriteAnimationComponent"
+// )
 
-type SpriteAnimationComponentSystem struct {
-	BaseComponentSystem
-}
+// type SpriteAnimationComponentSystem struct {
+// 	BaseComponentSystem
+// }
 
-func (cs *SpriteAnimationComponentSystem) SystemName() string {
-	return SNSpriteAnimation
-}
+// func (cs *SpriteAnimationComponentSystem) SystemName() string {
+// 	return SNSpriteAnimation
+// }
 
-func (cs *SpriteAnimationComponentSystem) SystemPriority() int {
-	return -6
-}
+// func (cs *SpriteAnimationComponentSystem) SystemPriority() int {
+// 	return -6
+// }
 
-func (cs *SpriteAnimationComponentSystem) SystemExec() SystemExecFn {
-	return SpriteAnimationSystemExec
-}
+// func (cs *SpriteAnimationComponentSystem) SystemExec() SystemExecFn {
+// 	return SpriteAnimationSystemExec
+// }
 
-func (cs *SpriteAnimationComponentSystem) SystemTags() []string {
-	return []string{
-		"draw",
-	}
-}
+// func (cs *SpriteAnimationComponentSystem) SystemTags() []string {
+// 	return []string{
+// 		"draw",
+// 	}
+// }
 
-func (cs *SpriteAnimationComponentSystem) Components(w *ecs.World) []*ecs.Component {
-	return []*ecs.Component{
-		spriteAnimationComponentDef(w),
-	}
-}
+// func (cs *SpriteAnimationComponentSystem) Components(w *ecs.World) []*ecs.Component {
+// 	return []*ecs.Component{
+// 		spriteAnimationComponentDef(w),
+// 	}
+// }
 
-func (cs *SpriteAnimationComponentSystem) ExcludeComponents(w *ecs.World) []*ecs.Component {
-	return emptyCompSlice
-}
+// func (cs *SpriteAnimationComponentSystem) ExcludeComponents(w *ecs.World) []*ecs.Component {
+// 	return emptyCompSlice
+// }
 
-func spriteAnimationComponentDef(w *ecs.World) *ecs.Component {
-	return UpsertComponent(w, ecs.NewComponentInput{
-		Name: CNSpriteAnimation,
-		ValidateDataFn: func(data interface{}) bool {
-			_, ok := data.(*SpriteAnimation)
-			return ok
-		},
-		DestructorFn: func(_ *ecs.World, entity ecs.Entity, data interface{}) {
-			sd := data.(*SpriteAnimation)
-			sd.Anim = nil
-		},
-	})
-}
+// func spriteAnimationComponentDef(w *ecs.World) *ecs.Component {
+// 	return UpsertComponent(w, ecs.NewComponentInput{
+// 		Name: CNSpriteAnimation,
+// 		ValidateDataFn: func(data interface{}) bool {
+// 			_, ok := data.(*SpriteAnimation)
+// 			return ok
+// 		},
+// 		DestructorFn: func(_ *ecs.World, entity ecs.Entity, data interface{}) {
+// 			sd := data.(*SpriteAnimation)
+// 			sd.Anim = nil
+// 		},
+// 	})
+// }
 
 // SpriteAnimation holds the data of a sprite animation (and clips)
 type SpriteAnimation struct {
@@ -104,26 +104,79 @@ func (a *SpriteAnimation) AnimEvent(name, value string) {
 	//FIXME: implement this
 }
 
-// SpriteAnimationSystemExec is the main function of the SpriteSystem
-func SpriteAnimationSystemExec(ctx Context) {
-	//screen := ctx.Screen()
-	//dt float64, v *ecs.View, s *ecs.System
+//go:generate ecsgen -n SpriteAnimation -p core -o spriteanimation_component.go --component-tpl --vars "UUID=5A056275-C47D-44D2-994C-BD0AF107870C"
+
+//go:generate ecsgen -n SpriteAnimation -p core -o spriteanimation_system.go --system-tpl --vars "Priority=12" --vars "EntityAdded=s.onEntityAdded(e)" --vars "EntityRemoved=s.onEntityRemoved(e)" --vars "UUID=FFD3127E-6066-4561-8B2A-E1B59EBE489C" --components "Sprite" --components "SpriteAnimation"
+
+var matchSpriteAnimationSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
+	if !f.Contains(GetSpriteComponent(w).Flag()) {
+		return false
+	}
+	if !f.Contains(GetSpriteAnimationComponent(w).Flag()) {
+		return false
+	}
+	return true
+}
+
+var resizematchSpriteAnimationSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
+	if f.Contains(GetSpriteComponent(w).Flag()) {
+		return true
+	}
+	if f.Contains(GetSpriteAnimationComponent(w).Flag()) {
+		return true
+	}
+	return false
+}
+
+func (s *SpriteAnimationSystem) onEntityAdded(e ecs.Entity) {
+
+}
+
+func (s *SpriteAnimationSystem) onEntityRemoved(e ecs.Entity) {
+
+}
+
+func (s *SpriteAnimationSystem) DrawPriority(ctx DrawCtx) {
+
+}
+
+func (s *SpriteAnimationSystem) Draw(ctx DrawCtx) {
+
+}
+
+func (s *SpriteAnimationSystem) UpdatePriority(ctx UpdateCtx) {
+
+}
+
+func (s *SpriteAnimationSystem) Update(ctx UpdateCtx) {
 	dt := ctx.DT()
-	v := ctx.System().View()
-	matches := v.Matches()
-	spriteanimcomp := ctx.World().Component(CNSpriteAnimation)
-	globalfps := nonzeroval(ebiten.CurrentFPS(), 60)
-	for _, m := range matches {
-		spranim := m.Components[spriteanimcomp].(*SpriteAnimation)
-		if !spranim.Enabled || !spranim.Playing {
-			if !spranim.Playing && spranim.lastPlaying {
-				spranim.lastPlaying = false
+	globalfps := nonzeroval(ctx.TPS(), 60)
+	for _, v := range s.V().Matches() {
+		if !v.SpriteAnimation.Enabled || !v.SpriteAnimation.Playing {
+			if !v.SpriteAnimation.Playing && v.SpriteAnimation.lastPlaying {
+				v.SpriteAnimation.lastPlaying = false
 			}
 			continue
 		}
-		spriteAnimResolveClipMap(spranim)
-		spriteAnimResolvePlayClip(spranim)
-		spriteAnimResolvePlayback(globalfps, dt, spranim)
+		spriteAnimResolveClipMap(v.SpriteAnimation)
+		spriteAnimResolvePlayClip(v.SpriteAnimation)
+		spriteAnimResolvePlayback(globalfps, dt, v.SpriteAnimation)
+	}
+	for _, v := range s.V().Matches() {
+		if !v.SpriteAnimation.Enabled {
+			continue
+		}
+		// replace image if the animation clip uses a different one
+		if v.SpriteAnimation.lastImage == nil {
+			continue
+		}
+		if v.Sprite.Image == v.SpriteAnimation.lastImage {
+			continue
+		}
+		v.Sprite.Image = v.SpriteAnimation.lastImage
+		offx, offy := v.SpriteAnimation.Anim.GetClipOffset(v.SpriteAnimation.ActiveClip, v.SpriteAnimation.ActiveFrame)
+		v.Sprite.OffsetX = offx
+		v.Sprite.OffsetY = offy
 	}
 }
 
@@ -221,64 +274,64 @@ func spriteAnimResolvePlayback(globalfps, dt float64, spranim *SpriteAnimation) 
 	}
 }
 
-type SpriteAnimationLinkComponentSystem struct {
-	BaseComponentSystem
-}
+// type SpriteAnimationLinkComponentSystem struct {
+// 	BaseComponentSystem
+// }
 
-func (cs *SpriteAnimationLinkComponentSystem) SystemName() string {
-	return SNSpriteAnimationLink
-}
+// func (cs *SpriteAnimationLinkComponentSystem) SystemName() string {
+// 	return SNSpriteAnimationLink
+// }
 
-func (cs *SpriteAnimationLinkComponentSystem) SystemPriority() int {
-	return -5
-}
+// func (cs *SpriteAnimationLinkComponentSystem) SystemPriority() int {
+// 	return -5
+// }
 
-func (cs *SpriteAnimationLinkComponentSystem) SystemExec() SystemExecFn {
-	return SpriteAnimationLinkSystemExec
-}
+// func (cs *SpriteAnimationLinkComponentSystem) SystemExec() SystemExecFn {
+// 	return SpriteAnimationLinkSystemExec
+// }
 
-func (cs *SpriteAnimationLinkComponentSystem) SystemTags() []string {
-	return []string{"draw"}
-}
+// func (cs *SpriteAnimationLinkComponentSystem) SystemTags() []string {
+// 	return []string{"draw"}
+// }
 
-func (cs *SpriteAnimationLinkComponentSystem) Components(w *ecs.World) []*ecs.Component {
-	return []*ecs.Component{
-		spriteAnimationComponentDef(w),
-		drawableComponentDef(w),
-	}
-}
+// func (cs *SpriteAnimationLinkComponentSystem) Components(w *ecs.World) []*ecs.Component {
+// 	return []*ecs.Component{
+// 		spriteAnimationComponentDef(w),
+// 		drawableComponentDef(w),
+// 	}
+// }
 
-func (cs *SpriteAnimationLinkComponentSystem) ExcludeComponents(w *ecs.World) []*ecs.Component {
-	return emptyCompSlice
-}
+// func (cs *SpriteAnimationLinkComponentSystem) ExcludeComponents(w *ecs.World) []*ecs.Component {
+// 	return emptyCompSlice
+// }
 
-// SpriteAnimationLinkSystemExec is what glues the animation and sprite together
-func SpriteAnimationLinkSystemExec(ctx Context) {
-	//screen := ctx.Screen()
-	v := ctx.System().View()
-	world := ctx.World()
-	matches := v.Matches()
-	spriteanimcomp := world.Component(CNSpriteAnimation)
-	spritecomp := world.Component(CNDrawable)
-	for _, m := range matches {
-		spranim := m.Components[spriteanimcomp].(*SpriteAnimation)
-		spr := m.Components[spritecomp].(Drawable)
-		if !spranim.Enabled {
-			continue
-		}
-		// replace image if the animation clip uses a different one
-		if spranim.lastImage != nil {
-			if w, ok := spr.(DrawableImager); ok {
-				if w.GetImage() != spranim.lastImage {
-					w.SetImage(spranim.lastImage)
-					spr.SetOffset(spranim.Anim.GetClipOffset(spranim.ActiveClip, spranim.ActiveFrame))
-				}
-			}
-		}
-	}
-}
+// // SpriteAnimationLinkSystemExec is what glues the animation and sprite together
+// func SpriteAnimationLinkSystemExec(ctx Context) {
+// 	//screen := ctx.Screen()
+// 	v := ctx.System().View()
+// 	world := ctx.World()
+// 	matches := v.Matches()
+// 	spriteanimcomp := world.Component(CNSpriteAnimation)
+// 	spritecomp := world.Component(CNDrawable)
+// 	for _, m := range matches {
+// 		spranim := m.Components[spriteanimcomp].(*SpriteAnimation)
+// 		spr := m.Components[spritecomp].(Drawable)
+// 		if !spranim.Enabled {
+// 			continue
+// 		}
+// 		// replace image if the animation clip uses a different one
+// 		if spranim.lastImage != nil {
+// 			if w, ok := spr.(DrawableImager); ok {
+// 				if w.GetImage() != spranim.lastImage {
+// 					w.SetImage(spranim.lastImage)
+// 					spr.SetOffset(spranim.Anim.GetClipOffset(spranim.ActiveClip, spranim.ActiveFrame))
+// 				}
+// 			}
+// 		}
+// 	}
+// }
 
-func init() {
-	RegisterComponentSystem(&SpriteAnimationComponentSystem{})
-	RegisterComponentSystem(&SpriteAnimationLinkComponentSystem{})
-}
+// func init() {
+// 	RegisterComponentSystem(&SpriteAnimationComponentSystem{})
+// 	RegisterComponentSystem(&SpriteAnimationLinkComponentSystem{})
+// }

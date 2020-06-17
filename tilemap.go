@@ -11,11 +11,11 @@ type TileMap struct {
 	*WorldItem
 	*TransformItem
 	*DrawLayerItem
-	tilemap *core.TileMap
+	tilemap func() *core.TileSet
 }
 
 func (t *TileMap) SetDB(db []*ebiten.Image) {
-	t.tilemap.DB = db
+	t.tilemap().DB = db
 }
 
 func (t *TileMap) SetTilesXY(m2d [][]int) {
@@ -30,8 +30,8 @@ func (t *TileMap) SetTilesXY(m2d [][]int) {
 			mm[y*width+x] = m2d[x][y]
 		}
 	}
-	t.tilemap.Cells = mm
-	t.tilemap.CSize = image.Point{
+	t.tilemap().Cells = mm
+	t.tilemap().CSize = image.Point{
 		X: width,
 		Y: height,
 	}
@@ -49,21 +49,21 @@ func (t *TileMap) SetTilesYX(m2d [][]int) {
 			mm[y*width+x] = m2d[y][x]
 		}
 	}
-	t.tilemap.Cells = mm
-	t.tilemap.CSize = image.Point{
+	t.tilemap().Cells = mm
+	t.tilemap().CSize = image.Point{
 		X: width,
 		Y: height,
 	}
 }
 
 func (t *TileMap) SetCellSize(w, h float64) {
-	t.tilemap.CellWidth = w
-	t.tilemap.CellHeight = h
+	t.tilemap().CellWidth = w
+	t.tilemap().CellHeight = h
 }
 
 func (t *TileMap) SetOrigin(ox, oy float64) {
-	t.tilemap.OriginX = ox
-	t.tilemap.OriginY = oy
+	t.tilemap().OriginX = ox
+	t.tilemap().OriginY = oy
 }
 
 func NewTileSet(parent WorldTransform, layer Layer) *TileMap {
@@ -73,12 +73,10 @@ func NewTileSet(parent WorldTransform, layer Layer) *TileMap {
 	spr.WorldItem = newWorldItem(e, w)
 	spr.TransformItem = newTransformItem(e, parent)
 	spr.DrawLayerItem = newDrawLayerItem(e, w)
-	spr.tilemap = &core.TileMap{
+	core.SetTileSetComponentData(parent.World(), e, core.TileSet{
 		ScaleX: 1,
 		ScaleY: 1,
-	}
-	if err := w.AddComponentToEntity(spr.entity, w.Component(core.CNDrawable), spr.tilemap); err != nil {
-		panic(err)
-	}
+	})
+	spr.tilemap = func() *core.TileSet { return core.GetTileSetComponentData(spr.world, e) }
 	return spr
 }

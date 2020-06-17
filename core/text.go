@@ -4,6 +4,7 @@ import (
 	"image"
 	"image/color"
 
+	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen/rx"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/text"
@@ -132,97 +133,134 @@ func (l *Label) computeDynamicArea() {
 	l.lastBounds = l.base.Bounds()
 }
 
+//go:generate ecsgen -n Label -p core -o label_component.go --component-tpl --vars "UUID=1A74D1BE-BBF7-44F4-AC8B-18A00208EB76"
+
+//go:generate ecsgen -n DrawableLabel -p core -o label_drawablesystem.go --system-tpl --vars "Priority=10" --vars "EntityAdded=s.onEntityAdded(e)" --vars "EntityRemoved=s.onEntityRemoved(e)" --vars "UUID=70EC2F13-4C71-4A3F-9F6D-FF11F5DE9384" --components "Drawable" --components "Label"
+
+var matchDrawableLabelSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
+	if !f.Contains(GetDrawableComponent(w).Flag()) {
+		return false
+	}
+	if !f.Contains(GetLabelComponent(w).Flag()) {
+		return false
+	}
+	return true
+}
+
+var resizematchDrawableLabelSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
+	if f.Contains(GetDrawableComponent(w).Flag()) {
+		return true
+	}
+	if f.Contains(GetLabelComponent(w).Flag()) {
+		return true
+	}
+	return false
+}
+
+func (s *DrawableLabelSystem) onEntityAdded(e ecs.Entity) {
+	GetDrawableComponentData(s.world, e).Opt = &ebiten.DrawImageOptions{}
+}
+
+func (s *DrawableLabelSystem) onEntityRemoved(e ecs.Entity) {
+
+}
+
+func (s *DrawableLabelSystem) DrawPriority(ctx DrawCtx) {
+
+}
+
+func (s *DrawableLabelSystem) Draw(ctx DrawCtx) {
+
+}
+
+// if Debug is TRUE
+func (s *DrawableLabelSystem) DebugDraw(ctx DrawCtx) {
+
+}
+
+func (s *DrawableLabelSystem) UpdatePriority(ctx UpdateCtx) {
+
+}
+
+func (s *DrawableLabelSystem) Update(ctx UpdateCtx) {
+	for _, v := range s.V().Matches() {
+		v.Label.compute()
+		v.Drawable.Image = v.Label.base
+		v.Drawable.Opt.GeoM.Reset()
+		v.Drawable.Opt.GeoM.Translate(applyOrigin(float64(v.Label.realSize.X), v.Label.OriginX)+v.Label.OffsetX, applyOrigin(float64(v.Label.realSize.Y), v.Label.OriginY)+v.Label.OffsetY)
+		if v.Drawable.concatset {
+			v.Drawable.Opt.GeoM.Concat(v.Drawable.concatm)
+		} else {
+			v.Drawable.concatm.Reset()
+			v.Drawable.concatm.Scale(v.Label.ScaleX, v.Label.ScaleY)
+			v.Drawable.concatm.Rotate(v.Label.Angle)
+			v.Drawable.concatm.Translate(v.Label.X, v.Label.Y)
+			v.Drawable.Opt.GeoM.Concat(v.Drawable.concatm)
+		}
+	}
+}
+
 // implements drawable
 
-// Update does some computation before drawing
-func (l *Label) Update(ctx Context) {
-	l.compute()
-}
+// // Update does some computation before drawing
+// func (l *Label) Update(ctx Context) {
+// 	l.compute()
+// }
 
-// Draw is called by the Drawable systems
-func (l *Label) Draw(renderer DrawManager) {
-	if l.DrawDisabled {
-		return
-	}
-	g := l.transformMatrix
-	if g == nil {
-		g = GeoM().Scale(l.ScaleX, l.ScaleY).Rotate(l.Angle).Translate(l.X, l.Y)
-	}
-	lg := GeoM().Translate(applyOrigin(float64(l.realSize.X), l.OriginX), applyOrigin(float64(l.realSize.Y), l.OriginY))
-	lg.Translate(l.OffsetX, l.OffsetY)
-	lg.Concat(*g.M())
-	renderer.DrawImage(l.base, lg)
-	if DebugDraw {
-		x0, y0 := 0.0, 0.0
-		x1, y1 := x0+float64(l.realSize.X), y0
-		x2, y2 := x1, y1+float64(l.realSize.Y)
-		x3, y3 := x2-float64(l.realSize.X), y2
-		debugLineM(renderer.Screen(), *lg.M(), x0, y0, x1, y1, debugBoundsColor)
-		debugLineM(renderer.Screen(), *lg.M(), x1, y1, x2, y2, debugBoundsColor)
-		debugLineM(renderer.Screen(), *lg.M(), x2, y2, x3, y3, debugBoundsColor)
-		debugLineM(renderer.Screen(), *lg.M(), x3, y3, x0, y0, debugBoundsColor)
-		debugLineM(renderer.Screen(), *g.M(), -4, 0, 4, 0, debugPivotColor)
-		debugLineM(renderer.Screen(), *g.M(), 0, -4, 0, 4, debugPivotColor)
-	}
-	// prevGeo := opt.GeoM
-	// if l.customMatrix {
-	// 	opt.GeoM = l.transformMatrix
-	// } else {
-	// 	opt.GeoM.Scale(l.ScaleX, l.ScaleY)
-	// 	opt.GeoM.Rotate(l.Angle)
-	// 	opt.GeoM.Translate(l.X, l.Y)
-	// }
-	// xxg := &ebiten.GeoM{}
-	// xxg.Translate(applyOrigin(float64(l.realSize.X), l.OriginX), applyOrigin(float64(l.realSize.Y), l.OriginY))
-	// xxg.Translate(l.OffsetX, l.OffsetY)
-	// xxg.Concat(opt.GeoM)
-	// centerM := opt.GeoM
-	// opt.GeoM = *xxg
+// // Draw is called by the Drawable systems
+// func (l *Label) Draw(renderer DrawManager) {
+// 	if l.DrawDisabled {
+// 		return
+// 	}
+// 	g := l.transformMatrix
+// 	if g == nil {
+// 		g = GeoM().Scale(l.ScaleX, l.ScaleY).Rotate(l.Angle).Translate(l.X, l.Y)
+// 	}
+// 	lg := GeoM().Translate(applyOrigin(float64(l.realSize.X), l.OriginX), applyOrigin(float64(l.realSize.Y), l.OriginY))
+// 	lg.Translate(l.OffsetX, l.OffsetY)
+// 	lg.Concat(*g.M())
+// 	renderer.DrawImage(l.base, lg)
+// 	if DebugDraw {
+// 		x0, y0 := 0.0, 0.0
+// 		x1, y1 := x0+float64(l.realSize.X), y0
+// 		x2, y2 := x1, y1+float64(l.realSize.Y)
+// 		x3, y3 := x2-float64(l.realSize.X), y2
+// 		debugLineM(renderer.Screen(), *lg.M(), x0, y0, x1, y1, debugBoundsColor)
+// 		debugLineM(renderer.Screen(), *lg.M(), x1, y1, x2, y2, debugBoundsColor)
+// 		debugLineM(renderer.Screen(), *lg.M(), x2, y2, x3, y3, debugBoundsColor)
+// 		debugLineM(renderer.Screen(), *lg.M(), x3, y3, x0, y0, debugBoundsColor)
+// 		debugLineM(renderer.Screen(), *g.M(), -4, 0, 4, 0, debugPivotColor)
+// 		debugLineM(renderer.Screen(), *g.M(), 0, -4, 0, 4, debugPivotColor)
+// 	}
+// }
 
-	// // finally draw text
-	// screen.DrawImage(l.base, opt)
-	// if DebugDraw {
-	// 	x0, y0 := 0.0, 0.0
-	// 	x1, y1 := x0+float64(l.realSize.X), y0
-	// 	x2, y2 := x1, y1+float64(l.realSize.Y)
-	// 	x3, y3 := x2-float64(l.realSize.X), y2
-	// 	debugLineM(screen, opt.GeoM, x0, y0, x1, y1, debugBoundsColor)
-	// 	debugLineM(screen, opt.GeoM, x1, y1, x2, y2, debugBoundsColor)
-	// 	debugLineM(screen, opt.GeoM, x2, y2, x3, y3, debugBoundsColor)
-	// 	debugLineM(screen, opt.GeoM, x3, y3, x0, y0, debugBoundsColor)
-	// 	debugLineM(screen, centerM, -4, 0, 4, 0, debugPivotColor)
-	// 	debugLineM(screen, centerM, 0, -4, 0, 4, debugPivotColor)
-	// }
-	// opt.GeoM = prevGeo
-}
+// func (l *Label) Destroy() {
+// 	l.base = nil
+// 	l.SetDirty()
+// 	l.transformMatrix = nil
+// }
 
-func (l *Label) Destroy() {
-	l.base = nil
-	l.SetDirty()
-	l.transformMatrix = nil
-}
+// func (l *Label) IsDisabled() bool {
+// 	return l.DrawDisabled
+// }
 
-func (l *Label) IsDisabled() bool {
-	return l.DrawDisabled
-}
+// // Size returns the real size of the label
+// func (l *Label) Size() (w, h float64) {
+// 	return float64(l.realSize.X), float64(l.realSize.Y)
+// }
 
-// Size returns the real size of the label
-func (l *Label) Size() (w, h float64) {
-	return float64(l.realSize.X), float64(l.realSize.Y)
-}
+// // SetTransformMatrix is used by TransformSystem to set a custom transform
+// func (l *Label) SetTransformMatrix(m GeoMatrix) {
+// 	l.transformMatrix = m
+// }
 
-// SetTransformMatrix is used by TransformSystem to set a custom transform
-func (l *Label) SetTransformMatrix(m GeoMatrix) {
-	l.transformMatrix = m
-}
+// func (l *Label) ClearTransformMatrix() {
+// 	l.transformMatrix = nil
+// }
 
-func (l *Label) ClearTransformMatrix() {
-	l.transformMatrix = nil
-}
+// func (l *Label) SetOffset(x, y float64) {
+// 	l.OffsetX = x
+// 	l.OffsetY = y
+// }
 
-func (l *Label) SetOffset(x, y float64) {
-	l.OffsetX = x
-	l.OffsetY = y
-}
-
-var _ Drawable = &Label{}
+// var _ Drawable = &Label{}

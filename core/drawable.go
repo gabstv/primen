@@ -1,208 +1,230 @@
 package core
 
 import (
-	"github.com/gabstv/ecs"
+	"github.com/gabstv/ecs/v2"
 	"github.com/hajimehoshi/ebiten"
 )
 
-const (
-	// DefaultImageOptions key passed to the default world (&ebiten.DrawImageOptions{})
-	DefaultImageOptions string = "default_image_options"
-)
-
-// Drawable is the basis of all ebiten drawable items (sprites, texts, shapes)
-type Drawable interface {
-	Update(ctx Context)
-	Draw(m DrawManager)
-	Destroy()
-	IsDisabled() bool
-	Size() (w, h float64)
-	SetTransformMatrix(m GeoMatrix)
-	ClearTransformMatrix()
-	SetOffset(x, y float64)
+type DrawableObj interface {
+	Draw(ctx DrawCtx, o *Drawable)
 }
 
-// DrawableImager is a Drawable with Get and Set image funcs
-type DrawableImager interface {
-	Drawable
-	GetImage() *ebiten.Image
-	SetImage(img *ebiten.Image)
+type Drawable struct {
+	Image     *ebiten.Image
+	Opt       *ebiten.DrawImageOptions
+	Disabled  bool
+	concatm   ebiten.GeoM
+	concatset bool
+	drawer    DrawableObj
 }
 
-const (
-	// SNSoloDrawable is the system name of a drawable without as DrawLayer component
-	SNSoloDrawable = "primen.DrawableSystem"
-	// SNDrawLayerDrawable is the system name of a drawable with as DrawLayer component
-	SNDrawLayerDrawable = "primen.DrawLayerDrawableSystem"
-	// CNDrawable is the component name of a drawable
-	CNDrawable = "primen.DrawableComponent"
-)
+func (d *Drawable) Update(ctx UpdateCtx) {
 
-// ███████╗ ██████╗ ██╗      ██████╗
-// ██╔════╝██╔═══██╗██║     ██╔═══██╗
-// ███████╗██║   ██║██║     ██║   ██║
-// ╚════██║██║   ██║██║     ██║   ██║
-// ███████║╚██████╔╝███████╗╚██████╔╝
-// ╚══════╝ ╚═════╝ ╚══════╝ ╚═════╝
-
-// SoloDrawableComponentSystem handles drawable items (without a draw layer)
-type SoloDrawableComponentSystem struct {
-	BaseComponentSystem
 }
 
-// SystemName returns the system name
-func (cs *SoloDrawableComponentSystem) SystemName() string { return SNSoloDrawable }
-
-// SystemPriority returns the system priority
-func (cs *SoloDrawableComponentSystem) SystemPriority() int { return -10 }
-
-// SystemInit returns the system init
-func (cs *SoloDrawableComponentSystem) SystemInit() SystemInitFn {
-	return func(w *ecs.World, sys *ecs.System) {
-		if w.Get(DefaultImageOptions) == nil {
-			opt := &ebiten.DrawImageOptions{}
-			w.Set(DefaultImageOptions, opt)
-		}
+func (d *Drawable) Draw(ctx DrawCtx) {
+	if d.drawer != nil {
+		d.drawer.Draw(ctx, d)
+		return
 	}
-}
-
-// SystemExec returns the system exec fn
-func (cs *SoloDrawableComponentSystem) SystemExec() SystemExecFn {
-	return soloDrawableComponentSystemExec
-}
-
-// Components returns the component signature(s)
-func (cs *SoloDrawableComponentSystem) Components(w *ecs.World) []*ecs.Component {
-	return []*ecs.Component{
-		drawableComponentDef(w),
+	if d.Disabled {
+		return
 	}
-}
-
-// ExcludeComponents returns the components that must not be present in this system
-func (cs *SoloDrawableComponentSystem) ExcludeComponents(w *ecs.World) []*ecs.Component {
-	return []*ecs.Component{
-		drawLayerComponentDef(w),
+	if d.Image == nil || d.Opt == nil {
+		return
 	}
+	ctx.Renderer().DrawImageRaw(d.Image, d.Opt)
 }
 
-func drawableComponentDef(w *ecs.World) *ecs.Component {
-	return UpsertComponent(w, ecs.NewComponentInput{
-		Name: CNDrawable,
-		ValidateDataFn: func(data interface{}) bool {
-			_, ok := data.(Drawable)
-			return ok
-		},
-		DestructorFn: func(_ *ecs.World, entity ecs.Entity, data interface{}) {
-			sd := data.(Drawable)
-			sd.Destroy()
-		},
-	})
+//go:generate ecsgen -n Drawable -p core -o drawable_component.go --component-tpl --vars "UUID=E3086C37-F0F5-4BFD-8FEE-F9C451B1E57E"
+
+// ╔═╗╔═╗╦  ╔═╗  ╔═╗╦ ╦╔═╗
+// ╚═╗║ ║║  ║ ║  ╚═╗╚╦╝╚═╗
+// ╚═╝╚═╝╩═╝╚═╝  ╚═╝ ╩ ╚═╝
+
+//go:generate ecsgen -n SoloDrawable -p core -o drawable_solosystem.go --system-tpl --vars "Priority=0" --vars "UUID=6389F54D-76C9-49FC-B3E3-1C73B334EBB6" --components "Drawable"
+
+var matchSoloDrawableSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
+	if !f.Contains(GetDrawableComponent(w).Flag()) {
+		return false
+	}
+	if f.Contains(GetDrawLayerComponent(w).Flag()) {
+		return false
+	}
+	return true
 }
 
-// SystemTags -> draw
-func (cs *SoloDrawableComponentSystem) SystemTags() []string {
-	return []string{"draw"}
+var resizematchSoloDrawableSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
+	if f.Contains(GetDrawableComponent(w).Flag()) {
+		return true
+	}
+	return false
 }
 
-// soloDrawableComponentSystemExec is the main function of the SoloDrawableComponentSystem
-func soloDrawableComponentSystemExec(ctx Context) {
-	renderer := ctx.Renderer()
-	v := ctx.System().View()
-	matches := v.Matches()
-	comp := ctx.World().Component(CNDrawable)
-	for _, m := range matches {
-		drawable := m.Components[comp].(Drawable)
-		drawable.Update(ctx)
-		if drawable.IsDisabled() {
+func (s *SoloDrawableSystem) DrawPriority(ctx DrawCtx) {
+	// noop
+}
+
+func (s *SoloDrawableSystem) Draw(ctx DrawCtx) {
+	for _, v := range s.V().Matches() {
+		if v.Drawable.Disabled {
 			continue
 		}
-		drawable.Draw(renderer)
+		v.Drawable.Draw(ctx)
 	}
 }
 
-// ██████╗ ██████╗  █████╗ ██╗    ██╗██╗      █████╗ ██╗   ██╗███████╗██████╗
-// ██╔══██╗██╔══██╗██╔══██╗██║    ██║██║     ██╔══██╗╚██╗ ██╔╝██╔════╝██╔══██╗
-// ██║  ██║██████╔╝███████║██║ █╗ ██║██║     ███████║ ╚████╔╝ █████╗  ██████╔╝
-// ██║  ██║██╔══██╗██╔══██║██║███╗██║██║     ██╔══██║  ╚██╔╝  ██╔══╝  ██╔══██╗
-// ██████╔╝██║  ██║██║  ██║╚███╔███╔╝███████╗██║  ██║   ██║   ███████╗██║  ██║
-// ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝  ╚═╝
-
-// DrawLayerDrawableComponentSystem handles drawables with a draw layer
-type DrawLayerDrawableComponentSystem struct {
-	BaseComponentSystem
-}
-
-// SystemName returns the system name
-func (cs *DrawLayerDrawableComponentSystem) SystemName() string {
-	return SNDrawLayerDrawable
-}
-
-// SystemPriority returns the system priority
-func (cs *DrawLayerDrawableComponentSystem) SystemPriority() int {
-	return -9
-}
-
-// SystemInit returns the system init
-func (cs *DrawLayerDrawableComponentSystem) SystemInit() SystemInitFn {
-	return func(w *ecs.World, sys *ecs.System) {
-		sys.View().SetOnEntityAdded(func(e ecs.Entity, w *ecs.World) {
-			//TODO: checks?
-		})
-		sys.View().SetOnEntityRemoved(func(e ecs.Entity, w *ecs.World) {
-			//TODO: checks?
-		})
+func (s *SoloDrawableSystem) UpdatePriority(ctx UpdateCtx) {
+	for _, v := range s.V().Matches() {
+		v.Drawable.concatset = false
 	}
 }
 
-func (cs *DrawLayerDrawableComponentSystem) SystemTags() []string {
-	return []string{
-		"draw",
+func (s *SoloDrawableSystem) Update(ctx UpdateCtx) {
+	for _, v := range s.V().Matches() {
+		v.Drawable.Update(ctx)
 	}
 }
 
-// SystemExec returns the system exec fn
-func (cs *DrawLayerDrawableComponentSystem) SystemExec() SystemExecFn {
-	return drawLayerDrawableSystemExec
-}
+//  ___   ___    __    _       _      __    _     ____  ___       __   _     __
+// | | \ | |_)  / /\  \ \    /| |    / /\  \ \_/ | |_  | |_)     ( (` \ \_/ ( (`
+// |_|_/ |_| \ /_/--\  \_\/\/ |_|__ /_/--\  |_|  |_|__ |_| \     _)_)  |_|  _)_)
 
-// Components returns the component signature(s)
-func (cs *DrawLayerDrawableComponentSystem) Components(w *ecs.World) []*ecs.Component {
-	return []*ecs.Component{
-		drawLayerComponentDef(w),
-		drawableComponentDef(w),
+//go:generate ecsgen -n DrawLayerDrawable -p core -o drawable_layersystem.go --system-tpl --vars "Priority=-10" --vars "EntityAdded=s.onEntityAdded(e)" --vars "EntityRemoved=s.onEntityRemoved(e)" --vars "Setup=s.setupVars()" --vars "UUID=CBBC8DB4-4866-413E-A7A9-250A3C9ECDDC" --components "Drawable" --components "DrawLayer" --members "layers=*drawLayerDrawers"
+
+var matchDrawLayerDrawableSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
+	if !f.Contains(GetDrawLayerComponent(w).Flag()) {
+		return false
 	}
+	if !f.Contains(GetDrawableComponent(w).Flag()) {
+		return false
+	}
+	return true
 }
 
-// drawLayerDrawableSystemExec is the main function of the DrawLayerSystem
-func drawLayerDrawableSystemExec(ctx Context) {
-	world := ctx.World()
-	renderer := ctx.Renderer()
-	layers := world.System(SNDrawLayer).Get("layers").(*drawLayerDrawers).All()
-	dwgetter := world.Component(CNDrawable)
-	for _, layer := range layers {
-		layer.Items.Each(func(key ecs.Entity, value SLVal) bool {
+var resizematchDrawLayerDrawableSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
+	if f.Contains(GetDrawLayerComponent(w).Flag()) {
+		return true
+	}
+	if f.Contains(GetDrawableComponent(w).Flag()) {
+		return true
+	}
+	return false
+}
+
+func (s *DrawLayerDrawableSystem) DrawPriority(ctx DrawCtx) {
+	// noop
+}
+
+func (s *DrawLayerDrawableSystem) Draw(ctx DrawCtx) {
+	for _, l := range s.layers.All() {
+		l.Items.Each(func(key ecs.Entity, value SLVal) bool {
 			cache := value.(*drawLayerItemCache)
-			if cache.Drawable == nil {
-				cache.Drawable = dwgetter.Data(key).(Drawable)
-			}
-			cache.Drawable.Update(ctx)
-			if cache.Drawable.IsDisabled() {
+			if cache.Drawable.Disabled {
 				return true
 			}
-			cache.Drawable.Draw(renderer)
+			cache.Drawable.Draw(ctx)
 			return true
 		})
 	}
 }
 
-// ██╗███╗   ██╗██╗████████╗
-// ██║████╗  ██║██║╚══██╔══╝
-// ██║██╔██╗ ██║██║   ██║
-// ██║██║╚██╗██║██║   ██║
-// ██║██║ ╚████║██║   ██║
-// ╚═╝╚═╝  ╚═══╝╚═╝   ╚═╝
+func (s *DrawLayerDrawableSystem) UpdatePriority(ctx UpdateCtx) {
+	for _, v := range s.V().Matches() {
+		if v.DrawLayer.Layer != v.DrawLayer.prevLayer {
+			// switch layers
+			if l := s.layers.UpsertLayer(v.DrawLayer.prevLayer); l != nil {
+				if x, ok := l.Get(v.Entity); ok {
+					x.Destroy()
+					l.Delete(v.Entity)
+				}
+			}
+			v.DrawLayer.prevLayer = v.DrawLayer.Layer
+			//
+			l := s.layers.UpsertLayer(v.DrawLayer.Layer)
+			// update index history since the layer changed anyway
+			s.resolveIndex(v)
+			v.DrawLayer.prevIndex = v.DrawLayer.ZIndex
+			// TODO: check for leaks on AddOrUpdate (*Drawable might leak)
+			l.AddOrUpdate(v.Entity, &drawLayerItemCache{
+				ZIndex:   v.DrawLayer.ZIndex,
+				Drawable: v.Drawable,
+			})
+		} else if v.DrawLayer.ZIndex != v.DrawLayer.prevIndex {
+			s.resolveIndex(v)
+			v.DrawLayer.prevIndex = v.DrawLayer.ZIndex
+			if l := s.layers.UpsertLayer(v.DrawLayer.Layer); l != nil {
+				l.AddOrUpdate(v.Entity, &drawLayerItemCache{
+					ZIndex:   v.DrawLayer.ZIndex,
+					Drawable: v.Drawable,
+				})
+			}
+		}
+	}
+}
 
-func init() {
-	RegisterComponentSystem(&SoloDrawableComponentSystem{})
-	RegisterComponentSystem(&DrawLayerDrawableComponentSystem{})
+func (s *DrawLayerDrawableSystem) Update(ctx UpdateCtx) {
+	for _, v := range s.V().Matches() {
+		v.Drawable.Update(ctx)
+	}
+}
+
+func (s *DrawLayerDrawableSystem) resolveIndex(v VIDrawLayerDrawableSystem) {
+	if v.DrawLayer.ZIndex == ZIndexTop {
+		l := s.layers.UpsertLayer(v.DrawLayer.Layer)
+		if lv := l.LastValue(); lv != nil {
+			v.DrawLayer.ZIndex = lv.(*drawLayerItemCache).ZIndex + 1
+		} else {
+			v.DrawLayer.ZIndex = 0
+		}
+	} else if v.DrawLayer.ZIndex == ZIndexBottom {
+		l := s.layers.UpsertLayer(v.DrawLayer.Layer)
+		if lv := l.FirstValue(); lv != nil {
+			v.DrawLayer.ZIndex = lv.(*drawLayerItemCache).ZIndex - 1
+		} else {
+			v.DrawLayer.ZIndex = 0
+		}
+	}
+}
+
+func (s *DrawLayerDrawableSystem) onEntityAdded(e ecs.Entity) {
+	dl := GetDrawLayerComponentData(s.world, e)
+	d := GetDrawableComponentData(s.world, e)
+	dl.prevLayer = dl.Layer
+	l := s.layers.UpsertLayer(dl.Layer)
+	if dl.ZIndex == ZIndexBottom {
+		if lv := l.FirstValue(); lv != nil {
+			dl.ZIndex = lv.(*drawLayerItemCache).ZIndex - 1
+		} else {
+			dl.ZIndex = 0
+		}
+	}
+	if dl.ZIndex == ZIndexTop {
+		if lv := l.LastValue(); lv != nil {
+			dl.ZIndex = lv.(*drawLayerItemCache).ZIndex + 1
+		} else {
+			dl.ZIndex = 0
+		}
+	}
+	dl.prevIndex = dl.ZIndex
+	_ = l.AddOrUpdate(e, &drawLayerItemCache{
+		ZIndex:   dl.ZIndex,
+		Drawable: d,
+	})
+}
+
+func (s *DrawLayerDrawableSystem) onEntityRemoved(e ecs.Entity) {
+	for _, l := range s.layers.All() {
+		if x, ok := l.Items.Get(e); ok {
+			x.Destroy()
+			l.Items.Delete(e)
+		}
+	}
+}
+
+func (s *DrawLayerDrawableSystem) setupVars() {
+	s.layers = &drawLayerDrawers{
+		slice: make([]*drawLayerDrawer, 0, 16),
+		m:     make(map[LayerIndex]*drawLayerDrawer),
+	}
 }

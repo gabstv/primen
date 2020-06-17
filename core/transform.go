@@ -1,64 +1,13 @@
 package core
 
 import (
-	"github.com/gabstv/ecs"
+	"github.com/gabstv/ecs/v2"
 	"github.com/hajimehoshi/ebiten"
 )
 
-const (
-	SNTransform       = "primen.TransformSystem"
-	SNTransformSprite = "primen.TransformSpriteSystem"
-	CNTransform       = "primen.TransformComponent"
-)
-
-type TransformComponentSystem struct {
-	BaseComponentSystem
-}
-
-func (cs *TransformComponentSystem) SystemName() string {
-	return SNTransform
-}
-
-func (cs *TransformComponentSystem) SystemPriority() int {
-	return 0
-}
-
-func (cs *TransformComponentSystem) SystemInit() SystemInitFn {
-	return func(w *ecs.World, sys *ecs.System) {
-		sys.Set("tick", uint64(0))
-	}
-}
-
-func (cs *TransformComponentSystem) SystemExec() SystemExecFn {
-	return TransformSystemExec
-}
-
-func (cs *TransformComponentSystem) Components(w *ecs.World) []*ecs.Component {
-	return []*ecs.Component{
-		transformComponentDef(w),
-	}
-}
-
-func (cs *TransformComponentSystem) ExcludeComponents(w *ecs.World) []*ecs.Component {
-	return emptyCompSlice
-}
-
-func transformComponentDef(w *ecs.World) *ecs.Component {
-	return UpsertComponent(w, ecs.NewComponentInput{
-		Name: CNTransform,
-		ValidateDataFn: func(data interface{}) bool {
-			_, ok := data.(*Transform)
-			return ok
-		},
-		DestructorFn: func(_ *ecs.World, entity ecs.Entity, data interface{}) {
-			//sd := data.(*Transform)
-		},
-	})
-}
-
 // Transform is a hierarchy based matrix
 type Transform struct {
-	Parent *Transform
+	Parent ecs.Entity
 	X      float64
 	Y      float64
 	Angle  float64
@@ -66,135 +15,141 @@ type Transform struct {
 	ScaleY float64
 
 	// priv
-	lastTick uint64
+	lastTick    uint64
+	lastParent  ecs.Entity
+	lastParentT *Transform
 	// calculated transform matrix (Ebiten)
-	m      ebiten.GeoM
-	mAngle float64
+	m ebiten.GeoM
 }
 
-// NewTransform returns a new transform with ScaleX = 1 and ScaleY = 1
-func NewTransform() *Transform {
-	return &Transform{
-		ScaleX: 1,
-		ScaleY: 1,
+//go:generate ecsgen -n Transform -p core -o transform_component.go --component-tpl --vars "UUID=45E8849D-7EA9-4CDC-8AB1-86DB8705C253"
+
+//go:generate ecsgen -n Transform -p core -o transform_system.go --system-tpl --vars "EntityAdded=s.onEntityAdded(e)" --vars "EntityRemoved=s.onEntityRemoved(e)" --vars "Setup=s.setupTransforms()" --vars "Priority=100" --vars "UUID=486FA1E8-4C45-48F2-AD8A-02D84C4426C9" --components "Transform" --members "tick=uint64"
+
+var matchTransformSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
+	return f.Contains(GetTransformComponent(w).Flag())
+}
+
+var resizematchTransformSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
+	return f.Contains(GetTransformComponent(w).Flag())
+}
+
+func (s *TransformSystem) onEntityAdded(e ecs.Entity) {
+
+}
+
+func (s *TransformSystem) onEntityRemoved(e ecs.Entity) {
+	for _, v := range s.V().Matches() {
+		if v.Transform.lastParent == e {
+			v.Transform.lastParentT = nil
+		}
 	}
 }
 
-type TransformDrawableComponentSystem struct {
-	BaseComponentSystem
+func (s *TransformSystem) setupTransforms() {
+	s.tick = 0
 }
 
-func (cs *TransformDrawableComponentSystem) SystemName() string {
-	return SNTransformSprite
+func (s *TransformSystem) DrawPriority(ctx DrawCtx) {
+	// noop
 }
 
-func (cs *TransformDrawableComponentSystem) SystemPriority() int {
-	return -6
+func (s *TransformSystem) Draw(ctx DrawCtx) {
+	// noop
 }
 
-// SystemInit returns the system init
-func (cs *TransformDrawableComponentSystem) SystemInit() SystemInitFn {
-	return func(w *ecs.World, sys *ecs.System) {
-		sys.View().SetOnEntityRemoved(func(e ecs.Entity, w *ecs.World) {
-			if getter := w.Component(CNDrawable); getter != nil {
-				if vi := getter.Data(e); vi != nil {
-					if v, ok := vi.(Drawable); ok {
-						v.ClearTransformMatrix()
-					}
+func (s *TransformSystem) UpdatePriority(ctx UpdateCtx) {
+
+}
+
+func (s *TransformSystem) Update(ctx UpdateCtx) {
+	tick := s.tick
+	s.tick++
+
+	for _, v := range s.V().Matches() {
+		if v.Transform.lastParent != v.Transform.Parent {
+			if v.Transform.Parent == 0 {
+				v.Transform.lastParentT = nil
+			} else {
+				vd, ok := s.V().Fetch(v.Transform.Parent)
+				if !ok {
+					// invalid entity passed!
+					v.Transform.lastParentT = nil
+					v.Transform.Parent = 0
+				} else {
+					v.Transform.lastParentT = vd.Transform
 				}
 			}
-		})
+		}
+		v.Transform.lastParent = v.Transform.Parent
 	}
-}
 
-func (cs *TransformDrawableComponentSystem) SystemExec() SystemExecFn {
-	return TransformSpriteSystemExec
-}
-
-func (cs *TransformDrawableComponentSystem) Components(w *ecs.World) []*ecs.Component {
-	return []*ecs.Component{
-		transformComponentDef(w),
-		drawableComponentDef(w),
-	}
-}
-
-func (cs *TransformDrawableComponentSystem) ExcludeComponents(w *ecs.World) []*ecs.Component {
-	return emptyCompSlice
-}
-
-// TransformSystemExec is the main function of the TransformSystem
-func TransformSystemExec(ctx Context) {
-	// dt float64, v *ecs.View, s *ecs.System
-	s := ctx.System()
-	v := s.View()
-	tick := s.Get("tick").(uint64)
-	tick++
-	s.Set("tick", tick)
 	//
-	matches := v.Matches()
-	transformcomp := ctx.World().Component(CNTransform)
-	for _, m := range matches {
-		t := m.Components[transformcomp].(*Transform)
-		_ = resolveTransformM2(t, tick)
+	for _, v := range s.V().Matches() {
+		_ = resolveTransform(v.Transform, tick)
 	}
 }
 
-// TransformSpriteSystemExec is the main function of the TransformSpriteSystem
-func TransformSpriteSystemExec(ctx Context) {
-	// dt float64, v *ecs.View, s *ecs.System
-	v := ctx.System().View()
-	matches := v.Matches()
-	transformgetter := ctx.World().Component(CNTransform)
-	drawablegetter := ctx.World().Component(CNDrawable)
-	for _, m := range matches {
-		t := m.Components[transformgetter].(*Transform)
-		// transform is already resolved because the TransformSystem executed first
-		d := m.Components[drawablegetter].(Drawable)
-		d.SetTransformMatrix(GeoM2(t.m))
-	}
+type transformCache struct {
+	M ebiten.GeoM
 }
 
-func resolveTransformM2(t *Transform, tick uint64) ebiten.GeoM {
+func resolveCache(t *Transform)
+
+func resolveTransform(t *Transform, tick uint64) ebiten.GeoM {
 	if t == nil {
 		return ebiten.GeoM{}
 	}
 	if t.lastTick == tick {
 		return t.m
 	}
-
-	parent := resolveTransformM2(t.Parent, tick)
-	xb := &ebiten.GeoM{}
-
-	xb.Scale(t.ScaleX, t.ScaleY)
-	xb.Rotate(t.Angle)
-	xb.Translate(t.X, t.Y)
-	xb.Concat(parent)
-	t.m = *xb
+	parent := resolveTransform(t.lastParentT, tick)
+	t.m = ebiten.GeoM{}
+	t.m.Scale(t.ScaleX, t.ScaleY)
+	t.m.Rotate(t.Angle)
+	t.m.Translate(t.X, t.Y)
+	t.m.Concat(parent)
 	t.lastTick = tick
 	return t.m
 }
-func resolveTransformM(t *Transform, tick uint64) (ebiten.GeoM, float64) {
-	if t == nil {
-		return ebiten.GeoM{}, 0
-	}
-	if t.lastTick == tick {
-		return t.m, t.mAngle
-	}
 
-	base, pangle := resolveTransformM(t.Parent, tick)
-	xb := &base
+//go:generate ecsgen -n DrawableTransform -p core -o transform_drawablesystem.go --system-tpl --vars "Priority=90" --vars "UUID=7E9DEBA9-DEF6-4174-8160-AA7B72E2A734" --components "Transform" --components "Drawable"
 
-	xb.Rotate(pangle)
-	xb.Scale(t.ScaleX, t.ScaleY)
-	xb.Rotate(t.Angle)
-	xb.Translate(t.X, t.Y)
-	t.m = *xb
-	t.lastTick = tick
-	t.mAngle = pangle + t.Angle
-	return t.m, t.mAngle
+var matchDrawableTransformSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
+	if !f.Contains(GetTransformComponent(w).Flag()) {
+		return false
+	}
+	if !f.Contains(GetDrawableComponent(w).Flag()) {
+		return false
+	}
+	return true
 }
 
-func init() {
-	RegisterComponentSystem(&TransformComponentSystem{})
-	RegisterComponentSystem(&TransformDrawableComponentSystem{})
+var resizematchDrawableTransformSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
+	if f.Contains(GetTransformComponent(w).Flag()) {
+		return true
+	}
+	if f.Contains(GetDrawableComponent(w).Flag()) {
+		return true
+	}
+	return false
+}
+
+func (s *DrawableTransformSystem) DrawPriority(ctx DrawCtx) {
+	// noop
+}
+
+func (s *DrawableTransformSystem) Draw(ctx DrawCtx) {
+	// noop
+}
+
+func (s *DrawableTransformSystem) UpdatePriority(ctx UpdateCtx) {
+
+}
+
+func (s *DrawableTransformSystem) Update(ctx UpdateCtx) {
+	for _, v := range s.V().Matches() {
+		v.Drawable.concatm = v.Transform.m
+		v.Drawable.concatset = true
+	}
 }

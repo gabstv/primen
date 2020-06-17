@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gabstv/ecs"
+	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/io"
 	osfs "github.com/gabstv/primen/io/os"
@@ -45,7 +45,7 @@ type Engine struct {
 	drawInfo     *StepInfo
 	lock         sync.Mutex
 	worlds       []worldContainer
-	defaultWorld *ecs.World
+	defaultWorld *core.GameWorld
 	dmap         Dict
 	options      EngineOptions
 	f            io.Filesystem
@@ -178,6 +178,8 @@ func NewEngine(v *NewEngineInput) *Engine {
 
 	// create the default world
 	dw := core.NewWorld(e)
+	// start default components and systems
+	ecs.RegisterWorldDefaults(dw)
 
 	e.worlds = []worldContainer{
 		{
@@ -187,30 +189,29 @@ func NewEngine(v *NewEngineInput) *Engine {
 	}
 	e.defaultWorld = dw
 
-	// start default components and systems
-	core.StartDefaults(e)
-
 	return e
 }
 
-// AddWorld adds a world to the engine.
+// NewWorld adds a world to the engine.
 // The priority is used to sort world execution, from hight to low.
-func (e *Engine) AddWorld(w *ecs.World, priority int) {
+func (e *Engine) NewWorld(priority int) *core.GameWorld {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 	if e.worlds == nil {
 		e.worlds = make([]worldContainer, 0, 2)
 	}
+	ww := core.NewWorld(e)
 	e.worlds = append(e.worlds, worldContainer{
 		priority: priority,
-		world:    w,
+		world:    ww,
 	})
 	// sort by priority
 	sort.Sort(sortedWorldContainer(e.worlds))
+	return ww
 }
 
 // RemoveWorld removes a *World
-func (e *Engine) RemoveWorld(w *ecs.World) bool {
+func (e *Engine) RemoveWorld(w *core.GameWorld) {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 	wi := -1
@@ -222,18 +223,17 @@ func (e *Engine) RemoveWorld(w *ecs.World) bool {
 		}
 	}
 	if wi == -1 {
-		return false
+		return
 	}
 	// splice
 	e.worlds = append(e.worlds[:wi], e.worlds[wi+1:]...)
 	if w == e.defaultWorld {
 		e.defaultWorld = nil
 	}
-	return true
 }
 
 // Default world
-func (e *Engine) Default() *ecs.World {
+func (e *Engine) Default() *core.GameWorld {
 	return e.defaultWorld
 }
 
@@ -342,7 +342,6 @@ func (e *Engine) Update(screen *ebiten.Image) error {
 	lastt, lastf := e.updateInfo.Get()
 	now := time.Now()
 	delta := now.Sub(lastt).Seconds()
-	e.dmap.Set(TagDelta, delta)
 	e.lock.Lock()
 	worlds := e.worlds
 	e.lock.Unlock()
@@ -356,9 +355,17 @@ func (e *Engine) Update(screen *ebiten.Image) error {
 		}
 	})
 
+	ctx := core.NewUpdateCtx(frame, delta, ebiten.CurrentTPS())
+
 	for _, w := range worlds {
-		//w.world.Set("screen", screen) set on [[draw]]
-		w.world.RunWithoutTag(WorldTagDraw, delta)
+		w.world.EachSystem(func(s ecs.BaseSystem) bool {
+			s.(core.System).UpdatePriority(ctx)
+			return true
+		})
+		w.world.EachSystem(func(s ecs.BaseSystem) bool {
+			s.(core.System).Update(ctx)
+			return true
+		})
 	}
 	return nil
 }
@@ -374,9 +381,18 @@ func (e *Engine) Draw(screen *ebiten.Image) {
 	frame := lastf + 1
 	e.drawInfo.Set(now, frame)
 
+	//TODO: create DrawCtx
+	var ctx core.DrawCtx
+
 	for _, w := range worlds {
-		w.world.Set("screen", screen)
-		w.world.RunWithTag(WorldTagDraw, delta)
+		w.world.EachSystem(func(s ecs.BaseSystem) bool {
+			s.(core.System).DrawPriority(ctx)
+			return true
+		})
+		w.world.EachSystem(func(s ecs.BaseSystem) bool {
+			s.(core.System).Draw(ctx)
+			return true
+		})
 	}
 }
 
