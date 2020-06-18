@@ -7,6 +7,8 @@ import (
 	"github.com/hajimehoshi/ebiten"
 )
 
+//FIXME: review
+
 type DrawManager interface {
 	DrawImageXY(image *ebiten.Image, x, y float64)
 	DrawImage(image *ebiten.Image, m GeoMatrix)

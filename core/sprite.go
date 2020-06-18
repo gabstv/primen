@@ -55,7 +55,7 @@ var resizematchDrawableSpriteSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
 }
 
 func (s *DrawableSpriteSystem) onEntityAdded(e ecs.Entity) {
-	GetDrawableComponentData(s.world, e).Opt = &ebiten.DrawImageOptions{}
+	GetDrawableComponentData(s.world, e).opt = &ebiten.DrawImageOptions{}
 }
 
 func (s *DrawableSpriteSystem) onEntityRemoved(e ecs.Entity) {
@@ -78,10 +78,10 @@ func (s *DrawableSpriteSystem) DebugDraw(ctx DrawCtx) {
 		x1, y1 := x0+v.Sprite.imageWidth, y0
 		x2, y2 := x1, y1+v.Sprite.imageHeight
 		x3, y3 := x2-v.Sprite.imageWidth, y2
-		debugLineM(screen, v.Drawable.Opt.GeoM, x0, y0, x1, y1, debugBoundsColor)
-		debugLineM(screen, v.Drawable.Opt.GeoM, x1, y1, x2, y2, debugBoundsColor)
-		debugLineM(screen, v.Drawable.Opt.GeoM, x2, y2, x3, y3, debugBoundsColor)
-		debugLineM(screen, v.Drawable.Opt.GeoM, x3, y3, x0, y0, debugBoundsColor)
+		debugLineM(screen, v.Drawable.opt.GeoM, x0, y0, x1, y1, debugBoundsColor)
+		debugLineM(screen, v.Drawable.opt.GeoM, x1, y1, x2, y2, debugBoundsColor)
+		debugLineM(screen, v.Drawable.opt.GeoM, x2, y2, x3, y3, debugBoundsColor)
+		debugLineM(screen, v.Drawable.opt.GeoM, x3, y3, x0, y0, debugBoundsColor)
 		debugLineM(screen, v.Drawable.concatm, -4, 0, 4, 0, debugPivotColor)
 		debugLineM(screen, v.Drawable.concatm, 0, -4, 0, 4, debugPivotColor)
 	}
@@ -104,16 +104,16 @@ func (s *DrawableSpriteSystem) Update(ctx UpdateCtx) {
 				v.Sprite.imageHeight = float64(ih)
 			}
 		}
-		v.Drawable.Opt.GeoM.Reset()
-		v.Drawable.Opt.GeoM.Translate(applyOrigin(v.Sprite.imageWidth, v.Sprite.OriginX)+v.Sprite.OffsetX, applyOrigin(v.Sprite.imageHeight, v.Sprite.OriginY)+v.Sprite.OffsetY)
+		v.Drawable.opt.GeoM.Reset()
+		v.Drawable.opt.GeoM.Translate(applyOrigin(v.Sprite.imageWidth, v.Sprite.OriginX)+v.Sprite.OffsetX, applyOrigin(v.Sprite.imageHeight, v.Sprite.OriginY)+v.Sprite.OffsetY)
 		if v.Drawable.concatset {
-			v.Drawable.Opt.GeoM.Concat(v.Drawable.concatm)
+			v.Drawable.opt.GeoM.Concat(v.Drawable.concatm)
 		} else {
 			v.Drawable.concatm.Reset()
 			v.Drawable.concatm.Scale(v.Sprite.ScaleX, v.Sprite.ScaleY)
 			v.Drawable.concatm.Rotate(v.Sprite.Angle)
 			v.Drawable.concatm.Translate(v.Sprite.X, v.Sprite.Y)
-			v.Drawable.Opt.GeoM.Concat(v.Drawable.concatm)
+			v.Drawable.opt.GeoM.Concat(v.Drawable.concatm)
 		}
 	}
 }

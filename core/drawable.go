@@ -5,35 +5,41 @@ import (
 	"github.com/hajimehoshi/ebiten"
 )
 
+//FIXME: review (2)
+
+// DrawableObj is the interface of a custom drawable component to use inetead
+// of Drawable.Draw()
 type DrawableObj interface {
 	Draw(ctx DrawCtx, o *Drawable)
 }
 
+// Drawable is the component that controls drawing to the ebiten screen
 type Drawable struct {
-	Image     *ebiten.Image
-	Opt       *ebiten.DrawImageOptions
-	Disabled  bool
+	img       *ebiten.Image
+	opt       *ebiten.DrawImageOptions
+	disabled  bool
 	concatm   ebiten.GeoM
 	concatset bool
 	drawer    DrawableObj
 }
 
-func (d *Drawable) Update(ctx UpdateCtx) {
-
-}
-
+// Draw uses drawer or defaultDraw
 func (d *Drawable) Draw(ctx DrawCtx) {
 	if d.drawer != nil {
 		d.drawer.Draw(ctx, d)
 		return
 	}
-	if d.Disabled {
+	d.defaultDraw(ctx)
+}
+
+func (d *Drawable) defaultDraw(ctx DrawCtx) {
+	if d.disabled {
 		return
 	}
-	if d.Image == nil || d.Opt == nil {
+	if d.img == nil || d.opt == nil {
 		return
 	}
-	ctx.Renderer().DrawImageRaw(d.Image, d.Opt)
+	ctx.Renderer().DrawImageRaw(d.img, d.opt)
 }
 
 //go:generate ecsgen -n Drawable -p core -o drawable_component.go --component-tpl --vars "UUID=E3086C37-F0F5-4BFD-8FEE-F9C451B1E57E"
@@ -61,30 +67,28 @@ var resizematchSoloDrawableSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
 	return false
 }
 
-func (s *SoloDrawableSystem) DrawPriority(ctx DrawCtx) {
-	// noop
-}
+// DrawPriority is noop as of now
+func (s *SoloDrawableSystem) DrawPriority(ctx DrawCtx) {}
 
+// Draw all solo drawables ordered by entity ID
 func (s *SoloDrawableSystem) Draw(ctx DrawCtx) {
 	for _, v := range s.V().Matches() {
-		if v.Drawable.Disabled {
+		if v.Drawable.disabled {
 			continue
 		}
 		v.Drawable.Draw(ctx)
 	}
 }
 
+// UpdatePriority sets v.Drawable.concatset to false on all Drawables
 func (s *SoloDrawableSystem) UpdatePriority(ctx UpdateCtx) {
 	for _, v := range s.V().Matches() {
 		v.Drawable.concatset = false
 	}
 }
 
-func (s *SoloDrawableSystem) Update(ctx UpdateCtx) {
-	for _, v := range s.V().Matches() {
-		v.Drawable.Update(ctx)
-	}
-}
+// Update is noop as of now
+func (s *SoloDrawableSystem) Update(ctx UpdateCtx) {}
 
 //  ___   ___    __    _       _      __    _     ____  ___       __   _     __
 // | | \ | |_)  / /\  \ \    /| |    / /\  \ \_/ | |_  | |_)     ( (` \ \_/ ( (`
@@ -112,15 +116,15 @@ var resizematchDrawLayerDrawableSystem = func(f ecs.Flag, w ecs.BaseWorld) bool 
 	return false
 }
 
-func (s *DrawLayerDrawableSystem) DrawPriority(ctx DrawCtx) {
-	// noop
-}
+// DrawPriority is noop as of now
+func (s *DrawLayerDrawableSystem) DrawPriority(ctx DrawCtx) {}
 
+// Draw draws a drawable by its layer and zindex order
 func (s *DrawLayerDrawableSystem) Draw(ctx DrawCtx) {
 	for _, l := range s.layers.All() {
 		l.Items.Each(func(key ecs.Entity, value SLVal) bool {
 			cache := value.(*drawLayerItemCache)
-			if cache.Drawable.Disabled {
+			if cache.Drawable.disabled {
 				return true
 			}
 			cache.Drawable.Draw(ctx)
@@ -129,8 +133,12 @@ func (s *DrawLayerDrawableSystem) Draw(ctx DrawCtx) {
 	}
 }
 
+// UpdatePriority updates layer changes
 func (s *DrawLayerDrawableSystem) UpdatePriority(ctx UpdateCtx) {
 	for _, v := range s.V().Matches() {
+		// reset concat matrix:
+		v.Drawable.concatset = false
+
 		if v.DrawLayer.Layer != v.DrawLayer.prevLayer {
 			// switch layers
 			if l := s.layers.UpsertLayer(v.DrawLayer.prevLayer); l != nil {
@@ -163,11 +171,8 @@ func (s *DrawLayerDrawableSystem) UpdatePriority(ctx UpdateCtx) {
 	}
 }
 
-func (s *DrawLayerDrawableSystem) Update(ctx UpdateCtx) {
-	for _, v := range s.V().Matches() {
-		v.Drawable.Update(ctx)
-	}
-}
+// Update is noop as of now
+func (s *DrawLayerDrawableSystem) Update(ctx UpdateCtx) {}
 
 func (s *DrawLayerDrawableSystem) resolveIndex(v VIDrawLayerDrawableSystem) {
 	if v.DrawLayer.ZIndex == ZIndexTop {

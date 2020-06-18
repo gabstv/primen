@@ -11,6 +11,8 @@ import (
 	"github.com/gabstv/ecs"
 )
 
+//FIXME: review
+
 var itemExists = struct{}{}
 
 type SetBase interface {

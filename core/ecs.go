@@ -4,6 +4,8 @@ import (
 	"github.com/gabstv/ecs/v2"
 )
 
+//FIXME: review
+
 type GameWorld struct {
 	*ecs.World
 	e Engine

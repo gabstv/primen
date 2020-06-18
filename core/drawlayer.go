@@ -6,6 +6,8 @@ import (
 	"sync"
 )
 
+//FIXME: review
+
 // LayerIndex is the layer index
 type LayerIndex int64
 

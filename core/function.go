@@ -4,6 +4,8 @@ import (
 	"github.com/gabstv/ecs/v2"
 )
 
+//FIXME: review
+
 type UpdateFn func(ctx UpdateCtx, e ecs.Entity)
 type DrawFn func(ctx DrawCtx, e ecs.Entity)
 

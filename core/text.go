@@ -158,7 +158,7 @@ var resizematchDrawableLabelSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
 }
 
 func (s *DrawableLabelSystem) onEntityAdded(e ecs.Entity) {
-	GetDrawableComponentData(s.world, e).Opt = &ebiten.DrawImageOptions{}
+	GetDrawableComponentData(s.world, e).opt = &ebiten.DrawImageOptions{}
 }
 
 func (s *DrawableLabelSystem) onEntityRemoved(e ecs.Entity) {
@@ -185,17 +185,17 @@ func (s *DrawableLabelSystem) UpdatePriority(ctx UpdateCtx) {
 func (s *DrawableLabelSystem) Update(ctx UpdateCtx) {
 	for _, v := range s.V().Matches() {
 		v.Label.compute()
-		v.Drawable.Image = v.Label.base
-		v.Drawable.Opt.GeoM.Reset()
-		v.Drawable.Opt.GeoM.Translate(applyOrigin(float64(v.Label.realSize.X), v.Label.OriginX)+v.Label.OffsetX, applyOrigin(float64(v.Label.realSize.Y), v.Label.OriginY)+v.Label.OffsetY)
+		v.Drawable.img = v.Label.base
+		v.Drawable.opt.GeoM.Reset()
+		v.Drawable.opt.GeoM.Translate(applyOrigin(float64(v.Label.realSize.X), v.Label.OriginX)+v.Label.OffsetX, applyOrigin(float64(v.Label.realSize.Y), v.Label.OriginY)+v.Label.OffsetY)
 		if v.Drawable.concatset {
-			v.Drawable.Opt.GeoM.Concat(v.Drawable.concatm)
+			v.Drawable.opt.GeoM.Concat(v.Drawable.concatm)
 		} else {
 			v.Drawable.concatm.Reset()
 			v.Drawable.concatm.Scale(v.Label.ScaleX, v.Label.ScaleY)
 			v.Drawable.concatm.Rotate(v.Label.Angle)
 			v.Drawable.concatm.Translate(v.Label.X, v.Label.Y)
-			v.Drawable.Opt.GeoM.Concat(v.Drawable.concatm)
+			v.Drawable.opt.GeoM.Concat(v.Drawable.concatm)
 		}
 	}
 }

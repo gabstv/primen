@@ -101,7 +101,7 @@ var resizematchDrawableTileSetSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
 
 func (s *DrawableTileSetSystem) onEntityAdded(e ecs.Entity) {
 	d := GetDrawableComponentData(s.world, e)
-	d.Opt = &ebiten.DrawImageOptions{}
+	d.opt = &ebiten.DrawImageOptions{}
 	d.drawer = GetTileSetComponentData(s.world, e)
 }
 
