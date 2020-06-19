@@ -7,28 +7,122 @@ import (
 
 // Sprite is the data of a sprite component.
 type Sprite struct {
-	X       float64 // logical X position
-	Y       float64 // logical Y position
-	Angle   float64 // radians
-	ScaleX  float64 // logical X scale (1 = 100%)
-	ScaleY  float64 // logical Y scale (1 = 100%)
+	x       float64 // logical X position
+	y       float64 // logical Y position
+	angle   float64 // radians
+	scaleX  float64 // logical X scale (1 = 100%)
+	scaleY  float64 // logical Y scale (1 = 100%)
 	OriginX float64 // X origin (0 = left; 0.5 = center; 1 = right)
 	OriginY float64 // Y origin (0 = top; 0.5 = middle; 1 = bottom)
 	OffsetX float64 // offset origin X (in pixels)
 	OffsetY float64 // offset origin Y (in pixels)
-	Image   *ebiten.Image
-	// DrawDisabled bool // if true, the SpriteSystem will not draw this
+	image   *ebiten.Image
 
-	lastImage *ebiten.Image // lastImage exists to keep track of the public Image field, if it
-	// changes, the imageWidth and ImageHeight needs to be recalculated.
+	// is recalculated if image is set:
+
 	imageWidth  float64 // last calculated image width
 	imageHeight float64 // last calculated image height
-	//
-	//transformMatrix GeoMatrix
-	//localMatrix     GeoMatrix
-	//localColor      ColorMatrix
-	//compositeMode   *ebiten.CompositeMode
+	opt         *ebiten.DrawImageOptions
 }
+
+func getImageSize(img *ebiten.Image) (w, h float64) {
+	if img == nil {
+		return 0, 0
+	}
+	iw, ih := img.Size()
+	return float64(iw), float64(ih)
+}
+
+// NewSprite creates a new sprite (component data)
+func NewSprite(x, y float64, quad *ebiten.Image) Sprite {
+	iw, ih := getImageSize(quad)
+	return Sprite{
+		x:           x,
+		y:           y,
+		scaleX:      1,
+		scaleY:      1,
+		image:       quad,
+		imageWidth:  iw,
+		imageHeight: ih,
+		opt:         &ebiten.DrawImageOptions{},
+	}
+}
+
+// public setters/getters
+
+// X gets the local x position. Overrided by the transform
+func (s *Sprite) X() float64 {
+	return s.x
+}
+
+// Y gets the local y position. Overrided by the transform
+func (s *Sprite) Y() float64 {
+	return s.y
+}
+
+func (s *Sprite) SetX(x float64) *Sprite {
+	s.x = x
+	return s
+}
+
+func (s *Sprite) SetY(y float64) *Sprite {
+	s.y = y
+	return s
+}
+
+// Angle gets the local angle (radians).
+// It is overrided by the transform component.
+func (s *Sprite) Angle() float64 {
+	return s.angle
+}
+
+func (s *Sprite) SetAngle(r float64) *Sprite {
+	s.angle = r
+	return s
+}
+
+func (s *Sprite) ScaleX() float64 {
+	return s.scaleX
+}
+
+func (s *Sprite) SetScaleX(sx float64) *Sprite {
+	s.scaleX = sx
+	return s
+}
+
+func (s *Sprite) ScaleY() float64 {
+	return s.scaleY
+}
+
+func (s *Sprite) SetScaleY(sy float64) *Sprite {
+	s.scaleY = sy
+	return s
+}
+
+func (s *Sprite) Image() *ebiten.Image {
+	return s.image
+}
+
+func (s *Sprite) SetImage(img *ebiten.Image) *Sprite {
+	s.image = img
+	s.imageWidth, s.imageHeight = getImageSize(img)
+	return s
+}
+
+func (s *Sprite) Draw(ctx DrawCtx, d *Drawable) {
+	if d == nil {
+		return
+	}
+
+}
+
+func (s *Sprite) setGeo(m ebiten.GeoM) {
+	s.opt.GeoM = m
+}
+
+// func (s *Sprite) setDebugGeo(m ebiten.GeoM) {
+// 	s.opt.GeoM = m
+// }
 
 //go:generate ecsgen -n Sprite -p core -o sprite_component.go --component-tpl --vars "UUID=80C95DEC-DBBF-4529-BD27-739A69055BA0"
 
@@ -62,13 +156,9 @@ func (s *DrawableSpriteSystem) onEntityRemoved(e ecs.Entity) {
 
 }
 
-func (s *DrawableSpriteSystem) DrawPriority(ctx DrawCtx) {
+func (s *DrawableSpriteSystem) DrawPriority(ctx DrawCtx) {}
 
-}
-
-func (s *DrawableSpriteSystem) Draw(ctx DrawCtx) {
-
-}
+func (s *DrawableSpriteSystem) Draw(ctx DrawCtx) {}
 
 // if Debug is TRUE
 func (s *DrawableSpriteSystem) DebugDraw(ctx DrawCtx) {
@@ -87,32 +177,20 @@ func (s *DrawableSpriteSystem) DebugDraw(ctx DrawCtx) {
 	}
 }
 
-func (s *DrawableSpriteSystem) UpdatePriority(ctx UpdateCtx) {
-
-}
+func (s *DrawableSpriteSystem) UpdatePriority(ctx UpdateCtx) {}
 
 func (s *DrawableSpriteSystem) Update(ctx UpdateCtx) {
 	for _, v := range s.V().Matches() {
-		if v.Sprite.lastImage != v.Sprite.Image {
-			v.Sprite.lastImage = v.Sprite.Image
-			if v.Sprite.Image == nil {
-				v.Sprite.imageWidth = 0
-				v.Sprite.imageHeight = 0
-			} else {
-				iw, ih := v.Sprite.Image.Size()
-				v.Sprite.imageWidth = float64(iw)
-				v.Sprite.imageHeight = float64(ih)
-			}
-		}
+		//v.Sprite.opt.GeoM.Reset()
 		v.Drawable.opt.GeoM.Reset()
 		v.Drawable.opt.GeoM.Translate(applyOrigin(v.Sprite.imageWidth, v.Sprite.OriginX)+v.Sprite.OffsetX, applyOrigin(v.Sprite.imageHeight, v.Sprite.OriginY)+v.Sprite.OffsetY)
 		if v.Drawable.concatset {
 			v.Drawable.opt.GeoM.Concat(v.Drawable.concatm)
 		} else {
 			v.Drawable.concatm.Reset()
-			v.Drawable.concatm.Scale(v.Sprite.ScaleX, v.Sprite.ScaleY)
-			v.Drawable.concatm.Rotate(v.Sprite.Angle)
-			v.Drawable.concatm.Translate(v.Sprite.X, v.Sprite.Y)
+			v.Drawable.concatm.Scale(v.Sprite.scaleX, v.Sprite.scaleY)
+			v.Drawable.concatm.Rotate(v.Sprite.angle)
+			v.Drawable.concatm.Translate(v.Sprite.x, v.Sprite.y)
 			v.Drawable.opt.GeoM.Concat(v.Drawable.concatm)
 		}
 	}
