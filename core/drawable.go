@@ -15,9 +15,6 @@ type DrawableObj interface {
 
 // Drawable is the component that controls drawing to the ebiten screen
 type Drawable struct {
-	img       *ebiten.Image
-	opt       *ebiten.DrawImageOptions
-	disabled  bool
 	concatm   ebiten.GeoM
 	concatset bool
 	drawer    DrawableObj
@@ -27,19 +24,23 @@ type Drawable struct {
 func (d *Drawable) Draw(ctx DrawCtx) {
 	if d.drawer != nil {
 		d.drawer.Draw(ctx, d)
-		return
 	}
-	d.defaultDraw(ctx)
 }
 
-func (d *Drawable) defaultDraw(ctx DrawCtx) {
-	if d.disabled {
-		return
+func (d *Drawable) SetConcatM(m ebiten.GeoM) {
+	d.concatm = m
+	d.concatset = true
+}
+
+// G returns the concatm (if set by a *Transform) or a pre calculated matrix using
+// sx, sy (scale)
+// r (radians)
+// x, y position
+func (d *Drawable) G(sx, sy, r, x, y float64) ebiten.GeoM {
+	if d.concatset {
+		return d.concatm
 	}
-	if d.img == nil || d.opt == nil {
-		return
-	}
-	ctx.Renderer().DrawImageRaw(d.img, d.opt)
+	return GeoM().Scale(sx, sy).Rotate(r).Translate(x, y).MV()
 }
 
 //go:generate ecsgen -n Drawable -p core -o drawable_component.go --component-tpl --vars "UUID=E3086C37-F0F5-4BFD-8FEE-F9C451B1E57E"
@@ -73,9 +74,6 @@ func (s *SoloDrawableSystem) DrawPriority(ctx DrawCtx) {}
 // Draw all solo drawables ordered by entity ID
 func (s *SoloDrawableSystem) Draw(ctx DrawCtx) {
 	for _, v := range s.V().Matches() {
-		if v.Drawable.disabled {
-			continue
-		}
 		v.Drawable.Draw(ctx)
 	}
 }
@@ -124,9 +122,6 @@ func (s *DrawLayerDrawableSystem) Draw(ctx DrawCtx) {
 	for _, l := range s.layers.All() {
 		l.Items.Each(func(key ecs.Entity, value SLVal) bool {
 			cache := value.(*drawLayerItemCache)
-			if cache.Drawable.disabled {
-				return true
-			}
 			cache.Drawable.Draw(ctx)
 			return true
 		})

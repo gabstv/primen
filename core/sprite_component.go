@@ -3,11 +3,12 @@
 package core
 
 import (
-    
     "sort"
+    
 
     "github.com/gabstv/ecs/v2"
 )
+
 
 
 
@@ -23,10 +24,36 @@ type drawerSpriteComponent struct {
     Data   Sprite
 }
 
+// WatchSprite is a helper struct to access a valid pointer of Sprite
+type WatchSprite interface {
+    Entity() ecs.Entity
+    Data() *Sprite
+}
+
 type slcdrawerSpriteComponent []drawerSpriteComponent
 func (a slcdrawerSpriteComponent) Len() int           { return len(a) }
 func (a slcdrawerSpriteComponent) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a slcdrawerSpriteComponent) Less(i, j int) bool { return a[i].Entity < a[j].Entity }
+
+
+type mWatchSprite struct {
+    c *SpriteComponent
+    entity ecs.Entity
+}
+
+func (w *mWatchSprite) Entity() ecs.Entity {
+    return w.entity
+}
+
+func (w *mWatchSprite) Data() *Sprite {
+    
+    
+    id := w.c.indexof(w.entity)
+    if id == -1 {
+        return nil
+    }
+    return &w.c.data[id].Data
+}
 
 // SpriteComponent implements ecs.BaseComponent
 type SpriteComponent struct {
@@ -51,6 +78,16 @@ func SetSpriteComponentData(w ecs.BaseWorld, e ecs.Entity, data Sprite) {
 // GetSpriteComponentData gets the *Sprite of Entity e
 func GetSpriteComponentData(w ecs.BaseWorld, e ecs.Entity) *Sprite {
     return GetSpriteComponent(w).Data(e)
+}
+
+// WatchSpriteComponentData gets a pointer getter of an entity's Sprite.
+//
+// The pointer must not be stored because it may become invalid overtime.
+func WatchSpriteComponentData(w ecs.BaseWorld, e ecs.Entity) WatchSprite {
+    return &mWatchSprite{
+        c: GetSpriteComponent(w),
+        entity: e,
+    }
 }
 
 // UUID implements ecs.BaseComponent
@@ -105,11 +142,23 @@ func (c *SpriteComponent) Upsert(e ecs.Entity, data interface{}) {
         }
     }
     
-    c.world.CAdded(e, c, c.wkey)
     if rsz {
+        
         c.world.CResized(c, c.wkey)
+        c.world.Dispatch(ecs.Event{
+            Type: ecs.EvtComponentsResized,
+            ComponentName: "SpriteComponent",
+            ComponentID: "80C95DEC-DBBF-4529-BD27-739A69055BA0",
+        })
     }
-    
+    c.onAdd(e)
+    c.world.CAdded(e, c, c.wkey)
+    c.world.Dispatch(ecs.Event{
+        Type: ecs.EvtComponentAdded,
+        ComponentName: "SpriteComponent",
+        ComponentID: "80C95DEC-DBBF-4529-BD27-739A69055BA0",
+        Entity: e,
+    })
 }
 
 // Remove a Sprite data from entity e
@@ -122,11 +171,17 @@ func (c *SpriteComponent) Remove(e ecs.Entity) {
     if i == -1 {
         return
     }
-    
+    c.beforeRemove(e)
     //c.data = append(c.data[:i], c.data[i+1:]...)
     c.data = c.data[:i+copy(c.data[i:], c.data[i+1:])]
     c.world.CRemoved(e, c, c.wkey)
     
+    c.world.Dispatch(ecs.Event{
+        Type: ecs.EvtComponentRemoved,
+        ComponentName: "SpriteComponent",
+        ComponentID: "80C95DEC-DBBF-4529-BD27-739A69055BA0",
+        Entity: e,
+    })
 }
 
 func (c *SpriteComponent) Data(e ecs.Entity) *Sprite {

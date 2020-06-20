@@ -3,11 +3,12 @@
 package core
 
 import (
-    
     "sort"
+    
 
     "github.com/gabstv/ecs/v2"
 )
+
 
 
 
@@ -23,10 +24,36 @@ type drawerLabelComponent struct {
     Data   Label
 }
 
+// WatchLabel is a helper struct to access a valid pointer of Label
+type WatchLabel interface {
+    Entity() ecs.Entity
+    Data() *Label
+}
+
 type slcdrawerLabelComponent []drawerLabelComponent
 func (a slcdrawerLabelComponent) Len() int           { return len(a) }
 func (a slcdrawerLabelComponent) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a slcdrawerLabelComponent) Less(i, j int) bool { return a[i].Entity < a[j].Entity }
+
+
+type mWatchLabel struct {
+    c *LabelComponent
+    entity ecs.Entity
+}
+
+func (w *mWatchLabel) Entity() ecs.Entity {
+    return w.entity
+}
+
+func (w *mWatchLabel) Data() *Label {
+    
+    
+    id := w.c.indexof(w.entity)
+    if id == -1 {
+        return nil
+    }
+    return &w.c.data[id].Data
+}
 
 // LabelComponent implements ecs.BaseComponent
 type LabelComponent struct {
@@ -51,6 +78,16 @@ func SetLabelComponentData(w ecs.BaseWorld, e ecs.Entity, data Label) {
 // GetLabelComponentData gets the *Label of Entity e
 func GetLabelComponentData(w ecs.BaseWorld, e ecs.Entity) *Label {
     return GetLabelComponent(w).Data(e)
+}
+
+// WatchLabelComponentData gets a pointer getter of an entity's Label.
+//
+// The pointer must not be stored because it may become invalid overtime.
+func WatchLabelComponentData(w ecs.BaseWorld, e ecs.Entity) WatchLabel {
+    return &mWatchLabel{
+        c: GetLabelComponent(w),
+        entity: e,
+    }
 }
 
 // UUID implements ecs.BaseComponent
@@ -105,11 +142,23 @@ func (c *LabelComponent) Upsert(e ecs.Entity, data interface{}) {
         }
     }
     
-    c.world.CAdded(e, c, c.wkey)
     if rsz {
+        
         c.world.CResized(c, c.wkey)
+        c.world.Dispatch(ecs.Event{
+            Type: ecs.EvtComponentsResized,
+            ComponentName: "LabelComponent",
+            ComponentID: "1A74D1BE-BBF7-44F4-AC8B-18A00208EB76",
+        })
     }
-    
+    c.onAdd(e)
+    c.world.CAdded(e, c, c.wkey)
+    c.world.Dispatch(ecs.Event{
+        Type: ecs.EvtComponentAdded,
+        ComponentName: "LabelComponent",
+        ComponentID: "1A74D1BE-BBF7-44F4-AC8B-18A00208EB76",
+        Entity: e,
+    })
 }
 
 // Remove a Label data from entity e
@@ -122,11 +171,17 @@ func (c *LabelComponent) Remove(e ecs.Entity) {
     if i == -1 {
         return
     }
-    
+    c.beforeRemove(e)
     //c.data = append(c.data[:i], c.data[i+1:]...)
     c.data = c.data[:i+copy(c.data[i:], c.data[i+1:])]
     c.world.CRemoved(e, c, c.wkey)
     
+    c.world.Dispatch(ecs.Event{
+        Type: ecs.EvtComponentRemoved,
+        ComponentName: "LabelComponent",
+        ComponentID: "1A74D1BE-BBF7-44F4-AC8B-18A00208EB76",
+        Entity: e,
+    })
 }
 
 func (c *LabelComponent) Data(e ecs.Entity) *Label {

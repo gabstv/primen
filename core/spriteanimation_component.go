@@ -3,11 +3,12 @@
 package core
 
 import (
-    
     "sort"
+    
 
     "github.com/gabstv/ecs/v2"
 )
+
 
 
 
@@ -23,10 +24,36 @@ type drawerSpriteAnimationComponent struct {
     Data   SpriteAnimation
 }
 
+// WatchSpriteAnimation is a helper struct to access a valid pointer of SpriteAnimation
+type WatchSpriteAnimation interface {
+    Entity() ecs.Entity
+    Data() *SpriteAnimation
+}
+
 type slcdrawerSpriteAnimationComponent []drawerSpriteAnimationComponent
 func (a slcdrawerSpriteAnimationComponent) Len() int           { return len(a) }
 func (a slcdrawerSpriteAnimationComponent) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a slcdrawerSpriteAnimationComponent) Less(i, j int) bool { return a[i].Entity < a[j].Entity }
+
+
+type mWatchSpriteAnimation struct {
+    c *SpriteAnimationComponent
+    entity ecs.Entity
+}
+
+func (w *mWatchSpriteAnimation) Entity() ecs.Entity {
+    return w.entity
+}
+
+func (w *mWatchSpriteAnimation) Data() *SpriteAnimation {
+    
+    
+    id := w.c.indexof(w.entity)
+    if id == -1 {
+        return nil
+    }
+    return &w.c.data[id].Data
+}
 
 // SpriteAnimationComponent implements ecs.BaseComponent
 type SpriteAnimationComponent struct {
@@ -51,6 +78,16 @@ func SetSpriteAnimationComponentData(w ecs.BaseWorld, e ecs.Entity, data SpriteA
 // GetSpriteAnimationComponentData gets the *SpriteAnimation of Entity e
 func GetSpriteAnimationComponentData(w ecs.BaseWorld, e ecs.Entity) *SpriteAnimation {
     return GetSpriteAnimationComponent(w).Data(e)
+}
+
+// WatchSpriteAnimationComponentData gets a pointer getter of an entity's SpriteAnimation.
+//
+// The pointer must not be stored because it may become invalid overtime.
+func WatchSpriteAnimationComponentData(w ecs.BaseWorld, e ecs.Entity) WatchSpriteAnimation {
+    return &mWatchSpriteAnimation{
+        c: GetSpriteAnimationComponent(w),
+        entity: e,
+    }
 }
 
 // UUID implements ecs.BaseComponent
@@ -105,11 +142,23 @@ func (c *SpriteAnimationComponent) Upsert(e ecs.Entity, data interface{}) {
         }
     }
     
-    c.world.CAdded(e, c, c.wkey)
     if rsz {
+        
         c.world.CResized(c, c.wkey)
+        c.world.Dispatch(ecs.Event{
+            Type: ecs.EvtComponentsResized,
+            ComponentName: "SpriteAnimationComponent",
+            ComponentID: "5A056275-C47D-44D2-994C-BD0AF107870C",
+        })
     }
     
+    c.world.CAdded(e, c, c.wkey)
+    c.world.Dispatch(ecs.Event{
+        Type: ecs.EvtComponentAdded,
+        ComponentName: "SpriteAnimationComponent",
+        ComponentID: "5A056275-C47D-44D2-994C-BD0AF107870C",
+        Entity: e,
+    })
 }
 
 // Remove a SpriteAnimation data from entity e
@@ -127,6 +176,12 @@ func (c *SpriteAnimationComponent) Remove(e ecs.Entity) {
     c.data = c.data[:i+copy(c.data[i:], c.data[i+1:])]
     c.world.CRemoved(e, c, c.wkey)
     
+    c.world.Dispatch(ecs.Event{
+        Type: ecs.EvtComponentRemoved,
+        ComponentName: "SpriteAnimationComponent",
+        ComponentID: "5A056275-C47D-44D2-994C-BD0AF107870C",
+        Entity: e,
+    })
 }
 
 func (c *SpriteAnimationComponent) Data(e ecs.Entity) *SpriteAnimation {

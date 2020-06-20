@@ -3,11 +3,12 @@
 package core
 
 import (
-    
     "sort"
+    
 
     "github.com/gabstv/ecs/v2"
 )
+
 
 
 
@@ -23,10 +24,36 @@ type drawerFunctionComponent struct {
     Data   Function
 }
 
+// WatchFunction is a helper struct to access a valid pointer of Function
+type WatchFunction interface {
+    Entity() ecs.Entity
+    Data() *Function
+}
+
 type slcdrawerFunctionComponent []drawerFunctionComponent
 func (a slcdrawerFunctionComponent) Len() int           { return len(a) }
 func (a slcdrawerFunctionComponent) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a slcdrawerFunctionComponent) Less(i, j int) bool { return a[i].Entity < a[j].Entity }
+
+
+type mWatchFunction struct {
+    c *FunctionComponent
+    entity ecs.Entity
+}
+
+func (w *mWatchFunction) Entity() ecs.Entity {
+    return w.entity
+}
+
+func (w *mWatchFunction) Data() *Function {
+    
+    
+    id := w.c.indexof(w.entity)
+    if id == -1 {
+        return nil
+    }
+    return &w.c.data[id].Data
+}
 
 // FunctionComponent implements ecs.BaseComponent
 type FunctionComponent struct {
@@ -51,6 +78,16 @@ func SetFunctionComponentData(w ecs.BaseWorld, e ecs.Entity, data Function) {
 // GetFunctionComponentData gets the *Function of Entity e
 func GetFunctionComponentData(w ecs.BaseWorld, e ecs.Entity) *Function {
     return GetFunctionComponent(w).Data(e)
+}
+
+// WatchFunctionComponentData gets a pointer getter of an entity's Function.
+//
+// The pointer must not be stored because it may become invalid overtime.
+func WatchFunctionComponentData(w ecs.BaseWorld, e ecs.Entity) WatchFunction {
+    return &mWatchFunction{
+        c: GetFunctionComponent(w),
+        entity: e,
+    }
 }
 
 // UUID implements ecs.BaseComponent
@@ -105,11 +142,23 @@ func (c *FunctionComponent) Upsert(e ecs.Entity, data interface{}) {
         }
     }
     
-    c.world.CAdded(e, c, c.wkey)
     if rsz {
+        
         c.world.CResized(c, c.wkey)
+        c.world.Dispatch(ecs.Event{
+            Type: ecs.EvtComponentsResized,
+            ComponentName: "FunctionComponent",
+            ComponentID: "C1A2F07B-6EB2-4F83-B20B-0138073786BA",
+        })
     }
     
+    c.world.CAdded(e, c, c.wkey)
+    c.world.Dispatch(ecs.Event{
+        Type: ecs.EvtComponentAdded,
+        ComponentName: "FunctionComponent",
+        ComponentID: "C1A2F07B-6EB2-4F83-B20B-0138073786BA",
+        Entity: e,
+    })
 }
 
 // Remove a Function data from entity e
@@ -127,6 +176,12 @@ func (c *FunctionComponent) Remove(e ecs.Entity) {
     c.data = c.data[:i+copy(c.data[i:], c.data[i+1:])]
     c.world.CRemoved(e, c, c.wkey)
     
+    c.world.Dispatch(ecs.Event{
+        Type: ecs.EvtComponentRemoved,
+        ComponentName: "FunctionComponent",
+        ComponentID: "C1A2F07B-6EB2-4F83-B20B-0138073786BA",
+        Entity: e,
+    })
 }
 
 func (c *FunctionComponent) Data(e ecs.Entity) *Function {

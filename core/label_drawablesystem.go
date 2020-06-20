@@ -200,6 +200,7 @@ func (s *DrawableLabelSystem) ComponentRemoved(e ecs.Entity, eflag ecs.Flag) {
 func (s *DrawableLabelSystem) ComponentResized(cflag ecs.Flag) {
     if s.resizematch(cflag) {
         s.view.rescan()
+        s.onResize()
     }
 }
 

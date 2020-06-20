@@ -113,7 +113,7 @@ func (v *viewDrawableTileSetSystem) rescan() {
         x.TileSet = GetTileSetComponent(v.world).Data(e)
         
         _ = e
-        v.onRescan(e,x)
+        
     }
 }
 
@@ -200,6 +200,7 @@ func (s *DrawableTileSetSystem) ComponentRemoved(e ecs.Entity, eflag ecs.Flag) {
 func (s *DrawableTileSetSystem) ComponentResized(cflag ecs.Flag) {
     if s.resizematch(cflag) {
         s.view.rescan()
+        s.onResize()
     }
 }
 

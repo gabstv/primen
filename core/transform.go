@@ -7,22 +7,107 @@ import (
 
 // Transform is a hierarchy based matrix
 type Transform struct {
-	Parent ecs.Entity
-	X      float64
-	Y      float64
-	Angle  float64
-	ScaleX float64
-	ScaleY float64
+	x      float64
+	y      float64
+	angle  float64
+	scaleX float64
+	scaleY float64
 
 	// priv
-	lastTick    uint64
-	lastParent  ecs.Entity
-	lastParentT *Transform
+	lastTick uint64
+	pentity  ecs.Entity
+	parent   *Transform
 	// calculated transform matrix (Ebiten)
 	m ebiten.GeoM
+	// copy the current world
+	// this is set once the component is created
+	w ecs.BaseWorld
 }
 
-//go:generate ecsgen -n Transform -p core -o transform_component.go --component-tpl --vars "UUID=45E8849D-7EA9-4CDC-8AB1-86DB8705C253"
+func NewTransform(x, y float64) Transform {
+	return Transform{
+		x:      x,
+		y:      y,
+		scaleX: 1,
+		scaleY: 1,
+	}
+}
+
+func (t *Transform) SetParent(e ecs.Entity) bool {
+	pt := GetTransformComponentData(t.w, e)
+	if pt == nil {
+		return false
+	}
+	//TODO: check cyclic transform parenting
+	t.pentity = e
+	t.parent = pt
+	return true
+}
+
+func (t *Transform) Parent() ecs.Entity {
+	return t.pentity
+}
+
+func (t *Transform) ParentTransform() *Transform {
+	return t.parent
+}
+
+func (t *Transform) SetX(x float64) *Transform {
+	t.x = x
+	return t
+}
+
+func (t *Transform) SetY(y float64) *Transform {
+	t.y = y
+	return t
+}
+
+func (t *Transform) X() float64 {
+	return t.x
+}
+
+func (t *Transform) Y() float64 {
+	return t.y
+}
+
+// SetAngle sets the angle (in radians)
+func (t *Transform) SetAngle(r float64) *Transform {
+	t.angle = r
+	return t
+}
+
+//go:generate ecsgen -n Transform -p core -o transform_component.go --component-tpl --vars "UUID=45E8849D-7EA9-4CDC-8AB1-86DB8705C253" --vars "OnAdd=c.setupTransform(e)" --vars "OnResize=c.resized()" --vars "OnRemove=c.removed(e)"
+
+func (c *TransformComponent) setupTransform(e ecs.Entity) {
+	d := c.Data(e)
+	d.w = c.world
+}
+
+func (c *TransformComponent) resized() {
+	for _, v := range c.data {
+		if v.Data.pentity == 0 {
+			v.Data.parent = nil
+		} else {
+			x := &v.Data
+			if d := c.Data(x.pentity); d != nil {
+				x.parent = d
+			} else {
+				x.pentity = 0
+				x.parent = nil
+			}
+		}
+	}
+}
+
+func (c *TransformComponent) removed(e ecs.Entity) {
+	for _, v := range c.data {
+		if v.Data.pentity == e {
+			x := &v.Data
+			x.parent = nil
+			x.pentity = 0
+		}
+	}
+}
 
 //go:generate ecsgen -n Transform -p core -o transform_system.go --system-tpl --vars "EntityAdded=s.onEntityAdded(e)" --vars "EntityRemoved=s.onEntityRemoved(e)" --vars "Setup=s.setupTransforms()" --vars "Priority=100" --vars "UUID=486FA1E8-4C45-48F2-AD8A-02D84C4426C9" --components "Transform" --members "tick=uint64"
 
@@ -40,8 +125,8 @@ func (s *TransformSystem) onEntityAdded(e ecs.Entity) {
 
 func (s *TransformSystem) onEntityRemoved(e ecs.Entity) {
 	for _, v := range s.V().Matches() {
-		if v.Transform.lastParent == e {
-			v.Transform.lastParentT = nil
+		if v.Transform.pentity == e {
+			v.Transform.parent = nil
 		}
 	}
 }
@@ -50,40 +135,19 @@ func (s *TransformSystem) setupTransforms() {
 	s.tick = 0
 }
 
-func (s *TransformSystem) DrawPriority(ctx DrawCtx) {
-	// noop
-}
+// DrawPriority noop
+func (s *TransformSystem) DrawPriority(ctx DrawCtx) {}
 
-func (s *TransformSystem) Draw(ctx DrawCtx) {
-	// noop
-}
+// Draw noop
+func (s *TransformSystem) Draw(ctx DrawCtx) {}
 
-func (s *TransformSystem) UpdatePriority(ctx UpdateCtx) {
+// UpdatePriority noop
+func (s *TransformSystem) UpdatePriority(ctx UpdateCtx) {}
 
-}
-
+// Update calculates all transform matrices
 func (s *TransformSystem) Update(ctx UpdateCtx) {
 	tick := s.tick
 	s.tick++
-
-	for _, v := range s.V().Matches() {
-		if v.Transform.lastParent != v.Transform.Parent {
-			if v.Transform.Parent == 0 {
-				v.Transform.lastParentT = nil
-			} else {
-				vd, ok := s.V().Fetch(v.Transform.Parent)
-				if !ok {
-					// invalid entity passed!
-					v.Transform.lastParentT = nil
-					v.Transform.Parent = 0
-				} else {
-					v.Transform.lastParentT = vd.Transform
-				}
-			}
-		}
-		v.Transform.lastParent = v.Transform.Parent
-	}
-
 	//
 	for _, v := range s.V().Matches() {
 		_ = resolveTransform(v.Transform, tick)
@@ -94,8 +158,6 @@ type transformCache struct {
 	M ebiten.GeoM
 }
 
-func resolveCache(t *Transform)
-
 func resolveTransform(t *Transform, tick uint64) ebiten.GeoM {
 	if t == nil {
 		return ebiten.GeoM{}
@@ -103,11 +165,11 @@ func resolveTransform(t *Transform, tick uint64) ebiten.GeoM {
 	if t.lastTick == tick {
 		return t.m
 	}
-	parent := resolveTransform(t.lastParentT, tick)
+	parent := resolveTransform(t.parent, tick)
 	t.m = ebiten.GeoM{}
-	t.m.Scale(t.ScaleX, t.ScaleY)
-	t.m.Rotate(t.Angle)
-	t.m.Translate(t.X, t.Y)
+	t.m.Scale(t.scaleX, t.scaleY)
+	t.m.Rotate(t.angle)
+	t.m.Translate(t.x, t.y)
 	t.m.Concat(parent)
 	t.lastTick = tick
 	return t.m
@@ -125,6 +187,8 @@ var matchDrawableTransformSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
 	return true
 }
 
+// The DrawableTransformSystem's View needs to be recalculated if the
+// Drawable or Transform component arrays change.
 var resizematchDrawableTransformSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
 	if f.Contains(GetTransformComponent(w).Flag()) {
 		return true
@@ -135,21 +199,18 @@ var resizematchDrawableTransformSystem = func(f ecs.Flag, w ecs.BaseWorld) bool 
 	return false
 }
 
-func (s *DrawableTransformSystem) DrawPriority(ctx DrawCtx) {
-	// noop
-}
+// DrawPriority noop
+func (s *DrawableTransformSystem) DrawPriority(ctx DrawCtx) {}
 
-func (s *DrawableTransformSystem) Draw(ctx DrawCtx) {
-	// noop
-}
+// Draw noop
+func (s *DrawableTransformSystem) Draw(ctx DrawCtx) {}
 
-func (s *DrawableTransformSystem) UpdatePriority(ctx UpdateCtx) {
+// UpdatePriority noop
+func (s *DrawableTransformSystem) UpdatePriority(ctx UpdateCtx) {}
 
-}
-
+// Update sets the drawable transform
 func (s *DrawableTransformSystem) Update(ctx UpdateCtx) {
 	for _, v := range s.V().Matches() {
-		v.Drawable.concatm = v.Transform.m
-		v.Drawable.concatset = true
+		v.Drawable.SetConcatM(v.Transform.m)
 	}
 }

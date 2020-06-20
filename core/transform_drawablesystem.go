@@ -200,6 +200,7 @@ func (s *DrawableTransformSystem) ComponentRemoved(e ecs.Entity, eflag ecs.Flag)
 func (s *DrawableTransformSystem) ComponentResized(cflag ecs.Flag) {
     if s.resizematch(cflag) {
         s.view.rescan()
+        
     }
 }
 

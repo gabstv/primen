@@ -3,11 +3,12 @@
 package core
 
 import (
-    
     "sort"
+    
 
     "github.com/gabstv/ecs/v2"
 )
+
 
 
 
@@ -23,10 +24,36 @@ type drawerDrawLayerComponent struct {
     Data   DrawLayer
 }
 
+// WatchDrawLayer is a helper struct to access a valid pointer of DrawLayer
+type WatchDrawLayer interface {
+    Entity() ecs.Entity
+    Data() *DrawLayer
+}
+
 type slcdrawerDrawLayerComponent []drawerDrawLayerComponent
 func (a slcdrawerDrawLayerComponent) Len() int           { return len(a) }
 func (a slcdrawerDrawLayerComponent) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a slcdrawerDrawLayerComponent) Less(i, j int) bool { return a[i].Entity < a[j].Entity }
+
+
+type mWatchDrawLayer struct {
+    c *DrawLayerComponent
+    entity ecs.Entity
+}
+
+func (w *mWatchDrawLayer) Entity() ecs.Entity {
+    return w.entity
+}
+
+func (w *mWatchDrawLayer) Data() *DrawLayer {
+    
+    
+    id := w.c.indexof(w.entity)
+    if id == -1 {
+        return nil
+    }
+    return &w.c.data[id].Data
+}
 
 // DrawLayerComponent implements ecs.BaseComponent
 type DrawLayerComponent struct {
@@ -51,6 +78,16 @@ func SetDrawLayerComponentData(w ecs.BaseWorld, e ecs.Entity, data DrawLayer) {
 // GetDrawLayerComponentData gets the *DrawLayer of Entity e
 func GetDrawLayerComponentData(w ecs.BaseWorld, e ecs.Entity) *DrawLayer {
     return GetDrawLayerComponent(w).Data(e)
+}
+
+// WatchDrawLayerComponentData gets a pointer getter of an entity's DrawLayer.
+//
+// The pointer must not be stored because it may become invalid overtime.
+func WatchDrawLayerComponentData(w ecs.BaseWorld, e ecs.Entity) WatchDrawLayer {
+    return &mWatchDrawLayer{
+        c: GetDrawLayerComponent(w),
+        entity: e,
+    }
 }
 
 // UUID implements ecs.BaseComponent
@@ -105,11 +142,23 @@ func (c *DrawLayerComponent) Upsert(e ecs.Entity, data interface{}) {
         }
     }
     
-    c.world.CAdded(e, c, c.wkey)
     if rsz {
+        
         c.world.CResized(c, c.wkey)
+        c.world.Dispatch(ecs.Event{
+            Type: ecs.EvtComponentsResized,
+            ComponentName: "DrawLayerComponent",
+            ComponentID: "2D35C735-7275-4195-A61F-F559F8346D46",
+        })
     }
     
+    c.world.CAdded(e, c, c.wkey)
+    c.world.Dispatch(ecs.Event{
+        Type: ecs.EvtComponentAdded,
+        ComponentName: "DrawLayerComponent",
+        ComponentID: "2D35C735-7275-4195-A61F-F559F8346D46",
+        Entity: e,
+    })
 }
 
 // Remove a DrawLayer data from entity e
@@ -127,6 +176,12 @@ func (c *DrawLayerComponent) Remove(e ecs.Entity) {
     c.data = c.data[:i+copy(c.data[i:], c.data[i+1:])]
     c.world.CRemoved(e, c, c.wkey)
     
+    c.world.Dispatch(ecs.Event{
+        Type: ecs.EvtComponentRemoved,
+        ComponentName: "DrawLayerComponent",
+        ComponentID: "2D35C735-7275-4195-A61F-F559F8346D46",
+        Entity: e,
+    })
 }
 
 func (c *DrawLayerComponent) Data(e ecs.Entity) *DrawLayer {

@@ -3,11 +3,12 @@
 package core
 
 import (
-    
     "sort"
+    
 
     "github.com/gabstv/ecs/v2"
 )
+
 
 
 
@@ -23,10 +24,36 @@ type drawerDrawableComponent struct {
     Data   Drawable
 }
 
+// WatchDrawable is a helper struct to access a valid pointer of Drawable
+type WatchDrawable interface {
+    Entity() ecs.Entity
+    Data() *Drawable
+}
+
 type slcdrawerDrawableComponent []drawerDrawableComponent
 func (a slcdrawerDrawableComponent) Len() int           { return len(a) }
 func (a slcdrawerDrawableComponent) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a slcdrawerDrawableComponent) Less(i, j int) bool { return a[i].Entity < a[j].Entity }
+
+
+type mWatchDrawable struct {
+    c *DrawableComponent
+    entity ecs.Entity
+}
+
+func (w *mWatchDrawable) Entity() ecs.Entity {
+    return w.entity
+}
+
+func (w *mWatchDrawable) Data() *Drawable {
+    
+    
+    id := w.c.indexof(w.entity)
+    if id == -1 {
+        return nil
+    }
+    return &w.c.data[id].Data
+}
 
 // DrawableComponent implements ecs.BaseComponent
 type DrawableComponent struct {
@@ -51,6 +78,16 @@ func SetDrawableComponentData(w ecs.BaseWorld, e ecs.Entity, data Drawable) {
 // GetDrawableComponentData gets the *Drawable of Entity e
 func GetDrawableComponentData(w ecs.BaseWorld, e ecs.Entity) *Drawable {
     return GetDrawableComponent(w).Data(e)
+}
+
+// WatchDrawableComponentData gets a pointer getter of an entity's Drawable.
+//
+// The pointer must not be stored because it may become invalid overtime.
+func WatchDrawableComponentData(w ecs.BaseWorld, e ecs.Entity) WatchDrawable {
+    return &mWatchDrawable{
+        c: GetDrawableComponent(w),
+        entity: e,
+    }
 }
 
 // UUID implements ecs.BaseComponent
@@ -105,11 +142,23 @@ func (c *DrawableComponent) Upsert(e ecs.Entity, data interface{}) {
         }
     }
     
-    c.world.CAdded(e, c, c.wkey)
     if rsz {
+        
         c.world.CResized(c, c.wkey)
+        c.world.Dispatch(ecs.Event{
+            Type: ecs.EvtComponentsResized,
+            ComponentName: "DrawableComponent",
+            ComponentID: "E3086C37-F0F5-4BFD-8FEE-F9C451B1E57E",
+        })
     }
     
+    c.world.CAdded(e, c, c.wkey)
+    c.world.Dispatch(ecs.Event{
+        Type: ecs.EvtComponentAdded,
+        ComponentName: "DrawableComponent",
+        ComponentID: "E3086C37-F0F5-4BFD-8FEE-F9C451B1E57E",
+        Entity: e,
+    })
 }
 
 // Remove a Drawable data from entity e
@@ -127,6 +176,12 @@ func (c *DrawableComponent) Remove(e ecs.Entity) {
     c.data = c.data[:i+copy(c.data[i:], c.data[i+1:])]
     c.world.CRemoved(e, c, c.wkey)
     
+    c.world.Dispatch(ecs.Event{
+        Type: ecs.EvtComponentRemoved,
+        ComponentName: "DrawableComponent",
+        ComponentID: "E3086C37-F0F5-4BFD-8FEE-F9C451B1E57E",
+        Entity: e,
+    })
 }
 
 func (c *DrawableComponent) Data(e ecs.Entity) *Drawable {

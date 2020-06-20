@@ -202,6 +202,7 @@ func (s *DrawLayerDrawableSystem) ComponentRemoved(e ecs.Entity, eflag ecs.Flag)
 func (s *DrawLayerDrawableSystem) ComponentResized(cflag ecs.Flag) {
     if s.resizematch(cflag) {
         s.view.rescan()
+        
     }
 }
 

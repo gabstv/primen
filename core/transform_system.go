@@ -197,6 +197,7 @@ func (s *TransformSystem) ComponentRemoved(e ecs.Entity, eflag ecs.Flag) {
 func (s *TransformSystem) ComponentResized(cflag ecs.Flag) {
     if s.resizematch(cflag) {
         s.view.rescan()
+        
     }
 }
 

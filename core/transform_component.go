@@ -3,11 +3,12 @@
 package core
 
 import (
-    
     "sort"
+    
 
     "github.com/gabstv/ecs/v2"
 )
+
 
 
 
@@ -23,10 +24,36 @@ type drawerTransformComponent struct {
     Data   Transform
 }
 
+// WatchTransform is a helper struct to access a valid pointer of Transform
+type WatchTransform interface {
+    Entity() ecs.Entity
+    Data() *Transform
+}
+
 type slcdrawerTransformComponent []drawerTransformComponent
 func (a slcdrawerTransformComponent) Len() int           { return len(a) }
 func (a slcdrawerTransformComponent) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a slcdrawerTransformComponent) Less(i, j int) bool { return a[i].Entity < a[j].Entity }
+
+
+type mWatchTransform struct {
+    c *TransformComponent
+    entity ecs.Entity
+}
+
+func (w *mWatchTransform) Entity() ecs.Entity {
+    return w.entity
+}
+
+func (w *mWatchTransform) Data() *Transform {
+    
+    
+    id := w.c.indexof(w.entity)
+    if id == -1 {
+        return nil
+    }
+    return &w.c.data[id].Data
+}
 
 // TransformComponent implements ecs.BaseComponent
 type TransformComponent struct {
@@ -51,6 +78,16 @@ func SetTransformComponentData(w ecs.BaseWorld, e ecs.Entity, data Transform) {
 // GetTransformComponentData gets the *Transform of Entity e
 func GetTransformComponentData(w ecs.BaseWorld, e ecs.Entity) *Transform {
     return GetTransformComponent(w).Data(e)
+}
+
+// WatchTransformComponentData gets a pointer getter of an entity's Transform.
+//
+// The pointer must not be stored because it may become invalid overtime.
+func WatchTransformComponentData(w ecs.BaseWorld, e ecs.Entity) WatchTransform {
+    return &mWatchTransform{
+        c: GetTransformComponent(w),
+        entity: e,
+    }
 }
 
 // UUID implements ecs.BaseComponent
@@ -105,11 +142,23 @@ func (c *TransformComponent) Upsert(e ecs.Entity, data interface{}) {
         }
     }
     
-    c.world.CAdded(e, c, c.wkey)
     if rsz {
+        c.resized()
         c.world.CResized(c, c.wkey)
+        c.world.Dispatch(ecs.Event{
+            Type: ecs.EvtComponentsResized,
+            ComponentName: "TransformComponent",
+            ComponentID: "45E8849D-7EA9-4CDC-8AB1-86DB8705C253",
+        })
     }
-    
+    c.setupTransform(e)
+    c.world.CAdded(e, c, c.wkey)
+    c.world.Dispatch(ecs.Event{
+        Type: ecs.EvtComponentAdded,
+        ComponentName: "TransformComponent",
+        ComponentID: "45E8849D-7EA9-4CDC-8AB1-86DB8705C253",
+        Entity: e,
+    })
 }
 
 // Remove a Transform data from entity e
@@ -126,7 +175,13 @@ func (c *TransformComponent) Remove(e ecs.Entity) {
     //c.data = append(c.data[:i], c.data[i+1:]...)
     c.data = c.data[:i+copy(c.data[i:], c.data[i+1:])]
     c.world.CRemoved(e, c, c.wkey)
-    
+    c.removed(e)
+    c.world.Dispatch(ecs.Event{
+        Type: ecs.EvtComponentRemoved,
+        ComponentName: "TransformComponent",
+        ComponentID: "45E8849D-7EA9-4CDC-8AB1-86DB8705C253",
+        Entity: e,
+    })
 }
 
 func (c *TransformComponent) Data(e ecs.Entity) *Transform {

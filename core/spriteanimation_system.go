@@ -200,6 +200,7 @@ func (s *SpriteAnimationSystem) ComponentRemoved(e ecs.Entity, eflag ecs.Flag) {
 func (s *SpriteAnimationSystem) ComponentResized(cflag ecs.Flag) {
     if s.resizematch(cflag) {
         s.view.rescan()
+        
     }
 }
 

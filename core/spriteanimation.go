@@ -170,10 +170,10 @@ func (s *SpriteAnimationSystem) Update(ctx UpdateCtx) {
 		if v.SpriteAnimation.lastImage == nil {
 			continue
 		}
-		if v.Sprite.Image == v.SpriteAnimation.lastImage {
+		if v.Sprite.Image() == v.SpriteAnimation.lastImage {
 			continue
 		}
-		v.Sprite.Image = v.SpriteAnimation.lastImage
+		v.Sprite.SetImage(v.SpriteAnimation.lastImage)
 		offx, offy := v.SpriteAnimation.Anim.GetClipOffset(v.SpriteAnimation.ActiveClip, v.SpriteAnimation.ActiveFrame)
 		v.Sprite.OffsetX = offx
 		v.Sprite.OffsetY = offy

@@ -3,11 +3,12 @@
 package core
 
 import (
-    
     "sort"
+    
 
     "github.com/gabstv/ecs/v2"
 )
+
 
 
 
@@ -23,10 +24,36 @@ type drawerTileSetComponent struct {
     Data   TileSet
 }
 
+// WatchTileSet is a helper struct to access a valid pointer of TileSet
+type WatchTileSet interface {
+    Entity() ecs.Entity
+    Data() *TileSet
+}
+
 type slcdrawerTileSetComponent []drawerTileSetComponent
 func (a slcdrawerTileSetComponent) Len() int           { return len(a) }
 func (a slcdrawerTileSetComponent) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a slcdrawerTileSetComponent) Less(i, j int) bool { return a[i].Entity < a[j].Entity }
+
+
+type mWatchTileSet struct {
+    c *TileSetComponent
+    entity ecs.Entity
+}
+
+func (w *mWatchTileSet) Entity() ecs.Entity {
+    return w.entity
+}
+
+func (w *mWatchTileSet) Data() *TileSet {
+    
+    
+    id := w.c.indexof(w.entity)
+    if id == -1 {
+        return nil
+    }
+    return &w.c.data[id].Data
+}
 
 // TileSetComponent implements ecs.BaseComponent
 type TileSetComponent struct {
@@ -51,6 +78,16 @@ func SetTileSetComponentData(w ecs.BaseWorld, e ecs.Entity, data TileSet) {
 // GetTileSetComponentData gets the *TileSet of Entity e
 func GetTileSetComponentData(w ecs.BaseWorld, e ecs.Entity) *TileSet {
     return GetTileSetComponent(w).Data(e)
+}
+
+// WatchTileSetComponentData gets a pointer getter of an entity's TileSet.
+//
+// The pointer must not be stored because it may become invalid overtime.
+func WatchTileSetComponentData(w ecs.BaseWorld, e ecs.Entity) WatchTileSet {
+    return &mWatchTileSet{
+        c: GetTileSetComponent(w),
+        entity: e,
+    }
 }
 
 // UUID implements ecs.BaseComponent
@@ -105,11 +142,23 @@ func (c *TileSetComponent) Upsert(e ecs.Entity, data interface{}) {
         }
     }
     
-    c.world.CAdded(e, c, c.wkey)
     if rsz {
+        
         c.world.CResized(c, c.wkey)
+        c.world.Dispatch(ecs.Event{
+            Type: ecs.EvtComponentsResized,
+            ComponentName: "TileSetComponent",
+            ComponentID: "775FFA75-9F2F-423A-A905-D48E4D562AE8",
+        })
     }
     c.onAdd(e)
+    c.world.CAdded(e, c, c.wkey)
+    c.world.Dispatch(ecs.Event{
+        Type: ecs.EvtComponentAdded,
+        ComponentName: "TileSetComponent",
+        ComponentID: "775FFA75-9F2F-423A-A905-D48E4D562AE8",
+        Entity: e,
+    })
 }
 
 // Remove a TileSet data from entity e
@@ -127,6 +176,12 @@ func (c *TileSetComponent) Remove(e ecs.Entity) {
     c.data = c.data[:i+copy(c.data[i:], c.data[i+1:])]
     c.world.CRemoved(e, c, c.wkey)
     
+    c.world.Dispatch(ecs.Event{
+        Type: ecs.EvtComponentRemoved,
+        ComponentName: "TileSetComponent",
+        ComponentID: "775FFA75-9F2F-423A-A905-D48E4D562AE8",
+        Entity: e,
+    })
 }
 
 func (c *TileSetComponent) Data(e ecs.Entity) *TileSet {
