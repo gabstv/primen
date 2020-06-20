@@ -1,5 +1,7 @@
 package core
 
+import "github.com/hajimehoshi/ebiten"
+
 //FIXME: review
 
 type Context interface {
@@ -39,6 +41,7 @@ type ctxt struct {
 	frame int64
 	dt    float64
 	tps   float64
+	r     DrawManager
 }
 
 func (c *ctxt) Frame() int64 {
@@ -53,11 +56,24 @@ func (c *ctxt) TPS() float64 {
 	return c.tps
 }
 
+func (c *ctxt) Renderer() DrawManager {
+	return c.r
+}
+
 func NewUpdateCtx(frame int64, dt, tps float64) UpdateCtx {
 	return &ctxt{
 		frame: frame,
 		dt:    dt,
 		tps:   tps,
+	}
+}
+
+func NewDrawCtx(frame int64, dt, tps float64, screen *ebiten.Image) DrawCtx {
+	return &ctxt{
+		frame: frame,
+		dt:    dt,
+		tps:   tps,
+		r:     newDrawManager(screen),
 	}
 }
 

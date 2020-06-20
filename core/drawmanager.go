@@ -3,7 +3,6 @@ package core
 import (
 	"image/color"
 
-	"github.com/gabstv/ecs"
 	"github.com/hajimehoshi/ebiten"
 )
 
@@ -20,7 +19,6 @@ type DrawManager interface {
 }
 
 type drawManager struct {
-	w        *ecs.World
 	__screen *ebiten.Image
 	imopt    *ebiten.DrawImageOptions
 	prevgeom ebiten.GeoM
@@ -28,18 +26,14 @@ type drawManager struct {
 	prevmode ebiten.CompositeMode
 }
 
-func newDrawManager(w *ecs.World) DrawManager {
+func newDrawManager(screen *ebiten.Image) DrawManager {
 	return &drawManager{
-		w:     w,
-		imopt: &ebiten.DrawImageOptions{}, //TODO: default filter
+		__screen: screen,
+		imopt:    &ebiten.DrawImageOptions{}, //TODO: default filter
 	}
 }
 
 func (m *drawManager) screen() *ebiten.Image {
-	if m.__screen != nil {
-		return m.__screen
-	}
-	m.__screen = m.w.Get("screen").(*ebiten.Image)
 	return m.__screen
 }
 

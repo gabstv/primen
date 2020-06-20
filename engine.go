@@ -382,7 +382,7 @@ func (e *Engine) Draw(screen *ebiten.Image) {
 	e.drawInfo.Set(now, frame)
 
 	//TODO: create DrawCtx
-	var ctx core.DrawCtx
+	ctx := core.NewDrawCtx(frame, delta, ebiten.CurrentTPS(), screen)
 
 	for _, w := range worlds {
 		w.world.EachSystem(func(s ecs.BaseSystem) bool {
