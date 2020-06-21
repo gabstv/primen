@@ -49,7 +49,7 @@ func main() {
 	}
 }
 
-func buildReady(c *cli.Context) func(e *primen.Engine) {
+func buildReady(c *cli.Context) func(e primen.Engine) {
 	core.DebugDraw = true
 	fn := c.Args().First()
 	if fn == "" {
@@ -64,18 +64,18 @@ func buildReady(c *cli.Context) func(e *primen.Engine) {
 		return errready(err.Error())
 	}
 	println(ff)
-	return func(e *primen.Engine) {
+	return func(e primen.Engine) {
 		_ = loadAtlas(e, ff)
 	}
 }
 
-func loadAtlas(e *primen.Engine, atlas *io.Atlas) *AtlasPreviewer {
+func loadAtlas(e primen.Engine, atlas *io.Atlas) *AtlasPreviewer {
 	//TODO: remove older one if present (to allow load multiple)
 	return newAtlasPreviewer(e, atlas)
 }
 
-func errready(v string) func(e *primen.Engine) {
-	return func(e *primen.Engine) {
+func errready(v string) func(e primen.Engine) {
+	return func(e primen.Engine) {
 		primen.SetDrawFuncs(e.Default(), e.Default().NewEntity(), nil, func(ctx core.Context, e ecs.Entity) {
 			ebitenutil.DebugPrint(ctx.Renderer().Screen(), v)
 		}, nil)
@@ -83,7 +83,7 @@ func errready(v string) func(e *primen.Engine) {
 }
 
 type AtlasPreviewer struct {
-	e        *primen.Engine
+	e        primen.Engine
 	itemList *AtlasItemList
 	atlas    *io.Atlas
 	canvas   *primen.Transform
@@ -130,7 +130,7 @@ func (p *AtlasPreviewer) setupAnim(name string) {
 	// })
 }
 
-func newAtlasPreviewer(e *primen.Engine, atlas *io.Atlas) *AtlasPreviewer {
+func newAtlasPreviewer(e primen.Engine, atlas *io.Atlas) *AtlasPreviewer {
 	p := &AtlasPreviewer{
 		e:     e,
 		atlas: atlas,

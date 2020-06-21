@@ -11,6 +11,10 @@ type GameWorld struct {
 	e Engine
 }
 
+func (w *GameWorld) Engine() Engine {
+	return w.e
+}
+
 func NewWorld(e Engine) *GameWorld {
 	return &GameWorld{
 		World: ecs.NewWorld().(*ecs.World),
@@ -20,10 +24,11 @@ func NewWorld(e Engine) *GameWorld {
 
 type World interface {
 	ecs.BaseWorld
-	DrawPriority(ctx DrawCtx)
-	Draw(ctx DrawCtx)
-	UpdatePriority(ctx UpdateCtx)
-	Update(ctx UpdateCtx)
+	// DrawPriority(ctx DrawCtx)
+	// Draw(ctx DrawCtx)
+	// UpdatePriority(ctx UpdateCtx)
+	// Update(ctx UpdateCtx)
+	Engine() Engine
 }
 
 type System interface {

@@ -22,12 +22,11 @@ type DrawCtx interface {
 }
 
 type Engine interface {
-	NewWorld(priority int) *GameWorld
-	RemoveWorld(w *GameWorld)
+	NewWorld(priority int) World
+	NewWorldWithDefaults(priority int) World
+	RemoveWorld(w World)
 	Run() error
 	Ready() <-chan struct{}
-	Get(key string) interface{}
-	Set(key string, value interface{})
 	UpdateFrame() int64
 	DrawFrame() int64
 	Width() int

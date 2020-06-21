@@ -2,12 +2,12 @@ package primen
 
 import "github.com/gabstv/primen/core"
 
-func (e *Engine) AddEventListener(eventName string, fn core.EventFn) core.EventID {
+func (e *engine) AddEventListener(eventName string, fn core.EventFn) core.EventID {
 	return e.eventManager.Register(eventName, fn)
 }
-func (e *Engine) RemoveEventListener(id core.EventID) bool {
+func (e *engine) RemoveEventListener(id core.EventID) bool {
 	return e.eventManager.Deregister(id)
 }
-func (e *Engine) DispatchEvent(eventName string, data interface{}) {
+func (e *engine) DispatchEvent(eventName string, data interface{}) {
 	e.eventManager.Dispatch(eventName, e, data)
 }

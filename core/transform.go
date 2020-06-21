@@ -76,6 +76,11 @@ func (t *Transform) SetAngle(r float64) *Transform {
 	return t
 }
 
+// Angle gets the angle (in radians)
+func (t *Transform) Angle() float64 {
+	return t.angle
+}
+
 //go:generate ecsgen -n Transform -p core -o transform_component.go --component-tpl --vars "UUID=45E8849D-7EA9-4CDC-8AB1-86DB8705C253" --vars "OnAdd=c.setupTransform(e)" --vars "OnResize=c.resized()" --vars "OnRemove=c.removed(e)"
 
 func (c *TransformComponent) setupTransform(e ecs.Entity) {
@@ -136,7 +141,15 @@ func (s *TransformSystem) setupTransforms() {
 }
 
 // DrawPriority noop
-func (s *TransformSystem) DrawPriority(ctx DrawCtx) {}
+func (s *TransformSystem) DrawPriority(ctx DrawCtx) {
+	if !DebugDraw {
+		return
+	}
+	for _, v := range s.V().Matches() {
+		debugLineM(ctx.Renderer().Screen(), v.Transform.m, -4, 0, 4, 0, debugPivotColor)
+		debugLineM(ctx.Renderer().Screen(), v.Transform.m, 0, -4, 0, 4, debugPivotColor)
+	}
+}
 
 // Draw noop
 func (s *TransformSystem) Draw(ctx DrawCtx) {}

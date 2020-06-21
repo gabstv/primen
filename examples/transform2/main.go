@@ -38,7 +38,7 @@ func main() {
 		Scale:           0.5,
 		FixedResolution: true,
 		Resizable:       true,
-		OnReady: func(e *primen.Engine) {
+		OnReady: func(e primen.Engine) {
 			dogamesetup(ctx, e, spbgs)
 		},
 	})
@@ -47,7 +47,7 @@ func main() {
 	}
 }
 
-func dogamesetup(ctx context.Context, engine *primen.Engine, bgs []*ebiten.Image) {
+func dogamesetup(ctx context.Context, engine primen.Engine, bgs []*ebiten.Image) {
 	select {
 	case <-ctx.Done():
 		return
