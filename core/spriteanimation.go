@@ -5,58 +5,6 @@ import (
 	"github.com/hajimehoshi/ebiten"
 )
 
-// const (
-// 	SNSpriteAnimation     = "primen.SpriteAnimationSystem"
-// 	SNSpriteAnimationLink = "primen.SpriteAnimationLinkSystem"
-// 	CNSpriteAnimation     = "primen.SpriteAnimationComponent"
-// )
-
-// type SpriteAnimationComponentSystem struct {
-// 	BaseComponentSystem
-// }
-
-// func (cs *SpriteAnimationComponentSystem) SystemName() string {
-// 	return SNSpriteAnimation
-// }
-
-// func (cs *SpriteAnimationComponentSystem) SystemPriority() int {
-// 	return -6
-// }
-
-// func (cs *SpriteAnimationComponentSystem) SystemExec() SystemExecFn {
-// 	return SpriteAnimationSystemExec
-// }
-
-// func (cs *SpriteAnimationComponentSystem) SystemTags() []string {
-// 	return []string{
-// 		"draw",
-// 	}
-// }
-
-// func (cs *SpriteAnimationComponentSystem) Components(w *ecs.World) []*ecs.Component {
-// 	return []*ecs.Component{
-// 		spriteAnimationComponentDef(w),
-// 	}
-// }
-
-// func (cs *SpriteAnimationComponentSystem) ExcludeComponents(w *ecs.World) []*ecs.Component {
-// 	return emptyCompSlice
-// }
-
-// func spriteAnimationComponentDef(w *ecs.World) *ecs.Component {
-// 	return UpsertComponent(w, ecs.NewComponentInput{
-// 		Name: CNSpriteAnimation,
-// 		ValidateDataFn: func(data interface{}) bool {
-// 			_, ok := data.(*SpriteAnimation)
-// 			return ok
-// 		},
-// 		DestructorFn: func(_ *ecs.World, entity ecs.Entity, data interface{}) {
-// 			sd := data.(*SpriteAnimation)
-// 			sd.Anim = nil
-// 		},
-// 	})
-// }
-
 // SpriteAnimation holds the data of a sprite animation (and clips)
 type SpriteAnimation struct {
 	Enabled     bool
@@ -175,8 +123,8 @@ func (s *SpriteAnimationSystem) Update(ctx UpdateCtx) {
 		}
 		v.Sprite.SetImage(v.SpriteAnimation.lastImage)
 		offx, offy := v.SpriteAnimation.Anim.GetClipOffset(v.SpriteAnimation.ActiveClip, v.SpriteAnimation.ActiveFrame)
-		v.Sprite.OffsetX = offx
-		v.Sprite.OffsetY = offy
+		v.Sprite.offsetX = offx
+		v.Sprite.offsetY = offy
 	}
 }
 

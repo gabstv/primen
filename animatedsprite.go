@@ -1,13 +1,35 @@
 package primen
 
-// import "github.com/gabstv/primen/core"
+import (
+	"github.com/gabstv/primen/core"
+)
 
-// type Animation = core.Animation
+type Animation = core.Animation
 
-// type AnimatedSprite struct {
-// 	*Sprite
-// 	coreAnim func() *core.SpriteAnimation
-// }
+type AnimatedSpriteNode struct {
+	*SpriteNode
+	ca core.WatchSpriteAnimation
+}
+
+func NewRootAnimatedSpriteNode(w World, layer Layer) *AnimatedSpriteNode {
+	sprn := &AnimatedSpriteNode{
+		SpriteNode: NewRootSpriteNode(w, layer),
+	}
+	core.SetSpriteAnimationComponentData(w, sprn.e, core.SpriteAnimation{})
+	sprn.ca = core.WatchSpriteAnimationComponentData(w, sprn.e)
+	return sprn
+}
+
+func NewChildAnimatedSpriteNode(parent ObjectContainer, layer Layer) *AnimatedSpriteNode {
+	sprn := &AnimatedSpriteNode{
+		SpriteNode: NewChildSpriteNode(parent, layer),
+	}
+	core.SetSpriteAnimationComponentData(parent.World(), sprn.e, core.SpriteAnimation{})
+	sprn.ca = core.WatchSpriteAnimationComponentData(parent.World(), sprn.e)
+	return sprn
+}
+
+//TODO: continue
 
 // func NewAnimatedSprite(parent WorldTransform, layer Layer, anim Animation) *AnimatedSprite {
 // 	as := &AnimatedSprite{

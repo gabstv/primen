@@ -4,6 +4,7 @@ import (
 	"context"
 	"math"
 
+	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen"
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/examples/layers/res"
@@ -53,18 +54,45 @@ func dogamesetup(ctx context.Context, engine primen.Engine, bgs []*ebiten.Image)
 		return
 	case <-engine.Ready():
 	}
-	spr := primen.NewSprite(engine.Root(nil), bgs[0], primen.Layer0)
-	spr.SetX(100)
-	spr.SetY(100)
-	spr.SetScale(.5, 1)
-	spr.SetOrigin(.5, .5)
-	engine.Default().AddComponentToEntity(spr.Entity(), engine.Default().Component(core.CNRotation), &core.Rotation{
-		Speed: math.Pi / 16,
-	})
-	spr2 := primen.NewSprite(spr, bgs[1], primen.Layer0)
-	spr2.SetPos(10, 7)
+	w := engine.NewWorldWithDefaults(0)
+	nspr := primen.NewRootSpriteNode(w, primen.Layer0)
+	tr := nspr.Transform()
+	spr := nspr.Sprite()
+	spr.SetImage(bgs[0]).SetOrigin(.5, .5)
+	tr.SetX(100).SetY(100).SetScale(.5, 1)
 
-	spr3 := primen.NewSprite(spr2, bgs[2], primen.Layer0)
-	spr3.SetPos(16, 16)
-	spr3.SetScale(2, 1)
+	// engine.Default().AddComponentToEntity(spr.Entity(), engine.Default().Component(core.CNRotation), &core.Rotation{
+	// 	Speed: math.Pi / 16,
+	// })
+
+	{
+		// spr2
+		nspr2 := primen.NewChildSpriteNode(nspr, primen.Layer0)
+		nspr2.Sprite().SetImage(bgs[1])
+		nspr2.Transform().SetX(10).SetY(7)
+
+		// spr3
+		nspr3 := primen.NewChildSpriteNode(nspr2, primen.Layer0)
+		nspr3.Sprite().SetImage(bgs[2])
+		nspr3.Transform().SetX(16).SetY(16).SetScale(2, 1)
+
+		core.SetFunctionComponentData(w, nspr3.Entity(), core.Function{
+			Update: func(ctx core.UpdateCtx, e ecs.Entity) {
+				dd := core.GetTransformComponentData(w, e)
+				dd.SetAngle(dd.Angle() + .1*math.Pi*ctx.DT())
+			},
+		})
+
+		// spr4
+		nspr4 := primen.NewChildSpriteNode(nspr3, primen.Layer0)
+		nspr4.Sprite().SetImage(bgs[0])
+		nspr4.Transform().SetX(32).SetY(32).SetScale(.25, .5)
+	}
+
+	core.SetFunctionComponentData(w, nspr.Entity(), core.Function{
+		Update: func(ctx core.UpdateCtx, e ecs.Entity) {
+			dd := core.GetTransformComponentData(w, e)
+			dd.SetAngle(dd.Angle() - .5*math.Pi*ctx.DT())
+		},
+	})
 }

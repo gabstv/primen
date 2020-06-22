@@ -86,8 +86,8 @@ type AtlasPreviewer struct {
 	e        primen.Engine
 	itemList *AtlasItemList
 	atlas    *io.Atlas
-	canvas   *primen.Transform
-	titler   *primen.Transform
+	canvas   *primen.Node
+	titler   *primen.Node
 }
 
 func (p *AtlasPreviewer) Destroy() {
@@ -143,7 +143,7 @@ func newAtlasPreviewer(e primen.Engine, atlas *io.Atlas) *AtlasPreviewer {
 }
 
 type AtlasItemList struct {
-	tr *primen.Transform
+	tr *primen.Node
 }
 
 func (al *AtlasItemList) Destroy() {

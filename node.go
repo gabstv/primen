@@ -5,18 +5,18 @@ import (
 	"github.com/gabstv/primen/core"
 )
 
-type CoreTransformer interface {
+type TransformGetter interface {
 	Entity() ecs.Entity
 	Transform() *core.Transform
 }
 
-type Transform struct {
+type Node struct {
 	*mObjectContainer
 	wtr core.WatchTransform
 }
 
-func NewRootTransform(w World) *Transform {
-	tr := &Transform{
+func NewRootNode(w World) *Node {
+	tr := &Node{
 		mObjectContainer: &mObjectContainer{
 			mObject: &mObject{
 				e: w.NewEntity(),
@@ -29,11 +29,11 @@ func NewRootTransform(w World) *Transform {
 	return tr
 }
 
-func NewChildTransform(parent ObjectContainer) *Transform {
+func NewChildNode(parent ObjectContainer) *Node {
 	if parent == nil {
 		panic("parent can't be nil")
 	}
-	tr := &Transform{
+	tr := &Node{
 		mObjectContainer: &mObjectContainer{
 			mObject: &mObject{
 				e: parent.World().NewEntity(),
@@ -47,13 +47,13 @@ func NewChildTransform(parent ObjectContainer) *Transform {
 	return tr
 }
 
-func (t *Transform) Transform() *core.Transform {
+func (t *Node) Transform() *core.Transform {
 	return t.wtr.Data()
 }
 
-func (t *Transform) SetParent(parent ObjectContainer) {
+func (t *Node) SetParent(parent ObjectContainer) {
 	if t.parent != nil {
-		if _, ok := t.parent.(CoreTransformer); ok {
+		if _, ok := t.parent.(TransformGetter); ok {
 			t.wtr.Data().SetParent(0)
 		}
 		t.parent.RemoveChild(t)
@@ -62,13 +62,13 @@ func (t *Transform) SetParent(parent ObjectContainer) {
 		t.parent = nil
 		return
 	}
-	if p, ok := parent.(CoreTransformer); ok {
+	if p, ok := parent.(TransformGetter); ok {
 		t.wtr.Data().SetParent(p.Entity())
 	}
 	t.mObject.SetParent(parent)
 }
 
-func (t *Transform) Destroy() {
+func (t *Node) Destroy() {
 	t.wtr = nil
 	t.mObjectContainer.Destroy()
 }

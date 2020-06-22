@@ -81,6 +81,33 @@ func (t *Transform) Angle() float64 {
 	return t.angle
 }
 
+func (t *Transform) SetScale(sx, sy float64) *Transform {
+	t.scaleX, t.scaleY = sx, sy
+	return t
+}
+
+func (t *Transform) Scale() (sx, sy float64) {
+	return t.scaleX, t.scaleY
+}
+
+func (t *Transform) SetScaleX(sx float64) *Transform {
+	t.scaleX = sx
+	return t
+}
+
+func (t *Transform) ScaleX() float64 {
+	return t.scaleX
+}
+
+func (t *Transform) SetScaleY(sy float64) *Transform {
+	t.scaleY = sy
+	return t
+}
+
+func (t *Transform) ScaleY() float64 {
+	return t.scaleY
+}
+
 //go:generate ecsgen -n Transform -p core -o transform_component.go --component-tpl --vars "UUID=45E8849D-7EA9-4CDC-8AB1-86DB8705C253" --vars "OnAdd=c.setupTransform(e)" --vars "OnResize=c.resized()" --vars "OnRemove=c.removed(e)"
 
 func (c *TransformComponent) setupTransform(e ecs.Entity) {

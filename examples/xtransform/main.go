@@ -22,10 +22,10 @@ func main() {
 
 func ready(engine primen.Engine) {
 	w := engine.NewWorldWithDefaults(0)
-	tr := primen.NewRootTransform(w)
+	tr := primen.NewRootNode(w)
 	coretr := tr.Transform()
 	coretr.SetX(400).SetY(300)
-	tr2 := primen.NewChildTransform(tr)
+	tr2 := primen.NewChildNode(tr)
 	coretr2 := tr2.Transform()
 	coretr2.SetX(10).SetY(20)
 	coretr.SetAngle(-math.Pi / 2)
@@ -36,7 +36,7 @@ func ready(engine primen.Engine) {
 		},
 	})
 	//
-	tr3 := primen.NewChildTransform(tr2)
+	tr3 := primen.NewChildNode(tr2)
 	coretr3 := tr3.Transform()
 	coretr3.SetX(-40).SetY(50)
 	//

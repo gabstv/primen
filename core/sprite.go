@@ -12,10 +12,10 @@ type Sprite struct {
 	angle    float64 // radians
 	scaleX   float64 // logical X scale (1 = 100%)
 	scaleY   float64 // logical Y scale (1 = 100%)
-	OriginX  float64 // X origin (0 = left; 0.5 = center; 1 = right)
-	OriginY  float64 // Y origin (0 = top; 0.5 = middle; 1 = bottom)
-	OffsetX  float64 // offset origin X (in pixels)
-	OffsetY  float64 // offset origin Y (in pixels)
+	originX  float64 // X origin (0 = left; 0.5 = center; 1 = right)
+	originY  float64 // Y origin (0 = top; 0.5 = middle; 1 = bottom)
+	offsetX  float64 // offset origin X (in pixels)
+	offsetY  float64 // offset origin Y (in pixels)
 	image    *ebiten.Image
 	disabled bool
 
@@ -105,6 +105,15 @@ func (s *Sprite) SetScaleY(sy float64) *Sprite {
 	return s
 }
 
+func (s *Sprite) Origin() (ox, oy float64) {
+	return s.originX, s.originY
+}
+
+func (s *Sprite) SetOrigin(ox, oy float64) *Sprite {
+	s.originX, s.originY = ox, oy
+	return s
+}
+
 func (s *Sprite) Image() *ebiten.Image {
 	return s.image
 }
@@ -125,7 +134,7 @@ func (s *Sprite) Draw(ctx DrawCtx, d *Drawable) {
 	g := d.G(s.scaleX, s.scaleY, s.angle, s.x, s.y)
 	o := &s.opt
 	o.GeoM.Reset()
-	o.GeoM.Translate(applyOrigin(s.imageWidth, s.OriginX)+s.OffsetX, applyOrigin(s.imageHeight, s.OriginY)+s.OffsetY)
+	o.GeoM.Translate(applyOrigin(s.imageWidth, s.originX)+s.offsetX, applyOrigin(s.imageHeight, s.originY)+s.offsetY)
 	o.GeoM.Concat(g)
 
 	//TODO: reimplement colormode and composite mode
