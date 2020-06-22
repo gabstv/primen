@@ -114,6 +114,11 @@ func (s *Sprite) SetOrigin(ox, oy float64) *Sprite {
 	return s
 }
 
+func (s *Sprite) SetOffset(x, y float64) *Sprite {
+	s.offsetX, s.offsetY = x, y
+	return s
+}
+
 func (s *Sprite) Image() *ebiten.Image {
 	return s.image
 }
