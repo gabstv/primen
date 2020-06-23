@@ -12,9 +12,9 @@ type SpriteAnimation struct {
 	anim        Animation
 	t           float64
 	reversed    bool
-	fps         float64                             // Default fps for clips with no fps specified
-	clipMap     map[string]AnimationClip            // clip cache
-	clipEvents  map[AnimationClip][]*AnimationEvent // clip cache
+	fps         float64                      // Default fps for clips with no fps specified
+	clipMap     map[string]AnimationClip     // clip cache
+	clipEvents  map[string][]*AnimationEvent // clip cache
 
 	listeners *AnimationEventListeners
 }
@@ -41,12 +41,13 @@ func (a *SpriteAnimation) SetAnimation(anim Animation) {
 		panic("anim cannot be nil")
 	}
 	n := anim.Count()
+	a.anim = anim
 	a.clipMap = make(map[string]AnimationClip)
-	a.clipEvents = make(map[AnimationClip][]*AnimationEvent)
+	a.clipEvents = make(map[string][]*AnimationEvent)
 	for i := 0; i < n; i++ {
 		clip := anim.GetClip(i)
 		a.clipMap[clip.GetName()] = clip
-		a.clipEvents[clip] = a.anim.GetClipEvents(i)
+		a.clipEvents[clip.GetName()] = a.anim.GetClipEvents(i)
 	}
 	a.reset()
 }
@@ -113,13 +114,13 @@ func (a *SpriteAnimation) AnimEvent(name, value string) {
 }
 
 func (a *SpriteAnimation) tryDispatchClipEvent(clip AnimationClip, frame int) {
-	if a.clipEvents[clip] == nil {
+	if a.clipEvents[clip.GetName()] == nil {
 		return
 	}
-	if len(a.clipEvents[clip]) <= frame {
+	if len(a.clipEvents[clip.GetName()]) <= frame {
 		return
 	}
-	if evt := a.clipEvents[clip][frame]; evt != nil {
+	if evt := a.clipEvents[clip.GetName()][frame]; evt != nil {
 		a.AnimEvent(evt.Name, evt.Value)
 	}
 }
@@ -224,7 +225,8 @@ func (s *SpriteAnimationSystem) Update(ctx UpdateCtx) {
 
 		localfps := nonzeroval(clip.GetFPS(), v.SpriteAnimation.fps, globalfps)
 
-		v.SpriteAnimation.t += dt * localfps
+		at := (localfps * dt)
+		v.SpriteAnimation.t += at
 
 		if v.SpriteAnimation.t >= 1 {
 			// next frame

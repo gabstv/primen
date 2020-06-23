@@ -1,6 +1,7 @@
 package primen
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"sort"
@@ -12,6 +13,7 @@ import (
 	"github.com/gabstv/primen/io"
 	osfs "github.com/gabstv/primen/io/os"
 	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
 
 type StepInfo struct {
@@ -59,6 +61,7 @@ type engine struct {
 	ebiLogicalH  int
 	ebiScale     float64
 	eventManager *core.EventManager
+	debugfps     bool
 }
 
 // NewEngineInput is the input data of NewEngine
@@ -190,6 +193,10 @@ func NewEngine(v *NewEngineInput) Engine {
 	e.defaultWorld = dw
 
 	return e
+}
+
+func (e *engine) SetDebugTPS(v bool) {
+	e.debugfps = v
 }
 
 // NewWorld adds a world to the engine.
@@ -399,6 +406,9 @@ func (e *engine) Draw(screen *ebiten.Image) {
 			s.(core.System).Draw(ctx)
 			return true
 		})
+	}
+	if e.debugfps {
+		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("TPS: %.2f", ebiten.CurrentTPS()), 10, 10)
 	}
 }
 

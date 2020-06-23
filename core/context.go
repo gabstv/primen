@@ -34,6 +34,7 @@ type Engine interface {
 	AddEventListener(eventName string, fn EventFn) EventID
 	RemoveEventListener(id EventID) bool
 	DispatchEvent(eventName string, data interface{})
+	SetDebugTPS(v bool)
 }
 
 type ctxt struct {

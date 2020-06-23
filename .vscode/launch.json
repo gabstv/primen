@@ -44,7 +44,7 @@
             "env": {},
             "args": [
             ],
-            "buildFlags": "-tags example this_doesnt_work_yet"
+            //"buildFlags": "-tags example this_doesnt_work_yet"
         }
     ]
 }
