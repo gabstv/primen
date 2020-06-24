@@ -368,7 +368,7 @@ func (e *engine) Update(screen *ebiten.Image) error {
 		}
 	})
 
-	ctx := core.NewUpdateCtx(frame, delta, ebiten.CurrentTPS())
+	ctx := core.NewUpdateCtx(e, frame, delta, ebiten.CurrentTPS())
 
 	for _, w := range worlds {
 		w.world.EachSystem(func(s ecs.BaseSystem) bool {
@@ -394,8 +394,7 @@ func (e *engine) Draw(screen *ebiten.Image) {
 	frame := lastf + 1
 	e.drawInfo.Set(now, frame)
 
-	//TODO: create DrawCtx
-	ctx := core.NewDrawCtx(frame, delta, ebiten.CurrentTPS(), screen)
+	ctx := core.NewDrawCtx(e, frame, delta, ebiten.CurrentTPS(), screen)
 
 	for _, w := range worlds {
 		w.world.EachSystem(func(s ecs.BaseSystem) bool {

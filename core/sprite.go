@@ -119,6 +119,18 @@ func (s *Sprite) SetOffset(x, y float64) *Sprite {
 	return s
 }
 
+func (s *Sprite) ResetColorMatrix() {
+	s.opt.ColorM.Reset()
+}
+
+func (s *Sprite) RotateHue(theta float64) {
+	s.opt.ColorM.RotateHue(theta)
+}
+
+func (s *Sprite) SetCompositeMode(mode ebiten.CompositeMode) {
+	s.opt.CompositeMode = mode
+}
+
 func (s *Sprite) Image() *ebiten.Image {
 	return s.image
 }
@@ -229,10 +241,6 @@ func (s *DrawableSpriteSystem) Update(ctx UpdateCtx) {}
 
 // func (s *Sprite) SetColorTint(c color.Color) {
 // 	s.localColor = ColorTint(c)
-// }
-
-// func (s *Sprite) SetColorHue(theta float64) {
-// 	s.localColor = ColorM().RotateHue(theta)
 // }
 
 // func (s *Sprite) ClearColorTransform() {

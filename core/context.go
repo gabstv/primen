@@ -8,6 +8,7 @@ type Context interface {
 	Frame() int64
 	DT() float64
 	TPS() float64
+	Engine() Engine
 }
 
 // UpdateCtx is the context passed to every system update function.
@@ -35,13 +36,15 @@ type Engine interface {
 	RemoveEventListener(id EventID) bool
 	DispatchEvent(eventName string, data interface{})
 	SetDebugTPS(v bool)
+	SetScreenScale(scale float64)
 }
 
 type ctxt struct {
-	frame int64
-	dt    float64
-	tps   float64
-	r     DrawManager
+	frame  int64
+	dt     float64
+	tps    float64
+	r      DrawManager
+	engine Engine
 }
 
 func (c *ctxt) Frame() int64 {
@@ -60,20 +63,26 @@ func (c *ctxt) Renderer() DrawManager {
 	return c.r
 }
 
-func NewUpdateCtx(frame int64, dt, tps float64) UpdateCtx {
+func (c *ctxt) Engine() Engine {
+	return c.engine
+}
+
+func NewUpdateCtx(e Engine, frame int64, dt, tps float64) UpdateCtx {
 	return &ctxt{
-		frame: frame,
-		dt:    dt,
-		tps:   tps,
+		frame:  frame,
+		dt:     dt,
+		tps:    tps,
+		engine: e,
 	}
 }
 
-func NewDrawCtx(frame int64, dt, tps float64, screen *ebiten.Image) DrawCtx {
+func NewDrawCtx(e Engine, frame int64, dt, tps float64, screen *ebiten.Image) DrawCtx {
 	return &ctxt{
-		frame: frame,
-		dt:    dt,
-		tps:   tps,
-		r:     newDrawManager(screen),
+		frame:  frame,
+		dt:     dt,
+		tps:    tps,
+		r:      newDrawManager(screen),
+		engine: e,
 	}
 }
 
