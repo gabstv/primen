@@ -30,6 +30,125 @@ type TileSet struct {
 	opt     ebiten.DrawImageOptions
 }
 
+func NewTileSet(db []*ebiten.Image, rows, cols int, cellwidthpx, cellheightpx float64, cells []int) TileSet {
+	tset := TileSet{
+		db: db,
+		cSize: image.Point{
+			X: cols,
+			Y: rows,
+		},
+		cellWidth:  cellwidthpx,
+		cellHeight: cellheightpx,
+		cells:      cells,
+		scaleX:     1,
+		scaleY:     1,
+	}
+	tset.isValid = tset.testvalid()
+	return tset
+}
+
+func (t TileSet) testvalid() bool {
+	if len(t.db) < 1 {
+		return false
+	}
+	if t.cSize.X <= 0 || t.cSize.Y <= 0 {
+		return false
+	}
+	if len(t.cells) < 1 {
+		return false
+	}
+	return true
+}
+
+func (s *TileSet) SetEnabled(enabled bool) *TileSet {
+	s.disabled = !enabled
+	return s
+}
+
+// X gets the local x position. Overrided by the transform
+func (s *TileSet) X() float64 {
+	return s.x
+}
+
+// Y gets the local y position. Overrided by the transform
+func (s *TileSet) Y() float64 {
+	return s.y
+}
+
+func (s *TileSet) SetX(x float64) *TileSet {
+	s.x = x
+	return s
+}
+
+func (s *TileSet) SetY(y float64) *TileSet {
+	s.y = y
+	return s
+}
+
+// Angle gets the local angle (radians).
+// It is overrided by the transform component.
+func (s *TileSet) Angle() float64 {
+	return s.angle
+}
+
+func (s *TileSet) SetAngle(r float64) *TileSet {
+	s.angle = r
+	return s
+}
+
+func (s *TileSet) ScaleX() float64 {
+	return s.scaleX
+}
+
+func (s *TileSet) SetScaleX(sx float64) *TileSet {
+	s.scaleX = sx
+	return s
+}
+
+func (s *TileSet) ScaleY() float64 {
+	return s.scaleY
+}
+
+func (s *TileSet) SetScaleY(sy float64) *TileSet {
+	s.scaleY = sy
+	return s
+}
+
+func (s *TileSet) Origin() (ox, oy float64) {
+	return s.originX, s.originY
+}
+
+func (s *TileSet) SetOrigin(ox, oy float64) *TileSet {
+	s.originX, s.originY = ox, oy
+	return s
+}
+
+func (s *TileSet) SetOffset(x, y float64) *TileSet {
+	s.offsetX, s.offsetY = x, y
+	return s
+}
+
+func (s *TileSet) SetDB(db []*ebiten.Image) *TileSet {
+	s.db = db
+	s.isValid = s.testvalid()
+	return s
+}
+
+func (s *TileSet) SetColsRows(cols, rows int) *TileSet {
+	s.cSize = image.Point{
+		X: cols,
+		Y: rows,
+	}
+	s.isValid = s.testvalid()
+	return s
+}
+
+func (s *TileSet) SetCells(cells []int) *TileSet {
+	s.cells = cells
+	s.isValid = s.testvalid()
+	return s
+}
+
 func (t *TileSet) Draw(ctx DrawCtx, d *Drawable) {
 	if d == nil {
 		return

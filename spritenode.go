@@ -22,7 +22,8 @@ func NewRootSpriteNode(w World, layer Layer) *SpriteNode {
 		Node: NewRootNode(w),
 	}
 	core.SetDrawLayerComponentData(w, sprn.e, core.DrawLayer{
-		Layer: layer,
+		Layer:  layer,
+		ZIndex: core.ZIndexTop,
 	})
 	core.SetSpriteComponentData(w, sprn.e, core.NewSprite(0, 0, transparentPixel))
 	sprn.wdl = core.WatchDrawLayerComponentData(w, sprn.e)

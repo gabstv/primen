@@ -1,5 +1,65 @@
 package primen
 
+import (
+	"github.com/gabstv/primen/core"
+	"github.com/hajimehoshi/ebiten"
+)
+
+type TileSetNode struct {
+	*Node
+	wdl core.WatchDrawLayer
+	wts core.WatchTileSet
+}
+
+func NewRootTileSetNode(w World, layer Layer, db []*ebiten.Image, rows, cols int, cellwidthpx, cellheightpx float64, cells []int) *TileSetNode {
+	tsn := &TileSetNode{
+		Node: NewRootNode(w),
+	}
+	core.SetDrawLayerComponentData(w, tsn.e, core.DrawLayer{
+		Layer:  layer,
+		ZIndex: core.ZIndexTop,
+	})
+	core.SetTileSetComponentData(w, tsn.e, core.NewTileSet(db, rows, cols, cellwidthpx, cellheightpx, cells))
+	tsn.wdl = core.WatchDrawLayerComponentData(w, tsn.e)
+	tsn.wts = core.WatchTileSetComponentData(w, tsn.e)
+	return tsn
+}
+
+func NewChildTileSetNode(parent ObjectContainer, layer Layer, db []*ebiten.Image, rows, cols int, cellwidthpx, cellheightpx float64, cells []int) *TileSetNode {
+	w := parent.World()
+	tsn := &TileSetNode{
+		Node: NewChildNode(parent),
+	}
+	core.SetDrawLayerComponentData(w, tsn.e, core.DrawLayer{
+		Layer:  layer,
+		ZIndex: core.ZIndexTop,
+	})
+	core.SetTileSetComponentData(w, tsn.e, core.NewTileSet(db, rows, cols, cellwidthpx, cellheightpx, cells))
+	tsn.wdl = core.WatchDrawLayerComponentData(w, tsn.e)
+	tsn.wts = core.WatchTileSetComponentData(w, tsn.e)
+	return tsn
+}
+
+func (n *TileSetNode) TileSet() *core.TileSet {
+	return n.wts.Data()
+}
+
+func (n *TileSetNode) SetLayer(l Layer) {
+	n.wdl.Data().Layer = l
+}
+
+func (n *TileSetNode) SetZIndex(index int64) {
+	n.wdl.Data().ZIndex = index
+}
+
+func (n *TileSetNode) Layer() Layer {
+	return n.wdl.Data().Layer
+}
+
+func (n *TileSetNode) ZIndex() int64 {
+	return n.wdl.Data().ZIndex
+}
+
 // import (
 // 	"image"
 

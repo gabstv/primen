@@ -4,9 +4,8 @@ package main
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/gabstv/ecs"
+	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen"
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/examples/layers/res"
@@ -43,44 +42,67 @@ func main() {
 		Scale:         1,
 		Resizable:     true,
 		MaxResolution: true,
-		OnReady: func(e *primen.Engine) {
+		OnReady: func(e primen.Engine) {
 			dogamesetup(ctx, e, spbgs)
 		},
 	})
+	engine.SetDebugTPS(true)
 	if err := engine.Run(); err != nil {
 		println(err.Error())
 	}
 }
 
-func dogamesetup(ctx context.Context, engine *primen.Engine, bgs []*ebiten.Image) {
+func dogamesetup(ctx context.Context, engine primen.Engine, bgs []*ebiten.Image) {
 	select {
 	case <-ctx.Done():
 		return
 	case <-engine.Ready():
 	}
-	tset := primen.NewTileSet(engine.Root(nil), primen.Layer0)
-	tset.SetDB(bgs)
-	tset.SetCellSize(32, 32)
-	tset.SetTilesYX([][]int{
-		{0, 0, 0, 0, 1, 0, 2, 3, 3, 1, 2, 3, 3, 2, 1, 2, 3, 1, 2, 3},
-		{2, 1, 3, 0, 1, 2, 2, 3, 3, 1, 2, 3, 3, 2, 1, 2, 3, 1, 2, 2},
-		{0, 0, 2, 3, 1, 0, 2, 3, 3, 1, 2, 3, 3, 2, 1, 2, 3, 1, 2, 1},
-		{0, 2, 0, 0, 3, 3, 2, 3, 3, 1, 2, 3, 3, 2, 1, 2, 3, 1, 2, 0},
-		{0, 2, 0, 0, 3, 3, 2, 3, 3, 1, 2, 3, 3, 2, 1, 2, 3, 1, 2, 3},
-		{1, 3, 1, 1, 3, 3, 3, 3, 3, 1, 3, 3, 3, 3, 1, 3, 3, 1, 3, 2},
-		{0, 2, 0, 0, 3, 3, 2, 3, 3, 1, 2, 2, 3, 2, 1, 2, 3, 1, 2, 1},
-		{0, 0, 0, 0, 0, 3, 0, 3, 3, 1, 2, 3, 1, 2, 1, 2, 3, 1, 2, 0},
-		{1, 2, 1, 1, 3, 3, 2, 3, 3, 1, 2, 3, 1, 2, 1, 2, 3, 1, 2, 3},
-		{0, 2, 0, 0, 3, 3, 2, 3, 3, 1, 2, 2, 3, 2, 1, 2, 3, 1, 2, 2},
-		{1, 2, 1, 1, 3, 3, 2, 3, 3, 1, 2, 3, 3, 2, 1, 2, 3, 1, 2, 1},
-		{0, 2, 1, 1, 3, 3, 2, 3, 3, 1, 2, 3, 3, 2, 1, 2, 3, 1, 2, 0},
-		{0, 2, 1, 0, 3, 3, 2, 3, 3, 1, 2, 3, 2, 2, 1, 2, 3, 1, 2, 3},
-		{1, 2, 1, 1, 3, 3, 2, 3, 3, 1, 2, 2, 3, 2, 1, 2, 3, 1, 2, 2},
-		{0, 2, 1, 0, 3, 3, 2, 3, 3, 1, 2, 3, 3, 2, 1, 2, 3, 1, 2, 2},
+	w := engine.NewWorldWithDefaults(0)
+	tset := primen.NewRootTileSetNode(w, primen.Layer0, bgs, 15, 20, 32, 32, nil)
+	tset.TileSet().SetCells([]int{
+		0, 0, 0, 0, 1, 0, 2, 3, 3, 1, 2, 3, 3, 2, 1, 2, 3, 1, 2, 3,
+		2, 1, 3, 0, 1, 2, 2, 3, 3, 1, 2, 3, 3, 2, 1, 2, 3, 1, 2, 2,
+		0, 0, 2, 3, 1, 0, 2, 3, 3, 1, 2, 3, 3, 2, 1, 2, 3, 1, 2, 1,
+		0, 2, 0, 0, 3, 3, 2, 3, 3, 1, 2, 3, 3, 2, 1, 2, 3, 1, 2, 0,
+		0, 2, 0, 0, 3, 3, 2, 3, 3, 1, 2, 3, 3, 2, 1, 2, 3, 1, 2, 3,
+		1, 3, 1, 1, 3, 3, 3, 3, 3, 1, 3, 3, 3, 3, 1, 3, 3, 1, 3, 2,
+		0, 2, 0, 0, 3, 3, 2, 3, 3, 1, 2, 2, 3, 2, 1, 2, 3, 1, 2, 1,
+		0, 0, 0, 0, 0, 3, 0, 3, 3, 1, 2, 3, 1, 2, 1, 2, 3, 1, 2, 0,
+		1, 2, 1, 1, 3, 3, 2, 3, 3, 1, 2, 3, 1, 2, 1, 2, 3, 1, 2, 3,
+		0, 2, 0, 0, 3, 3, 2, 3, 3, 1, 2, 2, 3, 2, 1, 2, 3, 1, 2, 2,
+		1, 2, 1, 1, 3, 3, 2, 3, 3, 1, 2, 3, 3, 2, 1, 2, 3, 1, 2, 1,
+		0, 2, 1, 1, 3, 3, 2, 3, 3, 1, 2, 3, 3, 2, 1, 2, 3, 1, 2, 0,
+		0, 2, 1, 0, 3, 3, 2, 3, 3, 1, 2, 3, 2, 2, 1, 2, 3, 1, 2, 3,
+		1, 2, 1, 1, 3, 3, 2, 3, 3, 1, 2, 2, 3, 2, 1, 2, 3, 1, 2, 2,
+		0, 2, 1, 0, 3, 3, 2, 3, 3, 1, 2, 3, 3, 2, 1, 2, 3, 1, 2, 2,
 	})
-	tset.SetOrigin(.5, .5)
-	tset.SetPos(float64(engine.Width())/2, float64(engine.Height())/2)
-	dd := primen.NewTransform(engine.Root(nil))
+	// tset := primen.NewTileSet(engine.Root(nil), primen.Layer0)
+	// tset.SetDB(bgs)
+	// tset.SetCellSize(32, 32)
+	// tset.SetTilesYX([][]int{
+	// 	{0, 0, 0, 0, 1, 0, 2, 3, 3, 1, 2, 3, 3, 2, 1, 2, 3, 1, 2, 3},
+	// 	{2, 1, 3, 0, 1, 2, 2, 3, 3, 1, 2, 3, 3, 2, 1, 2, 3, 1, 2, 2},
+	// 	{0, 0, 2, 3, 1, 0, 2, 3, 3, 1, 2, 3, 3, 2, 1, 2, 3, 1, 2, 1},
+	// 	{0, 2, 0, 0, 3, 3, 2, 3, 3, 1, 2, 3, 3, 2, 1, 2, 3, 1, 2, 0},
+	// 	{0, 2, 0, 0, 3, 3, 2, 3, 3, 1, 2, 3, 3, 2, 1, 2, 3, 1, 2, 3},
+	// 	{1, 3, 1, 1, 3, 3, 3, 3, 3, 1, 3, 3, 3, 3, 1, 3, 3, 1, 3, 2},
+	// 	{0, 2, 0, 0, 3, 3, 2, 3, 3, 1, 2, 2, 3, 2, 1, 2, 3, 1, 2, 1},
+	// 	{0, 0, 0, 0, 0, 3, 0, 3, 3, 1, 2, 3, 1, 2, 1, 2, 3, 1, 2, 0},
+	// 	{1, 2, 1, 1, 3, 3, 2, 3, 3, 1, 2, 3, 1, 2, 1, 2, 3, 1, 2, 3},
+	// 	{0, 2, 0, 0, 3, 3, 2, 3, 3, 1, 2, 2, 3, 2, 1, 2, 3, 1, 2, 2},
+	// 	{1, 2, 1, 1, 3, 3, 2, 3, 3, 1, 2, 3, 3, 2, 1, 2, 3, 1, 2, 1},
+	// 	{0, 2, 1, 1, 3, 3, 2, 3, 3, 1, 2, 3, 3, 2, 1, 2, 3, 1, 2, 0},
+	// 	{0, 2, 1, 0, 3, 3, 2, 3, 3, 1, 2, 3, 2, 2, 1, 2, 3, 1, 2, 3},
+	// 	{1, 2, 1, 1, 3, 3, 2, 3, 3, 1, 2, 2, 3, 2, 1, 2, 3, 1, 2, 2},
+	// 	{0, 2, 1, 0, 3, 3, 2, 3, 3, 1, 2, 3, 3, 2, 1, 2, 3, 1, 2, 2},
+	// })
+	tset.TileSet().SetOrigin(.5, .5)
+	tset.Transform().SetX(float64(engine.Width()) / 2).SetY(float64(engine.Height()) / 2)
+	//tset.SetOrigin(.5, .5)
+	//tset.SetPos(float64(engine.Width())/2, float64(engine.Height())/2)
+	//dd := primen.NewTransform(engine.Root(nil))
+	dd := primen.NewRootFnNode(w)
 	help := false
 	helpoff := `press 'h' for help`
 	helpon := `press 'h' to hide
@@ -88,55 +110,60 @@ func dogamesetup(ctx context.Context, engine *primen.Engine, bgs []*ebiten.Image
     [1] 50% scale; [2] 100% scale, [3] 200% scale
     [-] decrease scale; [+] increase scale
     WASD, Arrow Keys: move tileset
-    [q] [e] rotate`
-	dd.UpsertDrawFns(nil, nil, func(ctx core.Context, e ecs.Entity) {
-		fps := ebiten.CurrentFPS()
-		ebitenutil.DebugPrintAt(ctx.Renderer().Screen(), fmt.Sprintf("%.2f fps", fps), 12, 12)
+	[q] [e] rotate`
+	dd.Function().Draw = func(ctx core.DrawCtx, e ecs.Entity) {
 		if !help {
-			ebitenutil.DebugPrintAt(ctx.Renderer().Screen(), helpoff, 12, 24)
+			ebitenutil.DebugPrintAt(ctx.Renderer().Screen(), helpoff, 10, 24)
 		} else {
-			ebitenutil.DebugPrintAt(ctx.Renderer().Screen(), helpon, 12, 24)
+			ebitenutil.DebugPrintAt(ctx.Renderer().Screen(), helpon, 10, 24)
 		}
-	})
-	dd.UpsertFns(func(ctx core.Context, e ecs.Entity) {
-		//tset.SetPos(float64(engine.Width())/2, float64(engine.Height())/2)
+	}
+	dd.Function().Update = func(ctx core.UpdateCtx, e ecs.Entity) {
 		if inpututil.IsKeyJustPressed(ebiten.Key1) {
-			tset.SetScale2(.5)
+			tset.Transform().SetScale(.5, .5)
 		}
 		if inpututil.IsKeyJustPressed(ebiten.Key2) {
-			tset.SetScale2(1)
+			tset.Transform().SetScale(1, 1)
 		}
 		if inpututil.IsKeyJustPressed(ebiten.Key3) {
-			tset.SetScale2(2)
+			tset.Transform().SetScale(2, 2)
 		}
 		if ebiten.IsKeyPressed(ebiten.KeyQ) {
-			tset.SetAngle(tset.Angle() + ctx.DT()*-2)
+			a := tset.Transform().Angle()
+			tset.Transform().SetAngle(a + ctx.DT()*-2)
 		}
 		if ebiten.IsKeyPressed(ebiten.KeyE) {
-			tset.SetAngle(tset.Angle() + ctx.DT()*2)
+			a := tset.Transform().Angle()
+			tset.Transform().SetAngle(a + ctx.DT()*2)
 		}
 		if ebiten.IsKeyPressed(ebiten.KeyW) || ebiten.IsKeyPressed(ebiten.KeyUp) {
-			tset.SetY(tset.Y() - ctx.DT()*100)
+			t := tset.Transform()
+			t.SetY(t.Y() - ctx.DT()*100)
 		}
 		if ebiten.IsKeyPressed(ebiten.KeyS) || ebiten.IsKeyPressed(ebiten.KeyDown) {
-			tset.SetY(tset.Y() + ctx.DT()*100)
+			t := tset.Transform()
+			t.SetY(t.Y() + ctx.DT()*100)
 		}
 		if ebiten.IsKeyPressed(ebiten.KeyA) || ebiten.IsKeyPressed(ebiten.KeyLeft) {
-			tset.SetX(tset.X() - ctx.DT()*100)
+			t := tset.Transform()
+			t.SetX(t.X() - ctx.DT()*100)
 		}
 		if ebiten.IsKeyPressed(ebiten.KeyD) || ebiten.IsKeyPressed(ebiten.KeyRight) {
-			tset.SetX(tset.X() + ctx.DT()*100)
+			t := tset.Transform()
+			t.SetX(t.X() + ctx.DT()*100)
 		}
 		if inpututil.IsKeyJustPressed(ebiten.KeyEqual) {
-			s, _ := tset.Scale()
-			tset.SetScale2(s + 0.25)
+			t := tset.Transform()
+			sx := t.ScaleX()
+			t.SetScale(sx+.25, sx+.25)
 		}
 		if inpututil.IsKeyJustPressed(ebiten.KeyMinus) {
-			s, _ := tset.Scale()
-			tset.SetScale2(s - 0.25)
+			t := tset.Transform()
+			sx := t.ScaleX()
+			t.SetScale(sx-.25, sx-.25)
 		}
 		if inpututil.IsKeyJustPressed(ebiten.KeyH) {
 			help = !help
 		}
-	}, nil, nil)
+	}
 }
