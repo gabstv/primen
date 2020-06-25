@@ -1,22 +1,11 @@
 package primen
 
-import "github.com/gabstv/ecs"
-
-// WorldTag is a tag used to filter systems of a world
-type WorldTag = string
-
-// TagDelta is the key set of the time taken between frames (in seconds)
-const TagDelta = "delta"
-
-const (
-	// WorldTagDraw -> systems that draw things
-	WorldTagDraw WorldTag = "draw"
-	// WorldTagUpdate -> systems that update things (!= draw)
-	WorldTagUpdate WorldTag = "update"
+import (
+	"github.com/gabstv/primen/core"
 )
 
 type worldContainer struct {
-	world    *ecs.World
+	world    *core.GameWorld
 	priority int
 }
 

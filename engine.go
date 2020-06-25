@@ -1,17 +1,19 @@
 package primen
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"sort"
 	"sync"
 	"time"
 
-	"github.com/gabstv/ecs"
+	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/io"
 	osfs "github.com/gabstv/primen/io/os"
 	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
 
 type StepInfo struct {
@@ -39,19 +41,19 @@ func (i *StepInfo) Set(lt time.Time, frame int64) {
 	i.frame = frame
 }
 
-// Engine is what controls the ECS of primen.
-type Engine struct {
+// engine is what controls the ECS of primen.
+type engine struct {
 	updateInfo   *StepInfo
 	drawInfo     *StepInfo
 	lock         sync.Mutex
 	worlds       []worldContainer
-	defaultWorld *ecs.World
+	defaultWorld *core.GameWorld
 	dmap         Dict
 	options      EngineOptions
 	f            io.Filesystem
 	donech       chan struct{}
 	once         sync.Once
-	ready        func(e *Engine)
+	ready        func(e Engine)
 	ebilock      sync.RWMutex
 	ebiOutsideW  int
 	ebiOutsideH  int
@@ -59,25 +61,26 @@ type Engine struct {
 	ebiLogicalH  int
 	ebiScale     float64
 	eventManager *core.EventManager
+	debugfps     bool
 }
 
 // NewEngineInput is the input data of NewEngine
 type NewEngineInput struct {
-	Width             int             // main window width
-	Height            int             // main window height
-	Scale             float64         // pixel scale (default: 1)
-	TransparentScreen bool            // transparent screen
-	Maximized         bool            // start window maximized
-	Floating          bool            // always on top of all windows
-	Fullscreen        bool            // start in fullscreen
-	Resizable         bool            // is window resizable?
-	FixedResolution   bool            // fixed logical screen resolution
-	FixedWidth        int             // fixed logical screen resolution
-	FixedHeight       int             // fixed logical screen resolution
-	MaxResolution     bool            // set width/height to max resolution
-	Title             string          // window title
-	FS                io.Filesystem   // TODO: drop this
-	OnReady           func(e *Engine) // function to run once the window is opened
+	Width             int            // main window width
+	Height            int            // main window height
+	Scale             float64        // pixel scale (default: 1)
+	TransparentScreen bool           // transparent screen
+	Maximized         bool           // start window maximized
+	Floating          bool           // always on top of all windows
+	Fullscreen        bool           // start in fullscreen
+	Resizable         bool           // is window resizable?
+	FixedResolution   bool           // fixed logical screen resolution
+	FixedWidth        int            // fixed logical screen resolution
+	FixedHeight       int            // fixed logical screen resolution
+	MaxResolution     bool           // set width/height to max resolution
+	Title             string         // window title
+	FS                io.Filesystem  // TODO: drop this
+	OnReady           func(e Engine) // function to run once the window is opened
 }
 
 // EngineOptions is used to setup Ebiten @ Engine.boot
@@ -115,7 +118,7 @@ func (i *NewEngineInput) Options() EngineOptions {
 }
 
 // NewEngine returns a new Engine
-func NewEngine(v *NewEngineInput) *Engine {
+func NewEngine(v *NewEngineInput) Engine {
 	fbase := ""
 	if len(os.Args) > 0 {
 		fbase = path.Dir(os.Args[0])
@@ -161,7 +164,7 @@ func NewEngine(v *NewEngineInput) *Engine {
 		ih = v.FixedHeight
 	}
 
-	e := &Engine{
+	e := &engine{
 		updateInfo:   &StepInfo{},
 		drawInfo:     &StepInfo{},
 		options:      v.Options(),
@@ -178,6 +181,8 @@ func NewEngine(v *NewEngineInput) *Engine {
 
 	// create the default world
 	dw := core.NewWorld(e)
+	// start default components and systems
+	ecs.RegisterWorldDefaults(dw)
 
 	e.worlds = []worldContainer{
 		{
@@ -187,30 +192,39 @@ func NewEngine(v *NewEngineInput) *Engine {
 	}
 	e.defaultWorld = dw
 
-	// start default components and systems
-	core.StartDefaults(e)
-
 	return e
 }
 
-// AddWorld adds a world to the engine.
+func (e *engine) SetDebugTPS(v bool) {
+	e.debugfps = v
+}
+
+// NewWorld adds a world to the engine.
 // The priority is used to sort world execution, from hight to low.
-func (e *Engine) AddWorld(w *ecs.World, priority int) {
+func (e *engine) NewWorld(priority int) World {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 	if e.worlds == nil {
 		e.worlds = make([]worldContainer, 0, 2)
 	}
+	ww := core.NewWorld(e)
 	e.worlds = append(e.worlds, worldContainer{
 		priority: priority,
-		world:    w,
+		world:    ww,
 	})
 	// sort by priority
 	sort.Sort(sortedWorldContainer(e.worlds))
+	return ww
+}
+
+func (e *engine) NewWorldWithDefaults(priority int) World {
+	w := e.NewWorld(priority)
+	ecs.RegisterWorldDefaults(w)
+	return w
 }
 
 // RemoveWorld removes a *World
-func (e *Engine) RemoveWorld(w *ecs.World) bool {
+func (e *engine) RemoveWorld(w World) {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 	wi := -1
@@ -222,23 +236,22 @@ func (e *Engine) RemoveWorld(w *ecs.World) bool {
 		}
 	}
 	if wi == -1 {
-		return false
+		return
 	}
 	// splice
 	e.worlds = append(e.worlds[:wi], e.worlds[wi+1:]...)
 	if w == e.defaultWorld {
 		e.defaultWorld = nil
 	}
-	return true
 }
 
 // Default world
-func (e *Engine) Default() *ecs.World {
+func (e *engine) Default() *core.GameWorld {
 	return e.defaultWorld
 }
 
 // Run boots up the game engine
-func (e *Engine) Run() error {
+func (e *engine) Run() error {
 	now := time.Now()
 	e.drawInfo.Set(now, 0)
 	e.updateInfo.Set(now, 0)
@@ -265,44 +278,44 @@ func (e *Engine) Run() error {
 }
 
 // Ready returns a channel that signals when the engine is ready
-func (e *Engine) Ready() <-chan struct{} {
+func (e *engine) Ready() <-chan struct{} {
 	return e.donech
 }
 
 // UpdateFrame returns the current frame. Use ctx.Frame() (more performant)
-func (e *Engine) UpdateFrame() int64 {
+func (e *engine) UpdateFrame() int64 {
 	return e.updateInfo.GetFrame()
 }
 
 // DrawFrame returns the current frame. Use ctx.Frame() (more performant)
-func (e *Engine) DrawFrame() int64 {
+func (e *engine) DrawFrame() int64 {
 	return e.drawInfo.GetFrame()
 }
 
 // Get an item from the global map
-func (e *Engine) Get(key string) interface{} {
+func (e *engine) Get(key string) interface{} {
 	return e.dmap.Get(key)
 }
 
 // Set an item to the global map
-func (e *Engine) Set(key string, value interface{}) {
+func (e *engine) Set(key string, value interface{}) {
 	e.dmap.Set(key, value)
 }
 
 // FS returns the filesystem
-func (e *Engine) FS() io.Filesystem {
+func (e *engine) FS() io.Filesystem {
 	return e.f
 }
 
 // Width returns the logical width
-func (e *Engine) Width() int {
+func (e *engine) Width() int {
 	e.ebilock.RLock()
 	defer e.ebilock.RUnlock()
 	return e.ebiLogicalW
 }
 
 // Height returns the logical height
-func (e *Engine) Height() int {
+func (e *engine) Height() int {
 	e.ebilock.RLock()
 	defer e.ebilock.RUnlock()
 	return e.ebiLogicalH
@@ -311,7 +324,7 @@ func (e *Engine) Height() int {
 // EBITEN Game interface
 
 // Layout for ebiten.Game inteface
-func (e *Engine) Layout(outsideWidth, outsideHeight int) (int, int) {
+func (e *engine) Layout(outsideWidth, outsideHeight int) (int, int) {
 	e.ebilock.RLock()
 	pow, poh := e.ebiOutsideW, e.ebiOutsideH
 	piw, pih := e.ebiLogicalW, e.ebiLogicalH
@@ -331,18 +344,17 @@ func (e *Engine) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return niw, nih
 }
 
-func (e *Engine) SetScreenScale(scale float64) {
+func (e *engine) SetScreenScale(scale float64) {
 	if scale <= 0 {
 		return
 	}
 	e.ebiScale = scale
 }
 
-func (e *Engine) Update(screen *ebiten.Image) error {
+func (e *engine) Update(screen *ebiten.Image) error {
 	lastt, lastf := e.updateInfo.Get()
 	now := time.Now()
 	delta := now.Sub(lastt).Seconds()
-	e.dmap.Set(TagDelta, delta)
 	e.lock.Lock()
 	worlds := e.worlds
 	e.lock.Unlock()
@@ -356,14 +368,22 @@ func (e *Engine) Update(screen *ebiten.Image) error {
 		}
 	})
 
+	ctx := core.NewUpdateCtx(e, frame, delta, ebiten.CurrentTPS())
+
 	for _, w := range worlds {
-		//w.world.Set("screen", screen) set on [[draw]]
-		w.world.RunWithoutTag(WorldTagDraw, delta)
+		w.world.EachSystem(func(s ecs.BaseSystem) bool {
+			s.(core.System).UpdatePriority(ctx)
+			return true
+		})
+		w.world.EachSystem(func(s ecs.BaseSystem) bool {
+			s.(core.System).Update(ctx)
+			return true
+		})
 	}
 	return nil
 }
 
-func (e *Engine) Draw(screen *ebiten.Image) {
+func (e *engine) Draw(screen *ebiten.Image) {
 	lastt, lastf := e.drawInfo.Get()
 	now := time.Now()
 	delta := now.Sub(lastt).Seconds()
@@ -374,9 +394,20 @@ func (e *Engine) Draw(screen *ebiten.Image) {
 	frame := lastf + 1
 	e.drawInfo.Set(now, frame)
 
+	ctx := core.NewDrawCtx(e, frame, delta, ebiten.CurrentTPS(), screen)
+
 	for _, w := range worlds {
-		w.world.Set("screen", screen)
-		w.world.RunWithTag(WorldTagDraw, delta)
+		w.world.EachSystem(func(s ecs.BaseSystem) bool {
+			s.(core.System).DrawPriority(ctx)
+			return true
+		})
+		w.world.EachSystem(func(s ecs.BaseSystem) bool {
+			s.(core.System).Draw(ctx)
+			return true
+		})
+	}
+	if e.debugfps {
+		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("TPS: %.2f", ebiten.CurrentTPS()), 10, 10)
 	}
 }
 
