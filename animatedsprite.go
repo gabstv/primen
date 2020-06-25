@@ -1,33 +1,34 @@
 package primen
 
-import "github.com/gabstv/primen/core"
+import (
+	"github.com/gabstv/primen/core"
+)
 
 type Animation = core.Animation
 
-type AnimatedSprite struct {
-	*Sprite
-	coreAnim *core.SpriteAnimation
+type AnimatedSpriteNode struct {
+	*SpriteNode
+	ca core.WatchSpriteAnimation
 }
 
-func NewAnimatedSprite(parent WorldTransform, layer Layer, anim Animation) *AnimatedSprite {
-	as := &AnimatedSprite{
-		Sprite: NewSprite(parent, transparentPixel, layer),
+func NewRootAnimatedSpriteNode(w World, layer Layer, fps float64, anim core.Animation) *AnimatedSpriteNode {
+	sprn := &AnimatedSpriteNode{
+		SpriteNode: NewRootSpriteNode(w, layer),
 	}
-	sa := &core.SpriteAnimation{
-		Enabled: true,
-		Anim:    anim,
-	}
-	if err := as.World().AddComponentToEntity(as.Entity(), as.World().Component(core.CNSpriteAnimation), sa); err != nil {
-		panic(err)
-	}
-	as.coreAnim = sa
-	return as
+	core.SetSpriteAnimationComponentData(w, sprn.e, core.NewSpriteAnimation(fps, anim))
+	sprn.ca = core.WatchSpriteAnimationComponentData(w, sprn.e)
+	return sprn
 }
 
-func (as *AnimatedSprite) PlayClipIndex(i int) {
-	as.coreAnim.PlayClipIndex(i)
+func NewChildAnimatedSpriteNode(parent ObjectContainer, layer Layer, fps float64, anim core.Animation) *AnimatedSpriteNode {
+	sprn := &AnimatedSpriteNode{
+		SpriteNode: NewChildSpriteNode(parent, layer),
+	}
+	core.SetSpriteAnimationComponentData(parent.World(), sprn.e, core.NewSpriteAnimation(fps, anim))
+	sprn.ca = core.WatchSpriteAnimationComponentData(parent.World(), sprn.e)
+	return sprn
 }
 
-func (as *AnimatedSprite) PlayClip(name string) {
-	as.coreAnim.PlayClip(name)
+func (n *AnimatedSpriteNode) SpriteAnim() *core.SpriteAnimation {
+	return n.ca.Data()
 }

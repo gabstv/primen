@@ -4,11 +4,12 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/gabstv/ecs"
+	"github.com/gabstv/ecs/v2"
 )
 
 type SLVal interface {
 	Less(v interface{}) bool
+	Destroy()
 }
 
 type EntitySortedList struct {
@@ -41,6 +42,7 @@ func (sl *EntitySortedList) AddOrUpdate(key ecs.Entity, value SLVal) bool {
 			return false
 		}
 		// update and sort
+		e.Value.Destroy()
 		e.Value = value
 		sl.l.Lock()
 		sl.sort()
@@ -80,6 +82,7 @@ func (sl *EntitySortedList) Delete(key ecs.Entity) bool {
 		sl.list[i].Index = i - 1
 	}
 	sl.list = append(sl.list[:vv.Index], sl.list[vv.Index+1:]...)
+	sl.set[key].Value.Destroy()
 	delete(sl.set, key)
 	return true
 }

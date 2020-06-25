@@ -1,5 +1,7 @@
 package core
 
+//FIXME: review
+
 import (
 	"image/color"
 

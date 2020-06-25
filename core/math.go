@@ -28,3 +28,10 @@ func Clamp(x, min, max float64) float64 {
 	}
 	return x
 }
+
+func intmax(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
