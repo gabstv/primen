@@ -26,4 +26,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Test
-        run: go test ./...
+        env:
+          DISPLAY: ":99.0"
+        run: xvfb-run --auto-servernum go test -race -v ./...
