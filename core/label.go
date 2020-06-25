@@ -11,6 +11,8 @@ import (
 	"golang.org/x/image/font"
 )
 
+//FIXME: label is broken
+
 type Label struct {
 	text     string
 	face     font.Face
