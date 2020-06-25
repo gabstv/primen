@@ -7,6 +7,7 @@ import (
     "sort"
 
     "github.com/gabstv/ecs/v2"
+    
 )
 
 
@@ -97,6 +98,18 @@ func (v *viewHelloSystem) Remove(e ecs.Entity) bool {
         return true
     }
     return false
+}
+
+func (v *viewHelloSystem) clearpointers() {
+    
+    
+    for _, x := range v.entities {
+        e := x.Entity
+        
+        x.Hello = nil
+        
+        _ = e
+    }
 }
 
 func (v *viewHelloSystem) rescan() {
@@ -196,6 +209,13 @@ func (s *HelloSystem) ComponentResized(cflag ecs.Flag) {
     if s.resizematch(cflag) {
         s.view.rescan()
         
+    }
+}
+
+func (s *HelloSystem) ComponentWillResize(cflag ecs.Flag) {
+    if s.resizematch(cflag) {
+        
+        s.view.clearpointers()
     }
 }
 

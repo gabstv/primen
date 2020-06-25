@@ -7,6 +7,7 @@ import (
     "sort"
 
     "github.com/gabstv/ecs/v2"
+    
 )
 
 
@@ -102,15 +103,29 @@ func (v *viewDrawLayerDrawableSystem) Remove(e ecs.Entity) bool {
     return false
 }
 
+func (v *viewDrawLayerDrawableSystem) clearpointers() {
+    
+    
+    for i := range v.entities {
+        e := v.entities[i].Entity
+        
+        v.entities[i].Drawable = nil
+        
+        v.entities[i].DrawLayer = nil
+        
+        _ = e
+    }
+}
+
 func (v *viewDrawLayerDrawableSystem) rescan() {
     
     
-    for _, x := range v.entities {
-        e := x.Entity
+    for i := range v.entities {
+        e := v.entities[i].Entity
         
-        x.Drawable = GetDrawableComponent(v.world).Data(e)
+        v.entities[i].Drawable = GetDrawableComponent(v.world).Data(e)
         
-        x.DrawLayer = GetDrawLayerComponent(v.world).Data(e)
+        v.entities[i].DrawLayer = GetDrawLayerComponent(v.world).Data(e)
         
         _ = e
         
@@ -202,7 +217,14 @@ func (s *DrawLayerDrawableSystem) ComponentRemoved(e ecs.Entity, eflag ecs.Flag)
 func (s *DrawLayerDrawableSystem) ComponentResized(cflag ecs.Flag) {
     if s.resizematch(cflag) {
         s.view.rescan()
-        
+        s.afterCompResize()
+    }
+}
+
+func (s *DrawLayerDrawableSystem) ComponentWillResize(cflag ecs.Flag) {
+    if s.resizematch(cflag) {
+        s.beforeCompResize()
+        s.view.clearpointers()
     }
 }
 

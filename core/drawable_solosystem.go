@@ -7,6 +7,7 @@ import (
     "sort"
 
     "github.com/gabstv/ecs/v2"
+    
 )
 
 
@@ -99,13 +100,25 @@ func (v *viewSoloDrawableSystem) Remove(e ecs.Entity) bool {
     return false
 }
 
+func (v *viewSoloDrawableSystem) clearpointers() {
+    
+    
+    for i := range v.entities {
+        e := v.entities[i].Entity
+        
+        v.entities[i].Drawable = nil
+        
+        _ = e
+    }
+}
+
 func (v *viewSoloDrawableSystem) rescan() {
     
     
-    for _, x := range v.entities {
-        e := x.Entity
+    for i := range v.entities {
+        e := v.entities[i].Entity
         
-        x.Drawable = GetDrawableComponent(v.world).Data(e)
+        v.entities[i].Drawable = GetDrawableComponent(v.world).Data(e)
         
         _ = e
         
@@ -196,6 +209,13 @@ func (s *SoloDrawableSystem) ComponentResized(cflag ecs.Flag) {
     if s.resizematch(cflag) {
         s.view.rescan()
         
+    }
+}
+
+func (s *SoloDrawableSystem) ComponentWillResize(cflag ecs.Flag) {
+    if s.resizematch(cflag) {
+        
+        s.view.clearpointers()
     }
 }
 

@@ -7,6 +7,7 @@ import (
     "sort"
 
     "github.com/gabstv/ecs/v2"
+    
 )
 
 
@@ -99,13 +100,25 @@ func (v *viewTransformSystem) Remove(e ecs.Entity) bool {
     return false
 }
 
+func (v *viewTransformSystem) clearpointers() {
+    
+    
+    for i := range v.entities {
+        e := v.entities[i].Entity
+        
+        v.entities[i].Transform = nil
+        
+        _ = e
+    }
+}
+
 func (v *viewTransformSystem) rescan() {
     
     
-    for _, x := range v.entities {
-        e := x.Entity
+    for i := range v.entities {
+        e := v.entities[i].Entity
         
-        x.Transform = GetTransformComponent(v.world).Data(e)
+        v.entities[i].Transform = GetTransformComponent(v.world).Data(e)
         
         _ = e
         
@@ -198,6 +211,13 @@ func (s *TransformSystem) ComponentResized(cflag ecs.Flag) {
     if s.resizematch(cflag) {
         s.view.rescan()
         
+    }
+}
+
+func (s *TransformSystem) ComponentWillResize(cflag ecs.Flag) {
+    if s.resizematch(cflag) {
+        
+        s.view.clearpointers()
     }
 }
 

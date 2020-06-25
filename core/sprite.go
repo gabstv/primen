@@ -172,7 +172,7 @@ func (s *Sprite) Draw(ctx DrawCtx, d *Drawable) {
 	}
 }
 
-//go:generate ecsgen -n Sprite -p core -o sprite_component.go --component-tpl --vars "UUID=80C95DEC-DBBF-4529-BD27-739A69055BA0" --vars "BeforeRemove=c.beforeRemove(e)" --vars "OnAdd=c.onAdd(e)"
+//go:generate ecsgen -n Sprite -p core -o sprite_component.go --component-tpl --vars "UUID=80C95DEC-DBBF-4529-BD27-739A69055BA0" --vars "BeforeRemove=c.beforeRemove(e)" --vars "OnAdd=c.onAdd(e)" --vars "OnWillResize=c.willresize()" --vars "OnResize=c.resized()"
 
 func (c *SpriteComponent) beforeRemove(e ecs.Entity) {
 	if d := GetDrawableComponentData(c.world, e); d != nil {
@@ -187,6 +187,22 @@ func (c *SpriteComponent) onAdd(e ecs.Entity) {
 		SetDrawableComponentData(c.world, e, Drawable{
 			drawer: c.Data(e),
 		})
+	}
+}
+
+func (c *SpriteComponent) willresize() {
+	for i := range c.data {
+		if d := GetDrawableComponentData(c.world, c.data[i].Entity); d != nil {
+			d.drawer = nil
+		}
+	}
+}
+
+func (c *SpriteComponent) resized() {
+	for i := range c.data {
+		if d := GetDrawableComponentData(c.world, c.data[i].Entity); d != nil {
+			d.drawer = &c.data[i].Data
+		}
 	}
 }
 

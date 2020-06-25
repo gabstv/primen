@@ -7,6 +7,7 @@ import (
     "sort"
 
     "github.com/gabstv/ecs/v2"
+    
 )
 
 
@@ -102,15 +103,29 @@ func (v *viewDrawableLabelSystem) Remove(e ecs.Entity) bool {
     return false
 }
 
+func (v *viewDrawableLabelSystem) clearpointers() {
+    
+    
+    for i := range v.entities {
+        e := v.entities[i].Entity
+        
+        v.entities[i].Drawable = nil
+        
+        v.entities[i].Label = nil
+        
+        _ = e
+    }
+}
+
 func (v *viewDrawableLabelSystem) rescan() {
     
     
-    for _, x := range v.entities {
-        e := x.Entity
+    for i := range v.entities {
+        e := v.entities[i].Entity
         
-        x.Drawable = GetDrawableComponent(v.world).Data(e)
+        v.entities[i].Drawable = GetDrawableComponent(v.world).Data(e)
         
-        x.Label = GetLabelComponent(v.world).Data(e)
+        v.entities[i].Label = GetLabelComponent(v.world).Data(e)
         
         _ = e
         
@@ -201,6 +216,13 @@ func (s *DrawableLabelSystem) ComponentResized(cflag ecs.Flag) {
     if s.resizematch(cflag) {
         s.view.rescan()
         s.onResize()
+    }
+}
+
+func (s *DrawableLabelSystem) ComponentWillResize(cflag ecs.Flag) {
+    if s.resizematch(cflag) {
+        
+        s.view.clearpointers()
     }
 }
 

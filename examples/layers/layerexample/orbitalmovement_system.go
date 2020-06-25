@@ -113,19 +113,37 @@ func (v *viewOrbitalMovementSystem) Remove(e ecs.Entity) bool {
     return false
 }
 
+func (v *viewOrbitalMovementSystem) clearpointers() {
+    
+    
+    for i := range v.entities {
+        e := v.entities[i].Entity
+        
+        v.entities[i].OrbitalMovement = nil
+        
+        v.entities[i].Sprite = nil
+        
+        v.entities[i].DrawLayer = nil
+        
+        v.entities[i].Transform = nil
+        
+        _ = e
+    }
+}
+
 func (v *viewOrbitalMovementSystem) rescan() {
     
     
-    for _, x := range v.entities {
-        e := x.Entity
+    for i := range v.entities {
+        e := v.entities[i].Entity
         
-        x.OrbitalMovement = GetOrbitalMovementComponent(v.world).Data(e)
+        v.entities[i].OrbitalMovement = GetOrbitalMovementComponent(v.world).Data(e)
         
-        x.Sprite = core.GetSpriteComponent(v.world).Data(e)
+        v.entities[i].Sprite = core.GetSpriteComponent(v.world).Data(e)
         
-        x.DrawLayer = core.GetDrawLayerComponent(v.world).Data(e)
+        v.entities[i].DrawLayer = core.GetDrawLayerComponent(v.world).Data(e)
         
-        x.Transform = core.GetTransformComponent(v.world).Data(e)
+        v.entities[i].Transform = core.GetTransformComponent(v.world).Data(e)
         
         _ = e
         
@@ -232,6 +250,13 @@ func (s *OrbitalMovementSystem) ComponentResized(cflag ecs.Flag) {
     if s.resizematch(cflag) {
         s.view.rescan()
         
+    }
+}
+
+func (s *OrbitalMovementSystem) ComponentWillResize(cflag ecs.Flag) {
+    if s.resizematch(cflag) {
+        
+        s.view.clearpointers()
     }
 }
 

@@ -108,15 +108,24 @@ func (t *Transform) ScaleY() float64 {
 	return t.scaleY
 }
 
-//go:generate ecsgen -n Transform -p core -o transform_component.go --component-tpl --vars "UUID=45E8849D-7EA9-4CDC-8AB1-86DB8705C253" --vars "OnAdd=c.setupTransform(e)" --vars "OnResize=c.resized()" --vars "OnRemove=c.removed(e)"
+//go:generate ecsgen -n Transform -p core -o transform_component.go --component-tpl --vars "UUID=45E8849D-7EA9-4CDC-8AB1-86DB8705C253" --vars "OnAdd=c.setupTransform(e)" --vars "OnResize=c.resized()" --vars "OnWillResize=c.willresize()" --vars "OnRemove=c.removed(e)"
 
 func (c *TransformComponent) setupTransform(e ecs.Entity) {
 	d := c.Data(e)
 	d.w = c.world
 }
 
+func (c *TransformComponent) willresize() {
+	for i, v := range c.data {
+		d := v.Data
+		d.parent = nil
+		v.Data = d
+		c.data[i] = v
+	}
+}
+
 func (c *TransformComponent) resized() {
-	for _, v := range c.data {
+	for i, v := range c.data {
 		if v.Data.pentity == 0 {
 			v.Data.parent = nil
 		} else {
@@ -128,13 +137,14 @@ func (c *TransformComponent) resized() {
 				x.parent = nil
 			}
 		}
+		c.data[i] = v
 	}
 }
 
 func (c *TransformComponent) removed(e ecs.Entity) {
-	for _, v := range c.data {
-		if v.Data.pentity == e {
-			x := &v.Data
+	for i := range c.data {
+		if c.data[i].Data.pentity == e {
+			x := &c.data[i].Data
 			x.parent = nil
 			x.pentity = 0
 		}

@@ -4,6 +4,8 @@ import (
 	"math"
 	"sort"
 	"sync"
+
+	"github.com/gabstv/ecs/v2"
 )
 
 //FIXME: review
@@ -36,6 +38,7 @@ type drawLayerDrawer struct {
 
 type drawLayerItemCache struct {
 	ZIndex   int64
+	Entity   ecs.Entity
 	Drawable *Drawable
 }
 

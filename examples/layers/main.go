@@ -1,4 +1,4 @@
-// +build example
+//~~ +build example
 
 package main
 
@@ -6,6 +6,7 @@ import (
 	"context"
 	"math"
 	"math/rand"
+	"unsafe"
 
 	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen"
@@ -90,11 +91,18 @@ func dogamesetup(ctx context.Context, engine primen.Engine, bgs, fgs []*ebiten.I
 	rootnode.Transform().SetX(320 / 2).SetY(240 / 2)
 
 	rootnode.Function().Update = func(ctx core.UpdateCtx, e ecs.Entity) {
-		rootnode.Transform().SetX(float64(ctx.Engine().Width() / 2)).SetY(float64(ctx.Engine().Height() / 2))
+		ttx := core.GetTransformComponentData(w, e)
+		xx := uintptr(unsafe.Pointer(ttx))
+		_ = xx
+		ttx.SetX(float64(ctx.Engine().Width() / 2)).SetY(float64(ctx.Engine().Height() / 2))
 	}
 
 	nrings := 5
-	nitems := 20
+	nitems := 50
+
+	w.Listen(ecs.EvtComponentsResized, func(e ecs.Event) {
+		println("COMPONENT RESIZED", e.ComponentID, e.ComponentName)
+	})
 
 	for ring := 0; ring < nrings; ring++ {
 		for itemi := 0; itemi < nitems; itemi++ {
@@ -129,6 +137,8 @@ func dogamesetup(ctx context.Context, engine primen.Engine, bgs, fgs []*ebiten.I
 			}
 		}
 	}
+
+	rootnode = nil
 
 	fnss := primen.NewRootFnNode(w)
 

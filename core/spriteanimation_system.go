@@ -7,6 +7,7 @@ import (
     "sort"
 
     "github.com/gabstv/ecs/v2"
+    
 )
 
 
@@ -102,15 +103,29 @@ func (v *viewSpriteAnimationSystem) Remove(e ecs.Entity) bool {
     return false
 }
 
+func (v *viewSpriteAnimationSystem) clearpointers() {
+    
+    
+    for i := range v.entities {
+        e := v.entities[i].Entity
+        
+        v.entities[i].Sprite = nil
+        
+        v.entities[i].SpriteAnimation = nil
+        
+        _ = e
+    }
+}
+
 func (v *viewSpriteAnimationSystem) rescan() {
     
     
-    for _, x := range v.entities {
-        e := x.Entity
+    for i := range v.entities {
+        e := v.entities[i].Entity
         
-        x.Sprite = GetSpriteComponent(v.world).Data(e)
+        v.entities[i].Sprite = GetSpriteComponent(v.world).Data(e)
         
-        x.SpriteAnimation = GetSpriteAnimationComponent(v.world).Data(e)
+        v.entities[i].SpriteAnimation = GetSpriteAnimationComponent(v.world).Data(e)
         
         _ = e
         
@@ -201,6 +216,13 @@ func (s *SpriteAnimationSystem) ComponentResized(cflag ecs.Flag) {
     if s.resizematch(cflag) {
         s.view.rescan()
         
+    }
+}
+
+func (s *SpriteAnimationSystem) ComponentWillResize(cflag ecs.Flag) {
+    if s.resizematch(cflag) {
+        
+        s.view.clearpointers()
     }
 }
 

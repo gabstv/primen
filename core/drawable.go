@@ -43,7 +43,13 @@ func (d *Drawable) G(sx, sy, r, x, y float64) ebiten.GeoM {
 	return GeoM().Scale(sx, sy).Rotate(r).Translate(x, y).MV()
 }
 
-//go:generate ecsgen -n Drawable -p core -o drawable_component.go --component-tpl --vars "UUID=E3086C37-F0F5-4BFD-8FEE-F9C451B1E57E"
+//go:generate ecsgen -n Drawable -p core -o drawable_component.go --component-tpl --vars "UUID=E3086C37-F0F5-4BFD-8FEE-F9C451B1E57E" --vars "OnWillResize=c.willresize()"
+
+func (c *DrawableComponent) willresize() {
+	for i := range c.data {
+		c.data[i].Data.drawer = nil
+	}
+}
 
 // ╔═╗╔═╗╦  ╔═╗  ╔═╗╦ ╦╔═╗
 // ╚═╗║ ║║  ║ ║  ╚═╗╚╦╝╚═╗
@@ -92,7 +98,7 @@ func (s *SoloDrawableSystem) Update(ctx UpdateCtx) {}
 // | | \ | |_)  / /\  \ \    /| |    / /\  \ \_/ | |_  | |_)     ( (` \ \_/ ( (`
 // |_|_/ |_| \ /_/--\  \_\/\/ |_|__ /_/--\  |_|  |_|__ |_| \     _)_)  |_|  _)_)
 
-//go:generate ecsgen -n DrawLayerDrawable -p core -o drawable_layersystem.go --system-tpl --vars "Priority=-10" --vars "EntityAdded=s.onEntityAdded(e)" --vars "EntityRemoved=s.onEntityRemoved(e)" --vars "Setup=s.setupVars()" --vars "UUID=CBBC8DB4-4866-413E-A7A9-250A3C9ECDDC" --components "Drawable" --components "DrawLayer" --members "layers=*drawLayerDrawers"
+//go:generate ecsgen -n DrawLayerDrawable -p core -o drawable_layersystem.go --system-tpl --vars "Priority=-10" --vars "EntityAdded=s.onEntityAdded(e)" --vars "EntityRemoved=s.onEntityRemoved(e)" --vars "Setup=s.setupVars()" --vars "UUID=CBBC8DB4-4866-413E-A7A9-250A3C9ECDDC" --vars "OnWillResize=s.beforeCompResize()" --vars "OnResize=s.afterCompResize()" --components "Drawable" --components "DrawLayer" --members "layers=*drawLayerDrawers"
 
 var matchDrawLayerDrawableSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
 	if !f.Contains(GetDrawLayerComponent(w).Flag()) {
@@ -151,6 +157,7 @@ func (s *DrawLayerDrawableSystem) UpdatePriority(ctx UpdateCtx) {
 			// TODO: check for leaks on AddOrUpdate (*Drawable might leak)
 			l.AddOrUpdate(v.Entity, &drawLayerItemCache{
 				ZIndex:   v.DrawLayer.ZIndex,
+				Entity:   v.Entity,
 				Drawable: v.Drawable,
 			})
 		} else if v.DrawLayer.ZIndex != v.DrawLayer.prevIndex {
@@ -226,5 +233,23 @@ func (s *DrawLayerDrawableSystem) setupVars() {
 	s.layers = &drawLayerDrawers{
 		slice: make([]*drawLayerDrawer, 0, 16),
 		m:     make(map[LayerIndex]*drawLayerDrawer),
+	}
+}
+
+func (s *DrawLayerDrawableSystem) beforeCompResize() {
+	for _, l := range s.layers.All() {
+		l.Items.Each(func(key ecs.Entity, value SLVal) bool {
+			value.(*drawLayerItemCache).Drawable = nil
+			return true
+		})
+	}
+}
+
+func (s *DrawLayerDrawableSystem) afterCompResize() {
+	for _, l := range s.layers.All() {
+		l.Items.Each(func(key ecs.Entity, value SLVal) bool {
+			value.(*drawLayerItemCache).Drawable = GetDrawableComponentData(s.world, key)
+			return true
+		})
 	}
 }

@@ -130,6 +130,8 @@ func (c *OrbitalMovementComponent) Upsert(e ecs.Entity, data interface{}) {
     rsz := false
     if cap(c.data) == len(c.data) {
         rsz = true
+        c.world.CWillResize(c, c.wkey)
+        
     }
     newindex := len(c.data)
     c.data = append(c.data, drawerOrbitalMovementComponent{
@@ -138,7 +140,10 @@ func (c *OrbitalMovementComponent) Upsert(e ecs.Entity, data interface{}) {
     })
     if len(c.data) > 1 {
         if c.data[newindex].Entity < c.data[newindex-1].Entity {
+            c.world.CWillResize(c, c.wkey)
+            
             sort.Sort(slcdrawerOrbitalMovementComponent(c.data))
+            rsz = true
         }
     }
     

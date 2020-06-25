@@ -130,6 +130,8 @@ func (c *SpriteComponent) Upsert(e ecs.Entity, data interface{}) {
     rsz := false
     if cap(c.data) == len(c.data) {
         rsz = true
+        c.world.CWillResize(c, c.wkey)
+        c.willresize()
     }
     newindex := len(c.data)
     c.data = append(c.data, drawerSpriteComponent{
@@ -138,12 +140,15 @@ func (c *SpriteComponent) Upsert(e ecs.Entity, data interface{}) {
     })
     if len(c.data) > 1 {
         if c.data[newindex].Entity < c.data[newindex-1].Entity {
+            c.world.CWillResize(c, c.wkey)
+            c.willresize()
             sort.Sort(slcdrawerSpriteComponent(c.data))
+            rsz = true
         }
     }
     
     if rsz {
-        
+        c.resized()
         c.world.CResized(c, c.wkey)
         c.world.Dispatch(ecs.Event{
             Type: ecs.EvtComponentsResized,
