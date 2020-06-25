@@ -11,8 +11,6 @@ import (
 	"golang.org/x/image/font"
 )
 
-//FIXME: label is broken
-
 type Label struct {
 	text     string
 	face     font.Face
@@ -22,17 +20,18 @@ type Label struct {
 	filter   ebiten.Filter
 	disabled bool // if true, the DrawableSystem will not draw this
 	//
-	x           float64 // logical X position
-	y           float64 // logical Y position
-	angle       float64 // radians
-	scaleX      float64 // logical X scale (1 = 100%)
-	scaleY      float64 // logical Y scale (1 = 100%)
-	originX     float64 // X origin (0 = left; 0.5 = center; 1 = right)
-	originY     float64 // Y origin (0 = top; 0.5 = middle; 1 = bottom)
-	offsetX     float64 // Text rendering offset X (pixel unit)
-	offsetY     float64 // Text rendering offset Y (pixel unit)
-	faceOffsetX int     // Text rendering offset X (pixel unit)
-	faceOffsetY int     // Text rendering offset Y (pixel unit)
+	x              float64 // logical X position
+	y              float64 // logical Y position
+	angle          float64 // radians
+	scaleX         float64 // logical X scale (1 = 100%)
+	scaleY         float64 // logical Y scale (1 = 100%)
+	originX        float64 // X origin (0 = left; 0.5 = center; 1 = right)
+	originY        float64 // Y origin (0 = top; 0.5 = middle; 1 = bottom)
+	offsetX        float64 // Text rendering offset X (pixel unit)
+	offsetY        float64 // Text rendering offset Y (pixel unit)
+	faceOffsetAuto bool    // if true, apply font face height to faceOffsetY
+	faceOffsetX    int     // Text rendering offset X (pixel unit)
+	faceOffsetY    int     // Text rendering offset Y (pixel unit)
 	//
 
 	base      *ebiten.Image
@@ -44,8 +43,21 @@ type Label struct {
 
 func NewLabel() Label {
 	return Label{
-		textdirty: true,
+		textdirty:      true,
+		scaleX:         1,
+		scaleY:         1,
+		faceOffsetAuto: true,
 	}
+}
+
+func (l *Label) SetFaceOffset(x, y int) *Label {
+	l.faceOffsetX, l.faceOffsetY = x, y
+	return l
+}
+
+func (l *Label) SetFaceOffsetModeAuto(auto bool) *Label {
+	l.faceOffsetAuto = auto
+	return l
 }
 
 func (l *Label) SetText(t string) *Label {
@@ -59,7 +71,7 @@ func (l *Label) SetText(t string) *Label {
 	} else if l.area.Eq(image.ZP) {
 		// calc if image needs to be bigger
 		ff := l.validFontFace()
-		p := text.MeasureString(l.text, ff)
+		p := text.MeasureString(t, ff)
 		p.X += l.dborder.X
 		p.Y += l.dborder.Y
 		if ww, hh := l.base.Size(); ww < p.X || hh < p.Y {
@@ -147,8 +159,13 @@ func (l *Label) renderText() {
 	}
 	ff := l.validFontFace()
 	l.base.Fill(color.Transparent)
-	text.Draw(l.base, l.text, ff, l.faceOffsetX, l.faceOffsetY, l.color)
+	autoh := 0
+	if l.faceOffsetAuto {
+		autoh = l.FontFaceHeight()
+	}
+	text.Draw(l.base, l.text, ff, l.faceOffsetX, l.faceOffsetY+autoh, l.color)
 	l.realSize = text.MeasureString(l.text, ff)
+	l.textdirty = false
 }
 
 func (l *Label) Draw(ctx DrawCtx, d *Drawable) {
