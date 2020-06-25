@@ -1,7 +1,6 @@
 module github.com/gabstv/primen
 
 require (
-	aletheia.icu/broccoli v1.0.3 // indirect
 	aletheia.icu/broccoli/fs v0.0.0-20200420200651-c5ac961a357a
 	github.com/gabstv/ecs v1.6.4
 	github.com/gabstv/ecs/v2 v2.0.21
