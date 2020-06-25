@@ -7,8 +7,6 @@ import (
 	"github.com/hajimehoshi/ebiten"
 )
 
-//FIXME: review
-
 // AnimClipMode determines how time is treated outside of the keyframed range of an animation clip.
 type AnimClipMode byte
 

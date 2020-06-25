@@ -2,8 +2,6 @@ package core
 
 import "github.com/hajimehoshi/ebiten"
 
-//FIXME: review
-
 type Context interface {
 	Frame() int64
 	DT() float64
@@ -85,63 +83,3 @@ func NewDrawCtx(e Engine, frame int64, dt, tps float64, screen *ebiten.Image) Dr
 		engine: e,
 	}
 }
-
-// type ctxt struct {
-// 	c          context.Context
-// 	dt         float64
-// 	system     *ecs.System
-// 	world      *ecs.World
-// 	engine     Engine
-// 	fps        float64
-// 	frame      int64
-// 	drwskipped bool
-// 	drawM      DrawManager
-// }
-
-// func (c ctxt) Deadline() (deadline time.Time, ok bool) {
-// 	return c.c.Deadline()
-// }
-
-// func (c ctxt) Done() <-chan struct{} {
-// 	return c.c.Done()
-// }
-
-// func (c ctxt) Err() error {
-// 	return c.c.Err()
-// }
-
-// func (c ctxt) Value(key interface{}) interface{} {
-// 	return c.c.Value(key)
-// }
-
-// func (c ctxt) DT() float64 {
-// 	return c.dt
-// }
-
-// func (c ctxt) System() *ecs.System {
-// 	return c.system
-// }
-
-// func (c ctxt) World() *ecs.World {
-// 	return c.world
-// }
-
-// func (c ctxt) Engine() Engine {
-// 	return c.engine
-// }
-
-// func (c ctxt) FPS() float64 {
-// 	return c.fps
-// }
-
-// func (c ctxt) Frame() int64 {
-// 	return c.frame
-// }
-
-// func (c ctxt) IsDrawingSkipped() bool {
-// 	return c.drwskipped
-// }
-
-// func (c ctxt) Renderer() DrawManager {
-// 	return c.drawM
-// }

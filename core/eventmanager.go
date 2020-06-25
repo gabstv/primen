@@ -5,8 +5,6 @@ import (
 	"sync/atomic"
 )
 
-//FIXME: review
-
 type EventID int64
 
 type EventFn func(eventName string, e Event)

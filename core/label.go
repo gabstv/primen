@@ -273,9 +273,3 @@ func (s *DrawableLabelSystem) Update(ctx UpdateCtx) {
 		v.Label.compute()
 	}
 }
-
-// func (l *Label) Destroy() {
-// 	l.base = nil
-// 	l.SetDirty()
-// 	l.transformMatrix = nil
-// }

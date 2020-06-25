@@ -8,8 +8,6 @@ import (
 	"github.com/gabstv/ecs/v2"
 )
 
-//FIXME: review
-
 // LayerIndex is the layer index
 type LayerIndex int64
 

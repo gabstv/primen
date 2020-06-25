@@ -4,8 +4,6 @@ import (
 	"github.com/gabstv/ecs/v2"
 )
 
-//FIXME: review
-
 type GameWorld struct {
 	*ecs.World
 	e Engine
@@ -24,10 +22,6 @@ func NewWorld(e Engine) *GameWorld {
 
 type World interface {
 	ecs.BaseWorld
-	// DrawPriority(ctx DrawCtx)
-	// Draw(ctx DrawCtx)
-	// UpdatePriority(ctx UpdateCtx)
-	// Update(ctx UpdateCtx)
 	Engine() Engine
 }
 
