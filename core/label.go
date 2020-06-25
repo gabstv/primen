@@ -46,10 +46,10 @@ func NewLabel() Label {
 	}
 }
 
-func (l *Label) SetText(t string) {
+func (l *Label) SetText(t string) *Label {
 	if t == l.text {
 		// no change
-		return
+		return l
 	}
 	redraw := false
 	if l.base == nil {
@@ -69,6 +69,13 @@ func (l *Label) SetText(t string) {
 		l.setupInnerImage()
 		l.textdirty = true
 	}
+	return l
+}
+
+func (l *Label) SetOrigin(ox, oy float64) *Label {
+	l.originX = ox
+	l.originY = oy
+	return l
 }
 
 func (l *Label) SetColor(c color.Color) *Label {
@@ -217,7 +224,7 @@ var resizematchDrawableLabelSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
 
 func (s *DrawableLabelSystem) onEntityAdded(e ecs.Entity) {
 	d := GetDrawableComponentData(s.world, e)
-	d.drawer = GetSpriteComponentData(s.world, e)
+	d.drawer = GetLabelComponentData(s.world, e)
 }
 
 func (s *DrawableLabelSystem) onEntityRemoved(e ecs.Entity) {

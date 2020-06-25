@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/gabstv/ecs"
+	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen"
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/io"
@@ -76,9 +76,11 @@ func loadAtlas(e primen.Engine, atlas *io.Atlas) *AtlasPreviewer {
 
 func errready(v string) func(e primen.Engine) {
 	return func(e primen.Engine) {
-		primen.SetDrawFuncs(e.Default(), e.Default().NewEntity(), nil, func(ctx core.Context, e ecs.Entity) {
+		w := e.NewWorldWithDefaults(0)
+		f := primen.NewRootFnNode(w)
+		f.Function().Draw = func(ctx core.DrawCtx, e ecs.Entity) {
 			ebitenutil.DebugPrint(ctx.Renderer().Screen(), v)
-		}, nil)
+		}
 	}
 }
 
@@ -88,6 +90,7 @@ type AtlasPreviewer struct {
 	atlas    *io.Atlas
 	canvas   *primen.Node
 	titler   *primen.Node
+	w        primen.World
 }
 
 func (p *AtlasPreviewer) Destroy() {
@@ -97,33 +100,32 @@ func (p *AtlasPreviewer) Destroy() {
 
 func (p *AtlasPreviewer) resetCanvas() {
 	if p.canvas != nil {
-		primen.Destroy(p.canvas)
+		p.canvas.Destroy()
 	}
 	p.canvas = nil
 	if p.titler != nil {
-		primen.Destroy(p.titler)
+		p.titler.Destroy()
 	}
 	p.titler = nil
 }
 
 func (p *AtlasPreviewer) createCanvas() {
-	p.canvas = primen.NewTransform(p.e.Root(nil))
-	p.canvas.SetPos(float64(p.e.Width())/2, float64(p.e.Height())/2)
-	p.titler = primen.NewTransform(p.e.Root(nil))
-	p.titler.SetPos(float64(p.e.Width())/2, 30)
+	p.canvas = primen.NewRootNode(p.w)
+	p.canvas.Transform().SetX(float64(p.e.Width()) / 2).SetY(float64(p.e.Height()) / 2)
+	p.titler = primen.NewRootNode(p.w)
+	p.titler.Transform().SetX(float64(p.e.Width()) / 2).SetY(30)
 }
 
 func (p *AtlasPreviewer) setupAnim(name string) {
 	p.resetCanvas()
 	p.createCanvas()
-	p.canvas.SetScale2(8 * ebiten.DeviceScaleFactor())
+	p.canvas.Transform().SetScale(8*ebiten.DeviceScaleFactor(), 8*ebiten.DeviceScaleFactor())
 	anim := p.atlas.GetAnimation(name)
-	title := primen.NewLabel(p.titler, nil, uiLayer)
-	title.SetText("Animation: " + name)
-	title.SetColor(primen.ColorFromHex("#e74c3c"))
-	title.SetOrigin(.5, .5)
-	as := primen.NewAnimatedSprite(p.canvas, primen.Layer0, anim)
-	as.PlayClipIndex(0)
+	title := primen.NewChildLabelNode(p.titler, uiLayer)
+	title.Label().SetText("Animation: " + name).SetColor(primen.ColorFromHex("#e74c3c"))
+	title.Label().SetOrigin(.5, .5)
+	as := primen.NewChildAnimatedSpriteNode(p.canvas, primen.Layer0, 12, anim)
+	as.SpriteAnim().PlayClipIndex(0)
 	// nclips := anim.Count()
 	// anim.Each(func(i int, clip core.AnimationClip) bool {
 	//
@@ -134,6 +136,7 @@ func newAtlasPreviewer(e primen.Engine, atlas *io.Atlas) *AtlasPreviewer {
 	p := &AtlasPreviewer{
 		e:     e,
 		atlas: atlas,
+		w:     e.NewWorldWithDefaults(0),
 	}
 	p.itemList = newAtlasItemList(p)
 	if len(atlas.GetAnimations()) > 0 {
@@ -147,30 +150,32 @@ type AtlasItemList struct {
 }
 
 func (al *AtlasItemList) Destroy() {
-	primen.Destroy(al.tr)
+	al.tr.Destroy()
 	al.tr = nil
 }
 
 func newAtlasItemList(parent *AtlasPreviewer) *AtlasItemList {
 	atlas := parent.atlas
-	pp := primen.NewTransform(parent.e.Root(nil))
-	pp.SetPos(10, 10)
+	//pp := primen.NewTransform(parent.e.Root(nil))
+	pp := primen.NewRootNode(parent.w)
+	pp.Transform().SetX(10).SetY(10)
 	nexty := 0.0
 	// animations
 	{
-		lbl := primen.NewLabel(pp, nil, uiLayer)
-		lbl.SetColor(colorTitle)
-		lbl.SetText("Animations:")
-		lbl.SetY(nexty)
-		_, yp := lbl.ComputedSize()
-		nexty += float64(yp) + 10
+		//lbl := primen.NewLabel(pp, nil, uiLayer)
+		lbl := primen.NewChildLabelNode(pp, uiLayer)
+		lbl.Label().SetColor(colorTitle)
+		lbl.Label().SetText("Animations:")
+		lbl.Transform().SetY(nexty)
+		p := lbl.Label().ComputedSize()
+		nexty += float64(p.Y) + 10
 		for _, animg := range atlas.GetAnimations() {
-			li := primen.NewLabel(pp, nil, uiLayer)
-			li.SetColor(colorItem)
-			li.SetY(nexty)
-			li.SetText(animg.Name)
-			_, yp = li.ComputedSize()
-			nexty += float64(yp) + 10
+			li := primen.NewChildLabelNode(pp, uiLayer)
+			li.Label().SetColor(colorItem)
+			li.Transform().SetY(nexty)
+			li.Label().SetText(animg.Name)
+			p = li.Label().ComputedSize()
+			nexty += float64(p.Y) + 10
 		}
 	}
 	return &AtlasItemList{
