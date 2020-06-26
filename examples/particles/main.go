@@ -43,28 +43,26 @@ func ready(engine primen.Engine) {
 	{
 		pen := primen.NewChildParticleEmitterNode(tr, primen.Layer0)
 		props := pen.ParticleEmitter().Props()
-		props.Dur = 1
+		props.Duration = 1
 		props.Source = []*ebiten.Image{pimg}
-		props.Colorb = color.RGBA{
+		props.InitColor = color.RGBA{
 			R: 255,
 			G: 100,
 			B: 100,
 			A: 255,
 		}
-		props.Colore = color.RGBA{
+		props.EndColor = color.RGBA{
 			R: 0x00,
 			G: 0xd6,
 			B: 0xba,
 			A: 0,
 		}
-		//props.Vpx0 = -20
-		//props.Vpx1 = 20
-		props.Vvx0 = -10
-		props.Vvx1 = 10
-		props.Vax0 = -50
-		props.Vax1 = 50
-		props.Vay0 = 0
-		props.Vay1 = 10
+		props.SetPositionRange(-3, 3, 0, 0)
+		props.SetVelocityRange(-10, 10, -1, 1)
+		props.XAccelVar0 = -50
+		props.XAccelVar1 = 50
+		props.YAccelVar0 = 0
+		props.YAccelVar1 = 10
 		props.InitScaleVar0 = .2
 		props.InitScaleVar1 = 1
 		pen.ParticleEmitter().SetProps(props).SetMaxParticles(200) //.SetX(50).SetY(50)
@@ -79,26 +77,26 @@ func ready(engine primen.Engine) {
 	{
 		pen := primen.NewChildParticleEmitterNode(tr, primen.Layer0)
 		props := pen.ParticleEmitter().Props()
-		props.Dur = 1
+		props.Duration = 1
 		props.Source = []*ebiten.Image{pimg}
-		props.Colorb = color.RGBA{
+		props.InitColor = color.RGBA{
 			R: 255,
 			G: 100,
 			B: 100,
 			A: 255,
 		}
-		props.Colore = color.RGBA{
+		props.EndColor = color.RGBA{
 			R: 60,
 			G: 30,
 			B: 255,
 			A: 0,
 		}
-		props.Vvx0 = -10
-		props.Vvx1 = 10
-		props.Vax0 = -50
-		props.Vax1 = 50
-		props.Vay0 = 0
-		props.Vay1 = 10
+		props.XVelocityVar0 = -10
+		props.XVelocityVar1 = 10
+		props.XAccelVar0 = -50
+		props.XAccelVar1 = 50
+		props.YAccelVar0 = 0
+		props.YAccelVar1 = 10
 		pen.ParticleEmitter().SetProps(props).SetMaxParticles(200).SetX(-100)
 		em := pen.ParticleEmitter().EmissionProp()
 		em.N0 = 2
@@ -112,36 +110,36 @@ func ready(engine primen.Engine) {
 	{
 		pen3 := primen.NewChildParticleEmitterNode(tr, primen.Layer0)
 		props := pen3.ParticleEmitter().Props()
-		props.Dur = .25
-		props.Vdur1 = 2.5
+		props.Duration = .25
+		props.DurationVar1 = 2.5
 		props.Source = []*ebiten.Image{pimg, pimg2, pimg3}
-		props.Colorb = color.RGBA{
+		props.InitColor = color.RGBA{
 			R: 0xf1, // #f1c40f
 			G: 0xc4,
 			B: 0x0f,
 			A: 255,
 		}
-		props.Colore = color.RGBA{
+		props.EndColor = color.RGBA{
 			R: 0x8e, // #8e44ad
 			G: 0x44,
 			B: 0xad,
 			A: 0,
 		}
-		props.Vy = -350
-		props.Ay = 180
-		props.Vvx0 = -14
-		props.Vvx1 = 14
-		props.Vax0 = -90
-		props.Vax1 = 90
-		props.Vay0 = -100
-		props.Vay1 = 100
+		props.YVelocity = -350
+		props.YAccel = 180
+		props.XVelocityVar0 = -14
+		props.XVelocityVar1 = 14
+		props.XAccelVar0 = -90
+		props.XAccelVar1 = 90
+		props.YAccelVar0 = -100
+		props.YAccelVar1 = 100
 		props.EndScaleVar0 = .2
 		props.EndScaleVar1 = 2.9
-		props.Vr0 = -1
-		props.Vr1 = 1
-		props.Vrab0, props.Vrab1 = -10, 10
-		props.Vrae0, props.Vrae1 = -20, 20
-		props.Hueshift = math.Pi / 2
+		props.RotationVar0 = -1
+		props.RotationVar1 = 1
+		props.RotationAccelVar0, props.RotationAccelVar1 = -10, 10
+		props.EndRotationAccelVar0, props.EndRotationAccelVar1 = -20, 20
+		props.HueRotationSpeed = math.Pi / 2
 		pen3.ParticleEmitter().SetProps(props).SetMaxParticles(2000).SetX(100)
 		em := pen3.ParticleEmitter().EmissionProp()
 		em.N0 = 5
@@ -154,27 +152,27 @@ func ready(engine primen.Engine) {
 	penm := primen.NewChildParticleEmitterNode(tr, primen.Layer0)
 	{
 		props := penm.ParticleEmitter().Props()
-		props.Dur = .75
-		props.Vdur1 = 1.5
+		props.Duration = .75
+		props.DurationVar1 = 1.5
 		props.Source = []*ebiten.Image{pimg, pimg2, pimg3}
-		props.Colorb = color.RGBA{
+		props.InitColor = color.RGBA{
 			R: 0xfe, // #feca57
 			G: 0xca,
 			B: 0x57,
 			A: 255,
 		}
-		props.Colore = color.RGBA{
+		props.EndColor = color.RGBA{
 			R: 0xff,
 			G: 0xff,
 			B: 0xff,
 			A: 0,
 		}
-		props.Vy = 0
-		props.Ay = 0
-		props.Vvx0 = -3
-		props.Vvx1 = 3
-		props.Vvy0 = -4
-		props.Vvy1 = 4
+		props.YVelocity = 0
+		props.YAccel = 0
+		props.XVelocityVar0 = -3
+		props.XVelocityVar1 = 3
+		props.YVelocityVar0 = -4
+		props.YVelocityVar1 = 4
 		props.EndScaleVar0 = -1
 		props.EndScaleVar1 = 1
 		props.EndScale = 4
@@ -211,8 +209,8 @@ func ready(engine primen.Engine) {
 			ctx.Engine().SetScreenScale(ebiten.DeviceScaleFactor() / 2)
 		}
 		props := penm.ParticleEmitter().Props()
-		props.Vx = (gx - pgx) * 20
-		props.Vy = (gy - pgy) * 20
+		props.XVelocity = (gx - pgx) * 20
+		props.YVelocity = (gy - pgy) * 20
 		penm.ParticleEmitter().SetProps(props)
 		pgx, pgy = gx, gy
 	}
