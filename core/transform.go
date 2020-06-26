@@ -22,15 +22,29 @@ type Transform struct {
 	// copy the current world
 	// this is set once the component is created
 	w ecs.BaseWorld
+	// called before removal
+	removenotice map[int64]func()
+	removeindex  int64
 }
 
 func NewTransform(x, y float64) Transform {
 	return Transform{
-		x:      x,
-		y:      y,
-		scaleX: 1,
-		scaleY: 1,
+		x:            x,
+		y:            y,
+		scaleX:       1,
+		scaleY:       1,
+		removenotice: make(map[int64]func()),
 	}
+}
+
+func (t *Transform) AddDestroyListener(l func()) int64 {
+	t.removeindex++
+	id := t.removeindex
+	t.removenotice[id] = l
+	return id
+}
+func (t *Transform) RemoveDestroyListener(id int64) {
+	delete(t.removenotice, id)
 }
 
 func (t *Transform) SetParent(e ecs.Entity) bool {
@@ -50,6 +64,19 @@ func (t *Transform) Parent() ecs.Entity {
 
 func (t *Transform) ParentTransform() *Transform {
 	return t.parent
+}
+
+func (t *Transform) Tree() []*Transform {
+	tr := make([]*Transform, 0, 16)
+	t.tree(&tr)
+	return tr
+}
+
+func (t *Transform) tree(l *[]*Transform) {
+	*l = append(*l, t)
+	if t.parent != nil {
+		t.parent.tree(l)
+	}
 }
 
 func (t *Transform) SetX(x float64) *Transform {
@@ -108,7 +135,7 @@ func (t *Transform) ScaleY() float64 {
 	return t.scaleY
 }
 
-//go:generate ecsgen -n Transform -p core -o transform_component.go --component-tpl --vars "UUID=45E8849D-7EA9-4CDC-8AB1-86DB8705C253" --vars "OnAdd=c.setupTransform(e)" --vars "OnResize=c.resized()" --vars "OnWillResize=c.willresize()" --vars "OnRemove=c.removed(e)"
+//go:generate ecsgen -n Transform -p core -o transform_component.go --component-tpl --vars "UUID=45E8849D-7EA9-4CDC-8AB1-86DB8705C253" --vars "OnAdd=c.setupTransform(e)" --vars "OnResize=c.resized()" --vars "OnWillResize=c.willresize()" --vars "OnRemove=c.removed(e)" --vars "BeforeRemove=c.beforeremove(e)"
 
 func (c *TransformComponent) setupTransform(e ecs.Entity) {
 	d := c.Data(e)
@@ -151,6 +178,16 @@ func (c *TransformComponent) removed(e ecs.Entity) {
 	}
 }
 
+func (c *TransformComponent) beforeremove(e ecs.Entity) {
+	i := c.indexof(e)
+	if c.data[i].Data.removenotice != nil {
+		for _, v := range c.data[i].Data.removenotice {
+			v()
+		}
+	}
+	c.data[i].Data.removenotice = nil
+}
+
 //go:generate ecsgen -n Transform -p core -o transform_system.go --system-tpl --vars "EntityAdded=s.onEntityAdded(e)" --vars "EntityRemoved=s.onEntityRemoved(e)" --vars "Setup=s.setupTransforms()" --vars "Priority=100" --vars "UUID=486FA1E8-4C45-48F2-AD8A-02D84C4426C9" --components "Transform" --members "tick=uint64"
 
 var matchTransformSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
@@ -175,6 +212,36 @@ func (s *TransformSystem) onEntityRemoved(e ecs.Entity) {
 
 func (s *TransformSystem) setupTransforms() {
 	s.tick = 0
+}
+
+func (s *TransformSystem) GlobalToLocal(gx, gy float64, e ecs.Entity) (x, y float64, ok bool) {
+	ts, ok := s.V().Fetch(e)
+	if !ok {
+		return 0, 0, false
+	}
+	//ts.Transform.Parent()
+	//m := ebiten.GeoM{}
+	//m.Translate(gx, gy)
+	//m2 := ts.Transform.m
+	//m.Apply()
+	//x, y = ts.Transform.m.Apply(gx, gy)
+	//return x, y, true
+	// m := ebiten.GeoM{}
+	// m.Translate(gx, gy)
+	// m.Invert()
+	// m2 := ts.Transform.m
+	// m2.Concat(m)
+	// m2.Invert()
+	// x, y = m2.Apply(0, 0)
+
+	// M_loc = M_parent_inv * M
+	pm := ts.Transform.m
+	pm.Invert()
+	m := ebiten.GeoM{}
+	m.Translate(gx, gy)
+	pm.Concat(m)
+	x, y = pm.Apply(0, 0)
+	return x, y, true
 }
 
 // DrawPriority noop
