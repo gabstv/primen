@@ -36,7 +36,7 @@ func Scalef(f, scale float64) float64 {
 }
 
 func Scaleb(b uint8, scale float64) uint8 {
-	return b * scale
+	return uint8(float64(b) * scale)
 }
 
 func Lerpf(a, b, t float64) float64 {
