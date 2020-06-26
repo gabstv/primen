@@ -58,20 +58,18 @@ func NewParticleEmitter(w ecs.BaseWorld) ParticleEmitter {
 		scaleY:    1,
 		strategy:  SpawnPause,
 		props: ParticleProps{
-			Vy:     -100,
-			Colorb: color.RGBA{255, 255, 255, 255},
-			Colore: color.RGBA{255, 255, 255, 0},
-			Vvx0:   -3,
-			Vvx1:   3,
-			Ox:     .5,
-			Oy:     .5,
-			Vr0:    -math.Pi,
-			Vr1:    math.Pi,
-			Dur:    1,
-			Sx:     1,
-			Sy:     1,
-			Esx:    .5,
-			Esy:    .5,
+			Vy:        -100,
+			Colorb:    color.RGBA{255, 255, 255, 255},
+			Colore:    color.RGBA{255, 255, 255, 0},
+			Vvx0:      -3,
+			Vvx1:      3,
+			Ox:        .5,
+			Oy:        .5,
+			Vr0:       -math.Pi,
+			Vr1:       math.Pi,
+			Dur:       1,
+			InitScale: 1,
+			EndScale:  .5,
 		},
 		emission: EmissionProp{
 			Enabled: true,
@@ -308,31 +306,33 @@ func (c *ParticleEmitterComponent) onAdd(e ecs.Entity) {
 }
 
 type ParticleProps struct {
-	Px, Py                     float64         // initial position
-	Vpx0, Vpy0, Vpx1, Vpy1     float64         // randomized position range
-	Vx, Vy                     float64         // initial velocity
-	Vvx0, Vvy0, Vvx1, Vvy1     float64         // randomized velocity range
-	Ax, Ay                     float64         // initial acceleration
-	Vax0, Vay0, Vax1, Vay1     float64         // randomized acceleration range
-	R                          float64         // initial rotation (radians)
-	Vr0, Vr1                   float64         // randomized initial rotation (radians)
-	Vvr0, Vvr1                 float64         // randomized initial rotation velocity (radians/second)
-	Vrab0, Vrab1               float64         // initial rotation acceleration (radians/second)
-	Vrae0, Vrae1               float64         // end rotation acceleration (radians/second)
-	Sx, Sy                     float64         // initial scale
-	Vsx0, Vsy0, Vsx1, Vsy1     float64         // randomized initial scale
-	Esx, Esy                   float64         // end scale
-	Vesx0, Vesy0, Vesx1, Vesy1 float64         // randomized end scale
-	Ox, Oy                     float64         // origin
-	Dur                        float64         // duration
-	Vdur0, Vdur1               float64         // randomized duration (seconds)
-	Hueshift                   float64         // hue shift (/second)
-	Colorb                     color.RGBA      // initial color tint modifier
-	Colore                     color.RGBA      // end color tint modifier
-	Source                     []*ebiten.Image // particle source(s); if it's more than one, it will be randomized
+	Px, Py                       float64         // initial position
+	Vpx0, Vpy0, Vpx1, Vpy1       float64         // randomized position range
+	Vx, Vy                       float64         // initial velocity
+	Vvx0, Vvy0, Vvx1, Vvy1       float64         // randomized velocity range
+	Ax, Ay                       float64         // initial acceleration
+	Vax0, Vay0, Vax1, Vay1       float64         // randomized acceleration range
+	R                            float64         // initial rotation (radians)
+	Vr0, Vr1                     float64         // randomized initial rotation (radians)
+	Vvr0, Vvr1                   float64         // randomized initial rotation velocity (radians/second)
+	Vrab0, Vrab1                 float64         // initial rotation acceleration (radians/second)
+	Vrae0, Vrae1                 float64         // end rotation acceleration (radians/second)
+	InitScale                    float64         // initial scale
+	InitScaleVar0, InitScaleVar1 float64         // randomized initial scale
+	EndScale                     float64         // end scale
+	EndScaleVar0, EndScaleVar1   float64         // randomized end scale
+	Ox, Oy                       float64         // origin
+	Dur                          float64         // duration
+	Vdur0, Vdur1                 float64         // randomized duration (seconds)
+	Hueshift                     float64         // hue shift (/second)
+	Colorb                       color.RGBA      // initial color tint modifier
+	Colore                       color.RGBA      // end color tint modifier
+	Source                       []*ebiten.Image // particle source(s); if it's more than one, it will be randomized
 }
 
 func (pp ParticleProps) NewParticle(rng *rand.Rand, e *ParticleEmitter) Particle {
+	initscale := pp.InitScale + Lerpf(pp.InitScaleVar0, pp.InitScaleVar1, rng.Float64())
+	endscale := pp.EndScale + Lerpf(pp.EndScaleVar0, pp.EndScaleVar1, rng.Float64())
 	p := Particle{
 		bclr: float64(pp.Colorb.R) / 255,
 		bclg: float64(pp.Colorb.G) / 255,
@@ -362,18 +362,16 @@ func (pp ParticleProps) NewParticle(rng *rand.Rand, e *ParticleEmitter) Particle
 		rae:       Lerpf(pp.Vrae0, pp.Vrae1, rng.Float64()),
 		vx:        pp.Vx + Lerpf(pp.Vvx0, pp.Vvx1, rng.Float64()),
 		vy:        pp.Vy + Lerpf(pp.Vvy0, pp.Vvy1, rng.Float64()),
-		//sx: GET FROM bsx,
-		//sy: GET FROM bsy,
-		bsx:      pp.Sx + Lerpf(pp.Vsx0, pp.Vsx1, rng.Float64()),
-		bsy:      pp.Sy + Lerpf(pp.Vsy0, pp.Vsy1, rng.Float64()),
-		esx:      pp.Esx + Lerpf(pp.Vesx0, pp.Vesx1, rng.Float64()),
-		esy:      pp.Esy + Lerpf(pp.Vesy0, pp.Vesy1, rng.Float64()),
-		t:        0,
-		hueshift: pp.Hueshift,
-		hue:      0,
+		sx:        initscale,
+		sy:        initscale,
+		bsx:       initscale,
+		bsy:       initscale,
+		esx:       endscale,
+		esy:       endscale,
+		t:         0,
+		hueshift:  pp.Hueshift,
+		hue:       0,
 	}
-	p.sx = p.bsx
-	p.sy = p.bsy
 	if len(pp.Source) == 1 {
 		p.img = pp.Source[0]
 	} else if len(pp.Source) > 1 {

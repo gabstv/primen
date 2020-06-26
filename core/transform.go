@@ -66,6 +66,19 @@ func (t *Transform) ParentTransform() *Transform {
 	return t.parent
 }
 
+func (t *Transform) Tree() []*Transform {
+	tr := make([]*Transform, 0, 16)
+	t.tree(&tr)
+	return tr
+}
+
+func (t *Transform) tree(l *[]*Transform) {
+	*l = append(*l, t)
+	if t.parent != nil {
+		t.parent.tree(l)
+	}
+}
+
 func (t *Transform) SetX(x float64) *Transform {
 	t.x = x
 	return t
@@ -199,6 +212,36 @@ func (s *TransformSystem) onEntityRemoved(e ecs.Entity) {
 
 func (s *TransformSystem) setupTransforms() {
 	s.tick = 0
+}
+
+func (s *TransformSystem) GlobalToLocal(gx, gy float64, e ecs.Entity) (x, y float64, ok bool) {
+	ts, ok := s.V().Fetch(e)
+	if !ok {
+		return 0, 0, false
+	}
+	//ts.Transform.Parent()
+	//m := ebiten.GeoM{}
+	//m.Translate(gx, gy)
+	//m2 := ts.Transform.m
+	//m.Apply()
+	//x, y = ts.Transform.m.Apply(gx, gy)
+	//return x, y, true
+	// m := ebiten.GeoM{}
+	// m.Translate(gx, gy)
+	// m.Invert()
+	// m2 := ts.Transform.m
+	// m2.Concat(m)
+	// m2.Invert()
+	// x, y = m2.Apply(0, 0)
+
+	// M_loc = M_parent_inv * M
+	pm := ts.Transform.m
+	pm.Invert()
+	m := ebiten.GeoM{}
+	m.Translate(gx, gy)
+	pm.Concat(m)
+	x, y = pm.Apply(0, 0)
+	return x, y, true
 }
 
 // DrawPriority noop
