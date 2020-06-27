@@ -156,7 +156,7 @@ func (c *LabelComponent) Upsert(e ecs.Entity, data interface{}) {
             ComponentID: "1A74D1BE-BBF7-44F4-AC8B-18A00208EB76",
         })
     }
-    c.onAdd(e)
+    
     c.world.CAdded(e, c, c.wkey)
     c.world.Dispatch(ecs.Event{
         Type: ecs.EvtComponentAdded,
@@ -176,7 +176,7 @@ func (c *LabelComponent) Remove(e ecs.Entity) {
     if i == -1 {
         return
     }
-    c.beforeRemove(e)
+    
     //c.data = append(c.data[:i], c.data[i+1:]...)
     c.data = c.data[:i+copy(c.data[i:], c.data[i+1:])]
     c.world.CRemoved(e, c, c.wkey)
@@ -216,6 +216,7 @@ func (c *LabelComponent) Setup(w ecs.BaseWorld, f ecs.Flag, key [4]byte) {
     c.wkey = key
     c.data = make([]drawerLabelComponent, 0, 256)
     c.initialized = true
+    c.onCompSetup()
 }
 
 

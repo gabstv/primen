@@ -156,7 +156,7 @@ func (c *TileSetComponent) Upsert(e ecs.Entity, data interface{}) {
             ComponentID: "775FFA75-9F2F-423A-A905-D48E4D562AE8",
         })
     }
-    c.onAdd(e)
+    
     c.world.CAdded(e, c, c.wkey)
     c.world.Dispatch(ecs.Event{
         Type: ecs.EvtComponentAdded,
@@ -176,7 +176,7 @@ func (c *TileSetComponent) Remove(e ecs.Entity) {
     if i == -1 {
         return
     }
-    c.beforeRemove(e)
+    
     //c.data = append(c.data[:i], c.data[i+1:]...)
     c.data = c.data[:i+copy(c.data[i:], c.data[i+1:])]
     c.world.CRemoved(e, c, c.wkey)
@@ -216,6 +216,7 @@ func (c *TileSetComponent) Setup(w ecs.BaseWorld, f ecs.Flag, key [4]byte) {
     c.wkey = key
     c.data = make([]drawerTileSetComponent, 0, 256)
     c.initialized = true
+    c.onCompSetup()
 }
 
 

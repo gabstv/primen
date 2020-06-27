@@ -52,6 +52,19 @@ func (t *Transform) ParentTransform() *Transform {
 	return t.parent
 }
 
+func (t *Transform) Tree() []*Transform {
+	tr := make([]*Transform, 0, 16)
+	t.tree(&tr)
+	return tr
+}
+
+func (t *Transform) tree(l *[]*Transform) {
+	*l = append(*l, t)
+	if t.parent != nil {
+		t.parent.tree(l)
+	}
+}
+
 func (t *Transform) SetX(x float64) *Transform {
 	t.x = x
 	return t
@@ -177,6 +190,26 @@ func (s *TransformSystem) setupTransforms() {
 	s.tick = 0
 }
 
+func (s *TransformSystem) GlobalToLocal(gx, gy float64, e ecs.Entity) (x, y float64, ok bool) {
+	ts, ok := s.V().Fetch(e)
+	if !ok {
+		return 0, 0, false
+	}
+	// M_loc = M_parent_inv * M
+	// pm := ts.Transform.m
+	// pm.Invert()
+	// m := ebiten.GeoM{}
+	// m.Translate(gx, gy)
+	// pm.Concat(m)
+	// x, y = pm.Apply(0, 0)
+
+	pm := ts.Transform.m
+	pm.Invert()
+	x, y = pm.Apply(gx, gy)
+
+	return x, y, true
+}
+
 // DrawPriority noop
 func (s *TransformSystem) DrawPriority(ctx DrawCtx) {
 	if !DebugDraw {
@@ -223,44 +256,4 @@ func resolveTransform(t *Transform, tick uint64) ebiten.GeoM {
 	t.m.Concat(parent)
 	t.lastTick = tick
 	return t.m
-}
-
-//go:generate ecsgen -n DrawableTransform -p core -o transform_drawablesystem.go --system-tpl --vars "Priority=90" --vars "UUID=7E9DEBA9-DEF6-4174-8160-AA7B72E2A734" --components "Transform" --components "Drawable"
-
-var matchDrawableTransformSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
-	if !f.Contains(GetTransformComponent(w).Flag()) {
-		return false
-	}
-	if !f.Contains(GetDrawableComponent(w).Flag()) {
-		return false
-	}
-	return true
-}
-
-// The DrawableTransformSystem's View needs to be recalculated if the
-// Drawable or Transform component arrays change.
-var resizematchDrawableTransformSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
-	if f.Contains(GetTransformComponent(w).Flag()) {
-		return true
-	}
-	if f.Contains(GetDrawableComponent(w).Flag()) {
-		return true
-	}
-	return false
-}
-
-// DrawPriority noop
-func (s *DrawableTransformSystem) DrawPriority(ctx DrawCtx) {}
-
-// Draw noop
-func (s *DrawableTransformSystem) Draw(ctx DrawCtx) {}
-
-// UpdatePriority noop
-func (s *DrawableTransformSystem) UpdatePriority(ctx UpdateCtx) {}
-
-// Update sets the drawable transform
-func (s *DrawableTransformSystem) Update(ctx UpdateCtx) {
-	for _, v := range s.V().Matches() {
-		v.Drawable.SetConcatM(v.Transform.m)
-	}
 }
