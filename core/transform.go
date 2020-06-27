@@ -22,29 +22,15 @@ type Transform struct {
 	// copy the current world
 	// this is set once the component is created
 	w ecs.BaseWorld
-	// called before removal
-	removenotice map[int64]func()
-	removeindex  int64
 }
 
 func NewTransform(x, y float64) Transform {
 	return Transform{
-		x:            x,
-		y:            y,
-		scaleX:       1,
-		scaleY:       1,
-		removenotice: make(map[int64]func()),
+		x:      x,
+		y:      y,
+		scaleX: 1,
+		scaleY: 1,
 	}
-}
-
-func (t *Transform) AddDestroyListener(l func()) int64 {
-	t.removeindex++
-	id := t.removeindex
-	t.removenotice[id] = l
-	return id
-}
-func (t *Transform) RemoveDestroyListener(id int64) {
-	delete(t.removenotice, id)
 }
 
 func (t *Transform) SetParent(e ecs.Entity) bool {
@@ -135,7 +121,7 @@ func (t *Transform) ScaleY() float64 {
 	return t.scaleY
 }
 
-//go:generate ecsgen -n Transform -p core -o transform_component.go --component-tpl --vars "UUID=45E8849D-7EA9-4CDC-8AB1-86DB8705C253" --vars "OnAdd=c.setupTransform(e)" --vars "OnResize=c.resized()" --vars "OnWillResize=c.willresize()" --vars "OnRemove=c.removed(e)" --vars "BeforeRemove=c.beforeremove(e)"
+//go:generate ecsgen -n Transform -p core -o transform_component.go --component-tpl --vars "UUID=45E8849D-7EA9-4CDC-8AB1-86DB8705C253" --vars "OnAdd=c.setupTransform(e)" --vars "OnResize=c.resized()" --vars "OnWillResize=c.willresize()" --vars "OnRemove=c.removed(e)"
 
 func (c *TransformComponent) setupTransform(e ecs.Entity) {
 	d := c.Data(e)
@@ -178,16 +164,6 @@ func (c *TransformComponent) removed(e ecs.Entity) {
 	}
 }
 
-func (c *TransformComponent) beforeremove(e ecs.Entity) {
-	i := c.indexof(e)
-	if c.data[i].Data.removenotice != nil {
-		for _, v := range c.data[i].Data.removenotice {
-			v()
-		}
-	}
-	c.data[i].Data.removenotice = nil
-}
-
 //go:generate ecsgen -n Transform -p core -o transform_system.go --system-tpl --vars "EntityAdded=s.onEntityAdded(e)" --vars "EntityRemoved=s.onEntityRemoved(e)" --vars "Setup=s.setupTransforms()" --vars "Priority=100" --vars "UUID=486FA1E8-4C45-48F2-AD8A-02D84C4426C9" --components "Transform" --members "tick=uint64"
 
 var matchTransformSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
@@ -219,28 +195,18 @@ func (s *TransformSystem) GlobalToLocal(gx, gy float64, e ecs.Entity) (x, y floa
 	if !ok {
 		return 0, 0, false
 	}
-	//ts.Transform.Parent()
-	//m := ebiten.GeoM{}
-	//m.Translate(gx, gy)
-	//m2 := ts.Transform.m
-	//m.Apply()
-	//x, y = ts.Transform.m.Apply(gx, gy)
-	//return x, y, true
+	// M_loc = M_parent_inv * M
+	// pm := ts.Transform.m
+	// pm.Invert()
 	// m := ebiten.GeoM{}
 	// m.Translate(gx, gy)
-	// m.Invert()
-	// m2 := ts.Transform.m
-	// m2.Concat(m)
-	// m2.Invert()
-	// x, y = m2.Apply(0, 0)
+	// pm.Concat(m)
+	// x, y = pm.Apply(0, 0)
 
-	// M_loc = M_parent_inv * M
 	pm := ts.Transform.m
 	pm.Invert()
-	m := ebiten.GeoM{}
-	m.Translate(gx, gy)
-	pm.Concat(m)
-	x, y = pm.Apply(0, 0)
+	x, y = pm.Apply(gx, gy)
+
 	return x, y, true
 }
 
@@ -290,44 +256,4 @@ func resolveTransform(t *Transform, tick uint64) ebiten.GeoM {
 	t.m.Concat(parent)
 	t.lastTick = tick
 	return t.m
-}
-
-//go:generate ecsgen -n DrawableTransform -p core -o transform_drawablesystem.go --system-tpl --vars "Priority=90" --vars "UUID=7E9DEBA9-DEF6-4174-8160-AA7B72E2A734" --components "Transform" --components "Drawable"
-
-var matchDrawableTransformSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
-	if !f.Contains(GetTransformComponent(w).Flag()) {
-		return false
-	}
-	if !f.Contains(GetDrawableComponent(w).Flag()) {
-		return false
-	}
-	return true
-}
-
-// The DrawableTransformSystem's View needs to be recalculated if the
-// Drawable or Transform component arrays change.
-var resizematchDrawableTransformSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
-	if f.Contains(GetTransformComponent(w).Flag()) {
-		return true
-	}
-	if f.Contains(GetDrawableComponent(w).Flag()) {
-		return true
-	}
-	return false
-}
-
-// DrawPriority noop
-func (s *DrawableTransformSystem) DrawPriority(ctx DrawCtx) {}
-
-// Draw noop
-func (s *DrawableTransformSystem) Draw(ctx DrawCtx) {}
-
-// UpdatePriority noop
-func (s *DrawableTransformSystem) UpdatePriority(ctx UpdateCtx) {}
-
-// Update sets the drawable transform
-func (s *DrawableTransformSystem) Update(ctx UpdateCtx) {
-	for _, v := range s.V().Matches() {
-		v.Drawable.SetConcatM(v.Transform.m)
-	}
 }

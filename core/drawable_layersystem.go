@@ -29,9 +29,11 @@ type viewDrawLayerDrawableSystem struct {
 type VIDrawLayerDrawableSystem struct {
     Entity ecs.Entity
     
-    Drawable *Drawable 
+    Drawable Drawable 
     
     DrawLayer *DrawLayer 
+    
+    Transform *Transform 
     
 }
 
@@ -80,8 +82,9 @@ func (v *viewDrawLayerDrawableSystem) Add(e ecs.Entity) bool {
     }
     v.entities = append(v.entities, VIDrawLayerDrawableSystem{
         Entity: e,
-        Drawable: GetDrawableComponent(v.world).Data(e),
+        Drawable: GetDrawable(v.world, e),
 DrawLayer: GetDrawLayerComponent(v.world).Data(e),
+Transform: GetTransformComponent(v.world).Data(e),
 
     })
     if len(v.entities) > 1 {
@@ -113,6 +116,8 @@ func (v *viewDrawLayerDrawableSystem) clearpointers() {
         
         v.entities[i].DrawLayer = nil
         
+        v.entities[i].Transform = nil
+        
         _ = e
     }
 }
@@ -123,9 +128,11 @@ func (v *viewDrawLayerDrawableSystem) rescan() {
     for i := range v.entities {
         e := v.entities[i].Entity
         
-        v.entities[i].Drawable = GetDrawableComponent(v.world).Data(e)
+        v.entities[i].Drawable = GetDrawable(v.world, e)
         
         v.entities[i].DrawLayer = GetDrawLayerComponent(v.world).Data(e)
+        
+        v.entities[i].Transform = GetTransformComponent(v.world).Data(e)
         
         _ = e
         

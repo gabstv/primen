@@ -35,9 +35,10 @@ type drawLayerDrawer struct {
 }
 
 type drawLayerItemCache struct {
-	ZIndex   int64
-	Entity   ecs.Entity
-	Drawable *Drawable
+	ZIndex    int64
+	Entity    ecs.Entity
+	Drawable  Drawable
+	Transform *Transform
 }
 
 func (c *drawLayerItemCache) Less(v interface{}) bool {

@@ -7,11 +7,6 @@ import (
 
 // Sprite is the data of a sprite component.
 type Sprite struct {
-	x        float64 // logical X position
-	y        float64 // logical Y position
-	angle    float64 // radians
-	scaleX   float64 // logical X scale (1 = 100%)
-	scaleY   float64 // logical Y scale (1 = 100%)
 	originX  float64 // X origin (0 = left; 0.5 = center; 1 = right)
 	originY  float64 // Y origin (0 = top; 0.5 = middle; 1 = bottom)
 	offsetX  float64 // offset origin X (in pixels)
@@ -38,10 +33,6 @@ func getImageSize(img *ebiten.Image) (w, h float64) {
 func NewSprite(x, y float64, quad *ebiten.Image) Sprite {
 	iw, ih := getImageSize(quad)
 	return Sprite{
-		x:           x,
-		y:           y,
-		scaleX:      1,
-		scaleY:      1,
 		image:       quad,
 		imageWidth:  iw,
 		imageHeight: ih,
@@ -53,55 +44,6 @@ func NewSprite(x, y float64, quad *ebiten.Image) Sprite {
 
 func (s *Sprite) SetEnabled(enabled bool) *Sprite {
 	s.disabled = !enabled
-	return s
-}
-
-// X gets the local x position. Overrided by the transform
-func (s *Sprite) X() float64 {
-	return s.x
-}
-
-// Y gets the local y position. Overrided by the transform
-func (s *Sprite) Y() float64 {
-	return s.y
-}
-
-func (s *Sprite) SetX(x float64) *Sprite {
-	s.x = x
-	return s
-}
-
-func (s *Sprite) SetY(y float64) *Sprite {
-	s.y = y
-	return s
-}
-
-// Angle gets the local angle (radians).
-// It is overrided by the transform component.
-func (s *Sprite) Angle() float64 {
-	return s.angle
-}
-
-func (s *Sprite) SetAngle(r float64) *Sprite {
-	s.angle = r
-	return s
-}
-
-func (s *Sprite) ScaleX() float64 {
-	return s.scaleX
-}
-
-func (s *Sprite) SetScaleX(sx float64) *Sprite {
-	s.scaleX = sx
-	return s
-}
-
-func (s *Sprite) ScaleY() float64 {
-	return s.scaleY
-}
-
-func (s *Sprite) SetScaleY(sy float64) *Sprite {
-	s.scaleY = sy
 	return s
 }
 
@@ -141,14 +83,13 @@ func (s *Sprite) SetImage(img *ebiten.Image) *Sprite {
 	return s
 }
 
-func (s *Sprite) Draw(ctx DrawCtx, d *Drawable) {
-	if d == nil {
-		return
-	}
+func (s *Sprite) Update(ctx UpdateCtx, t *Transform) {}
+
+func (s *Sprite) Draw(ctx DrawCtx, t *Transform) {
 	if s.disabled {
 		return
 	}
-	g := d.G(s.scaleX, s.scaleY, s.angle, s.x, s.y)
+	g := t.m
 	o := &s.opt
 	o.GeoM.Reset()
 	o.GeoM.Translate(applyOrigin(s.imageWidth, s.originX)+s.offsetX, applyOrigin(s.imageHeight, s.originY)+s.offsetY)
@@ -172,85 +113,10 @@ func (s *Sprite) Draw(ctx DrawCtx, d *Drawable) {
 	}
 }
 
-//go:generate ecsgen -n Sprite -p core -o sprite_component.go --component-tpl --vars "UUID=80C95DEC-DBBF-4529-BD27-739A69055BA0" --vars "BeforeRemove=c.beforeRemove(e)" --vars "OnAdd=c.onAdd(e)" --vars "OnWillResize=c.willresize()" --vars "OnResize=c.resized()"
+//go:generate ecsgen -n Sprite -p core -o sprite_component.go --component-tpl --vars "UUID=80C95DEC-DBBF-4529-BD27-739A69055BA0" --vars "Setup=c.onCompSetup()"
 
-func (c *SpriteComponent) beforeRemove(e ecs.Entity) {
-	if d := GetDrawableComponentData(c.world, e); d != nil {
-		d.drawer = nil
-	}
+func (c *SpriteComponent) onCompSetup() {
+	RegisterDrawableComponent(c.world, c.flag, func(w ecs.BaseWorld, e ecs.Entity) Drawable {
+		return GetSpriteComponentData(w, e)
+	})
 }
-
-func (c *SpriteComponent) onAdd(e ecs.Entity) {
-	if d := GetDrawableComponentData(c.world, e); d != nil {
-		d.drawer = c.Data(e)
-	} else {
-		SetDrawableComponentData(c.world, e, Drawable{
-			drawer: c.Data(e),
-		})
-	}
-}
-
-func (c *SpriteComponent) willresize() {
-	for i := range c.data {
-		if d := GetDrawableComponentData(c.world, c.data[i].Entity); d != nil {
-			d.drawer = nil
-		}
-	}
-}
-
-func (c *SpriteComponent) resized() {
-	for i := range c.data {
-		if d := GetDrawableComponentData(c.world, c.data[i].Entity); d != nil {
-			d.drawer = &c.data[i].Data
-		}
-	}
-}
-
-//go:generate ecsgen -n DrawableSprite -p core -o sprite_drawablesystem.go --system-tpl --vars "Priority=10" --vars "EntityAdded=s.onEntityAdded(e)" --vars "EntityRemoved=s.onEntityRemoved(e)" --vars "OnResize=s.onResize()" --vars "UUID=02F3E9BD-CED3-4160-8943-9A89C0A533FB" --components "Drawable" --components "Sprite"
-
-var matchDrawableSpriteSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
-	if !f.Contains(GetDrawableComponent(w).Flag()) {
-		return false
-	}
-	if !f.Contains(GetSpriteComponent(w).Flag()) {
-		return false
-	}
-	return true
-}
-
-var resizematchDrawableSpriteSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
-	if f.Contains(GetDrawableComponent(w).Flag()) {
-		return true
-	}
-	if f.Contains(GetSpriteComponent(w).Flag()) {
-		return true
-	}
-	return false
-}
-
-func (s *DrawableSpriteSystem) onEntityAdded(e ecs.Entity) {
-	d := GetDrawableComponentData(s.world, e)
-	d.drawer = GetSpriteComponentData(s.world, e)
-}
-
-func (s *DrawableSpriteSystem) onEntityRemoved(e ecs.Entity) {
-
-}
-
-func (s *DrawableSpriteSystem) onResize() {
-	for _, v := range s.V().Matches() {
-		v.Drawable.drawer = v.Sprite
-	}
-}
-
-// DrawPriority noop
-func (s *DrawableSpriteSystem) DrawPriority(ctx DrawCtx) {}
-
-// Draw noop - drawing is controlled by *Drawable
-func (s *DrawableSpriteSystem) Draw(ctx DrawCtx) {}
-
-// UpdatePriority noop
-func (s *DrawableSpriteSystem) UpdatePriority(ctx UpdateCtx) {}
-
-// Update noop
-func (s *DrawableSpriteSystem) Update(ctx UpdateCtx) {}

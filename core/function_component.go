@@ -216,6 +216,7 @@ func (c *FunctionComponent) Setup(w ecs.BaseWorld, f ecs.Flag, key [4]byte) {
     c.wkey = key
     c.data = make([]drawerFunctionComponent, 0, 256)
     c.initialized = true
+    
 }
 
 

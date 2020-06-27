@@ -216,6 +216,7 @@ func (c *TransformComponent) Setup(w ecs.BaseWorld, f ecs.Flag, key [4]byte) {
     c.wkey = key
     c.data = make([]drawerTransformComponent, 0, 256)
     c.initialized = true
+    
 }
 
 

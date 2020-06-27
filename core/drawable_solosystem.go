@@ -29,7 +29,9 @@ type viewSoloDrawableSystem struct {
 type VISoloDrawableSystem struct {
     Entity ecs.Entity
     
-    Drawable *Drawable 
+    Drawable Drawable 
+    
+    Transform *Transform 
     
 }
 
@@ -78,7 +80,8 @@ func (v *viewSoloDrawableSystem) Add(e ecs.Entity) bool {
     }
     v.entities = append(v.entities, VISoloDrawableSystem{
         Entity: e,
-        Drawable: GetDrawableComponent(v.world).Data(e),
+        Drawable: GetDrawable(v.world, e),
+Transform: GetTransformComponent(v.world).Data(e),
 
     })
     if len(v.entities) > 1 {
@@ -108,6 +111,8 @@ func (v *viewSoloDrawableSystem) clearpointers() {
         
         v.entities[i].Drawable = nil
         
+        v.entities[i].Transform = nil
+        
         _ = e
     }
 }
@@ -118,7 +123,9 @@ func (v *viewSoloDrawableSystem) rescan() {
     for i := range v.entities {
         e := v.entities[i].Entity
         
-        v.entities[i].Drawable = GetDrawableComponent(v.world).Data(e)
+        v.entities[i].Drawable = GetDrawable(v.world, e)
+        
+        v.entities[i].Transform = GetTransformComponent(v.world).Data(e)
         
         _ = e
         

@@ -18,42 +18,42 @@ import (
 
 
 
-const uuidDrawableParticleEmitterSystem = "627C4B36-EE45-40C6-91AE-617D5CFDD8FC"
+const uuidParticleEmitterSystem = "627C4B36-EE45-40C6-91AE-617D5CFDD8FC"
 
-type viewDrawableParticleEmitterSystem struct {
-    entities []VIDrawableParticleEmitterSystem
+type viewParticleEmitterSystem struct {
+    entities []VIParticleEmitterSystem
     world ecs.BaseWorld
     
 }
 
-type VIDrawableParticleEmitterSystem struct {
+type VIParticleEmitterSystem struct {
     Entity ecs.Entity
     
-    Drawable *Drawable 
+    Transform *Transform 
     
     ParticleEmitter *ParticleEmitter 
     
 }
 
-type sortedVIDrawableParticleEmitterSystems []VIDrawableParticleEmitterSystem
-func (a sortedVIDrawableParticleEmitterSystems) Len() int           { return len(a) }
-func (a sortedVIDrawableParticleEmitterSystems) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a sortedVIDrawableParticleEmitterSystems) Less(i, j int) bool { return a[i].Entity < a[j].Entity }
+type sortedVIParticleEmitterSystems []VIParticleEmitterSystem
+func (a sortedVIParticleEmitterSystems) Len() int           { return len(a) }
+func (a sortedVIParticleEmitterSystems) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a sortedVIParticleEmitterSystems) Less(i, j int) bool { return a[i].Entity < a[j].Entity }
 
-func newviewDrawableParticleEmitterSystem(w ecs.BaseWorld) *viewDrawableParticleEmitterSystem {
-    return &viewDrawableParticleEmitterSystem{
-        entities: make([]VIDrawableParticleEmitterSystem, 0),
+func newviewParticleEmitterSystem(w ecs.BaseWorld) *viewParticleEmitterSystem {
+    return &viewParticleEmitterSystem{
+        entities: make([]VIParticleEmitterSystem, 0),
         world: w,
     }
 }
 
-func (v *viewDrawableParticleEmitterSystem) Matches() []VIDrawableParticleEmitterSystem {
+func (v *viewParticleEmitterSystem) Matches() []VIParticleEmitterSystem {
     
     return v.entities
     
 }
 
-func (v *viewDrawableParticleEmitterSystem) indexof(e ecs.Entity) int {
+func (v *viewParticleEmitterSystem) indexof(e ecs.Entity) int {
     i := sort.Search(len(v.entities), func(i int) bool { return v.entities[i].Entity >= e })
     if i < len(v.entities) && v.entities[i].Entity == e {
         return i
@@ -62,37 +62,37 @@ func (v *viewDrawableParticleEmitterSystem) indexof(e ecs.Entity) int {
 }
 
 // Fetch a specific entity
-func (v *viewDrawableParticleEmitterSystem) Fetch(e ecs.Entity) (data VIDrawableParticleEmitterSystem, ok bool) {
+func (v *viewParticleEmitterSystem) Fetch(e ecs.Entity) (data VIParticleEmitterSystem, ok bool) {
     
     i := v.indexof(e)
     if i == -1 {
-        return VIDrawableParticleEmitterSystem{}, false
+        return VIParticleEmitterSystem{}, false
     }
     return v.entities[i], true
 }
 
-func (v *viewDrawableParticleEmitterSystem) Add(e ecs.Entity) bool {
+func (v *viewParticleEmitterSystem) Add(e ecs.Entity) bool {
     
     
     // MUST NOT add an Entity twice:
     if i := v.indexof(e); i > -1 {
         return false
     }
-    v.entities = append(v.entities, VIDrawableParticleEmitterSystem{
+    v.entities = append(v.entities, VIParticleEmitterSystem{
         Entity: e,
-        Drawable: GetDrawableComponent(v.world).Data(e),
+        Transform: GetTransformComponent(v.world).Data(e),
 ParticleEmitter: GetParticleEmitterComponent(v.world).Data(e),
 
     })
     if len(v.entities) > 1 {
         if v.entities[len(v.entities)-1].Entity < v.entities[len(v.entities)-2].Entity {
-            sort.Sort(sortedVIDrawableParticleEmitterSystems(v.entities))
+            sort.Sort(sortedVIParticleEmitterSystems(v.entities))
         }
     }
     return true
 }
 
-func (v *viewDrawableParticleEmitterSystem) Remove(e ecs.Entity) bool {
+func (v *viewParticleEmitterSystem) Remove(e ecs.Entity) bool {
     
     
     if i := v.indexof(e); i != -1 {
@@ -103,13 +103,13 @@ func (v *viewDrawableParticleEmitterSystem) Remove(e ecs.Entity) bool {
     return false
 }
 
-func (v *viewDrawableParticleEmitterSystem) clearpointers() {
+func (v *viewParticleEmitterSystem) clearpointers() {
     
     
     for i := range v.entities {
         e := v.entities[i].Entity
         
-        v.entities[i].Drawable = nil
+        v.entities[i].Transform = nil
         
         v.entities[i].ParticleEmitter = nil
         
@@ -117,13 +117,13 @@ func (v *viewDrawableParticleEmitterSystem) clearpointers() {
     }
 }
 
-func (v *viewDrawableParticleEmitterSystem) rescan() {
+func (v *viewParticleEmitterSystem) rescan() {
     
     
     for i := range v.entities {
         e := v.entities[i].Entity
         
-        v.entities[i].Drawable = GetDrawableComponent(v.world).Data(e)
+        v.entities[i].Transform = GetTransformComponent(v.world).Data(e)
         
         v.entities[i].ParticleEmitter = GetParticleEmitterComponent(v.world).Data(e)
         
@@ -132,59 +132,59 @@ func (v *viewDrawableParticleEmitterSystem) rescan() {
     }
 }
 
-// DrawableParticleEmitterSystem implements ecs.BaseSystem
-type DrawableParticleEmitterSystem struct {
+// ParticleEmitterSystem implements ecs.BaseSystem
+type ParticleEmitterSystem struct {
     initialized bool
     world       ecs.BaseWorld
-    view        *viewDrawableParticleEmitterSystem
+    view        *viewParticleEmitterSystem
     enabled     bool
     
 }
 
-// GetDrawableParticleEmitterSystem returns the instance of the system in a World
-func GetDrawableParticleEmitterSystem(w ecs.BaseWorld) *DrawableParticleEmitterSystem {
-    return w.S(uuidDrawableParticleEmitterSystem).(*DrawableParticleEmitterSystem)
+// GetParticleEmitterSystem returns the instance of the system in a World
+func GetParticleEmitterSystem(w ecs.BaseWorld) *ParticleEmitterSystem {
+    return w.S(uuidParticleEmitterSystem).(*ParticleEmitterSystem)
 }
 
 // Enable system
-func (s *DrawableParticleEmitterSystem) Enable() {
+func (s *ParticleEmitterSystem) Enable() {
     s.enabled = true
 }
 
 // Disable system
-func (s *DrawableParticleEmitterSystem) Disable() {
+func (s *ParticleEmitterSystem) Disable() {
     s.enabled = false
 }
 
 // Enabled checks if enabled
-func (s *DrawableParticleEmitterSystem) Enabled() bool {
+func (s *ParticleEmitterSystem) Enabled() bool {
     return s.enabled
 }
 
 // UUID implements ecs.BaseSystem
-func (DrawableParticleEmitterSystem) UUID() string {
+func (ParticleEmitterSystem) UUID() string {
     return "627C4B36-EE45-40C6-91AE-617D5CFDD8FC"
 }
 
-func (DrawableParticleEmitterSystem) Name() string {
-    return "DrawableParticleEmitterSystem"
+func (ParticleEmitterSystem) Name() string {
+    return "ParticleEmitterSystem"
 }
 
 // ensure matchfn
-var _ ecs.MatchFn = matchDrawableParticleEmitterSystem
+var _ ecs.MatchFn = matchParticleEmitterSystem
 
 // ensure resizematchfn
-var _ ecs.MatchFn = resizematchDrawableParticleEmitterSystem
+var _ ecs.MatchFn = resizematchParticleEmitterSystem
 
-func (s *DrawableParticleEmitterSystem) match(eflag ecs.Flag) bool {
-    return matchDrawableParticleEmitterSystem(eflag, s.world)
+func (s *ParticleEmitterSystem) match(eflag ecs.Flag) bool {
+    return matchParticleEmitterSystem(eflag, s.world)
 }
 
-func (s *DrawableParticleEmitterSystem) resizematch(eflag ecs.Flag) bool {
-    return resizematchDrawableParticleEmitterSystem(eflag, s.world)
+func (s *ParticleEmitterSystem) resizematch(eflag ecs.Flag) bool {
+    return resizematchParticleEmitterSystem(eflag, s.world)
 }
 
-func (s *DrawableParticleEmitterSystem) ComponentAdded(e ecs.Entity, eflag ecs.Flag) {
+func (s *ParticleEmitterSystem) ComponentAdded(e ecs.Entity, eflag ecs.Flag) {
     if s.match(eflag) {
         if s.view.Add(e) {
             // TODO: dispatch event that this entity was added to this system
@@ -198,7 +198,7 @@ func (s *DrawableParticleEmitterSystem) ComponentAdded(e ecs.Entity, eflag ecs.F
     }
 }
 
-func (s *DrawableParticleEmitterSystem) ComponentRemoved(e ecs.Entity, eflag ecs.Flag) {
+func (s *ParticleEmitterSystem) ComponentRemoved(e ecs.Entity, eflag ecs.Flag) {
     if s.match(eflag) {
         if s.view.Add(e) {
             // TODO: dispatch event that this entity was added to this system
@@ -212,33 +212,33 @@ func (s *DrawableParticleEmitterSystem) ComponentRemoved(e ecs.Entity, eflag ecs
     }
 }
 
-func (s *DrawableParticleEmitterSystem) ComponentResized(cflag ecs.Flag) {
+func (s *ParticleEmitterSystem) ComponentResized(cflag ecs.Flag) {
     if s.resizematch(cflag) {
         s.view.rescan()
         s.onResize()
     }
 }
 
-func (s *DrawableParticleEmitterSystem) ComponentWillResize(cflag ecs.Flag) {
+func (s *ParticleEmitterSystem) ComponentWillResize(cflag ecs.Flag) {
     if s.resizematch(cflag) {
         s.onWillResize()
         s.view.clearpointers()
     }
 }
 
-func (s *DrawableParticleEmitterSystem) V() *viewDrawableParticleEmitterSystem {
+func (s *ParticleEmitterSystem) V() *viewParticleEmitterSystem {
     return s.view
 }
 
-func (*DrawableParticleEmitterSystem) Priority() int64 {
+func (*ParticleEmitterSystem) Priority() int64 {
     return 10
 }
 
-func (s *DrawableParticleEmitterSystem) Setup(w ecs.BaseWorld) {
+func (s *ParticleEmitterSystem) Setup(w ecs.BaseWorld) {
     if s.initialized {
-        panic("DrawableParticleEmitterSystem called Setup() more than once")
+        panic("ParticleEmitterSystem called Setup() more than once")
     }
-    s.view = newviewDrawableParticleEmitterSystem(w)
+    s.view = newviewParticleEmitterSystem(w)
     s.world = w
     s.enabled = true
     s.initialized = true
@@ -248,6 +248,6 @@ func (s *DrawableParticleEmitterSystem) Setup(w ecs.BaseWorld) {
 
 func init() {
     ecs.RegisterSystem(func() ecs.BaseSystem {
-        return &DrawableParticleEmitterSystem{}
+        return &ParticleEmitterSystem{}
     })
 }

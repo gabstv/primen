@@ -21,41 +21,26 @@ var (
 )
 
 type ParticleEmitter struct {
-	// if there is no transform attached, the props
-	// below are used
-
-	x      float64 // logical X position
-	y      float64 // logical Y position
-	angle  float64 // radians
-	scaleX float64 // logical X scale (1 = 100%)
-	scaleY float64 // logical Y scale (1 = 100%)
-
-	// exclusive props
-
-	max           int // max active particles
-	props         ParticleProps
-	parenttre     ecs.Entity // this is used to calculate GeoM
-	parenttr      *Transform // this is used to calculate GeoM
-	parenttrevtid int64      // used to deregister transform destroy event
-	particles     []Particle
-	strategy      SpawnStrategy
-	opt           ebiten.DrawImageOptions
-	eid           ecs.Entity // cached entity id used to obtains its own transform
-	ew            ecs.BaseWorld
-	rand          *rand.Rand
-	emission      EmissionProp
-	emissiont     float64
-	emissiontnext float64
-	compositeMode ebiten.CompositeMode
-	disabled      bool
+	max             int // max active particles
+	props           ParticleProps
+	particles       []Particle
+	strategy        SpawnStrategy
+	opt             ebiten.DrawImageOptions
+	eid             ecs.Entity // cached entity id used to obtains its own transform
+	ew              ecs.BaseWorld
+	rand            *rand.Rand
+	emission        EmissionProp
+	emissiont       float64
+	emissiontnext   float64
+	compositeMode   ebiten.CompositeMode
+	disabled        bool
+	lockedparticles bool
 }
 
 func NewParticleEmitter(w ecs.BaseWorld) ParticleEmitter {
 	return ParticleEmitter{
 		particles: make([]Particle, 0, 64),
 		max:       64,
-		scaleX:    1,
-		scaleY:    1,
 		strategy:  SpawnPause,
 		props: ParticleProps{
 			YVelocity:     -100,
@@ -80,51 +65,6 @@ func NewParticleEmitter(w ecs.BaseWorld) ParticleEmitter {
 		},
 		ew: w,
 	}
-}
-
-func (e *ParticleEmitter) X() float64 {
-	return e.x
-}
-
-func (e *ParticleEmitter) SetX(x float64) *ParticleEmitter {
-	e.x = x
-	return e
-}
-
-func (e *ParticleEmitter) Y() float64 {
-	return e.y
-}
-
-func (e *ParticleEmitter) SetY(y float64) *ParticleEmitter {
-	e.y = y
-	return e
-}
-
-func (e *ParticleEmitter) Angle() float64 {
-	return e.angle
-}
-
-func (e *ParticleEmitter) SetAngle(angle float64) *ParticleEmitter {
-	e.angle = angle
-	return e
-}
-
-func (e *ParticleEmitter) ScaleX() float64 {
-	return e.scaleX
-}
-
-func (e *ParticleEmitter) SetScaleX(sx float64) *ParticleEmitter {
-	e.scaleX = sx
-	return e
-}
-
-func (e *ParticleEmitter) ScaleY() float64 {
-	return e.scaleY
-}
-
-func (e *ParticleEmitter) SetScaleY(sy float64) *ParticleEmitter {
-	e.scaleY = sy
-	return e
 }
 
 func (e *ParticleEmitter) MaxParticles() int {
@@ -177,39 +117,7 @@ func (e *ParticleEmitter) SetCompositeMode(m ebiten.CompositeMode) *ParticleEmit
 	return e
 }
 
-func (e *ParticleEmitter) SetEmissionParentToSelf() {
-	e.SetEmissionParent(e.eid)
-}
-
-func (e *ParticleEmitter) SetEmissionParent(en ecs.Entity) {
-	if e.parenttrevtid != 0 && e.parenttr != nil && e.parenttre != 0 {
-		// unset
-		e.parenttr.RemoveDestroyListener(e.parenttrevtid)
-		e.parenttrevtid = 0
-	}
-	e.parenttr = nil
-	e.parenttre = 0
-	//
-	e.parenttre = en
-	if tr := e.fetchTransform(); tr != nil {
-		ww := e.ew
-		e.parenttrevtid = tr.AddDestroyListener(func() {
-			if x := GetParticleEmitterComponentData(ww, en); x != nil {
-				x.transformWillBeDestroyed()
-			}
-		})
-	} else {
-		e.parenttre = 0
-	}
-}
-
-func (e *ParticleEmitter) transformWillBeDestroyed() {
-	e.parenttrevtid = 0
-	e.parenttr = nil
-	e.parenttre = 0
-}
-
-func (e *ParticleEmitter) Emit() bool {
+func (e *ParticleEmitter) Emit(tr *Transform) bool {
 	if len(e.props.Source) < 1 {
 		return false
 	}
@@ -217,11 +125,20 @@ func (e *ParticleEmitter) Emit() bool {
 	if rng == nil {
 		rng = emitterRNG
 	}
-	particle := e.props.NewParticle(rng, e)
+	particle := e.props.NewParticle(rng)
 	//TODO: link position with transform!
-	particle.px += e.x
-	particle.py += e.y
-	particle.r += e.angle
+	if !e.lockedparticles {
+		particle.px += tr.x
+		particle.py += tr.y
+		particle.r += tr.angle
+		particle.parent = tr.parent
+		particle.parente = tr.pentity
+		particle.sx *= tr.scaleX
+		particle.sy *= tr.scaleY
+	} else {
+		particle.parent = tr
+		particle.parente = e.eid
+	}
 	if len(e.particles) >= e.max && e.max != 0 {
 		switch e.strategy {
 		case SpawnReplace:
@@ -237,10 +154,9 @@ func (e *ParticleEmitter) Emit() bool {
 	return true
 }
 
-func (e *ParticleEmitter) Draw(ctx DrawCtx, d *Drawable) {
-	if d == nil {
-		return
-	}
+func (e *ParticleEmitter) Update(ctx UpdateCtx, tr *Transform) {}
+
+func (e *ParticleEmitter) Draw(ctx DrawCtx, tr *Transform) {
 	if e.disabled {
 		return
 	}
@@ -252,10 +168,10 @@ func (e *ParticleEmitter) Draw(ctx DrawCtx, d *Drawable) {
 		opt.GeoM.Translate(p.pox, p.poy)
 		opt.GeoM.Scale(p.sx, p.sy)
 		opt.GeoM.Rotate(p.r)
-		if p.parenttr != nil {
-			opt.GeoM.Concat(p.parenttr.m)
-		}
 		opt.GeoM.Translate(p.px, p.py)
+		if p.parent != nil {
+			opt.GeoM.Concat(p.parent.m)
+		}
 		opt.ColorM.Reset()
 		opt.ColorM.Scale(p.clr, p.clb, p.clg, p.cla)
 		if p.hue != 0 {
@@ -265,44 +181,20 @@ func (e *ParticleEmitter) Draw(ctx DrawCtx, d *Drawable) {
 	}
 }
 
-func (e *ParticleEmitter) fetchTransform() *Transform {
-	if e.parenttre != 0 {
-		e.parenttr = GetTransformComponentData(e.ew, e.parenttre)
-		if e.parenttr == nil {
-			e.parenttre = 0
-			return nil
-		}
-		return e.parenttr
-	}
-	e.parenttr = nil
-	return nil
-}
-
-//go:generate ecsgen -n ParticleEmitter -p core -o particleemitter_component.go --component-tpl --vars "UUID=19A70DF9-0B1A-4A85-B23E-7BCA8E0857D7" --vars "BeforeRemove=c.beforeRemove(e)" --vars "OnAdd=c.onAdd(e)"
+//go:generate ecsgen -n ParticleEmitter -p core -o particleemitter_component.go --component-tpl --vars "UUID=19A70DF9-0B1A-4A85-B23E-7BCA8E0857D7" --vars "BeforeRemove=c.beforeRemove(e)" --vars "OnAdd=c.onAdd(e)" --vars "Setup=c.onCompSetup()"
 
 func (c *ParticleEmitterComponent) beforeRemove(e ecs.Entity) {
-	if d := GetDrawableComponentData(c.world, e); d != nil {
-		d.drawer = nil
-	}
-	emt := GetParticleEmitterComponentData(c.world, e)
-	emt.eid = 0
-	if emt.parenttrevtid != 0 && emt.parenttr != nil {
-		emt.parenttr.RemoveDestroyListener(emt.parenttrevtid)
-		emt.parenttrevtid = 0
-		emt.parenttre = 0
-		emt.parenttr = nil
-	}
+	c.Data(e).eid = 0
 }
 
 func (c *ParticleEmitterComponent) onAdd(e ecs.Entity) {
-	if d := GetDrawableComponentData(c.world, e); d != nil {
-		d.drawer = c.Data(e)
-	} else {
-		SetDrawableComponentData(c.world, e, Drawable{
-			drawer: c.Data(e),
-		})
-	}
 	c.Data(e).eid = e
+}
+
+func (c *ParticleEmitterComponent) onCompSetup() {
+	RegisterDrawableComponent(c.world, c.flag, func(w ecs.BaseWorld, e ecs.Entity) Drawable {
+		return GetParticleEmitterComponentData(w, e)
+	})
 }
 
 type ParticleProps struct {
@@ -343,7 +235,7 @@ func (pp *ParticleProps) SetVelocityRange(xmin, xmax, ymin, ymax float64) {
 	pp.YVelocityVar0, pp.YVelocityVar1 = ymin, ymax
 }
 
-func (pp ParticleProps) NewParticle(rng *rand.Rand, e *ParticleEmitter) Particle {
+func (pp ParticleProps) NewParticle(rng *rand.Rand) Particle {
 	initscale := pp.InitScale + Lerpf(pp.InitScaleVar0, pp.InitScaleVar1, rng.Float64())
 	endscale := pp.EndScale + Lerpf(pp.EndScaleVar0, pp.EndScaleVar1, rng.Float64())
 	p := Particle{
@@ -362,28 +254,26 @@ func (pp ParticleProps) NewParticle(rng *rand.Rand, e *ParticleEmitter) Particle
 		//img: rng.Intn(len(pp.Source)),
 		//pox: calc after obtaining image,
 		//poy: calc after obtaining image,
-		parenttr:  e.parenttr,
-		parenttre: e.parenttre,
-		ax:        pp.XAccel + Lerpf(pp.XAccelVar0, pp.XAccelVar1, rng.Float64()),
-		ay:        pp.YAccel + Lerpf(pp.YAccelVar0, pp.YAccelVar1, rng.Float64()),
-		dur:       pp.Duration + Lerpf(pp.DurationVar0, pp.DurationVar1, rng.Float64()),
-		px:        pp.X + Lerpf(pp.XVar0, pp.XVar1, rng.Float64()),
-		py:        pp.Y + Lerpf(pp.YVar0, pp.YVar1, rng.Float64()),
-		r:         pp.Rotation + Lerpf(pp.RotationVar0, pp.RotationVar1, rng.Float64()),
-		rv:        Lerpf(pp.RotationVelocityVar0, pp.RotationVelocityVar1, rng.Float64()),
-		rab:       Lerpf(pp.RotationAccelVar0, pp.RotationAccelVar1, rng.Float64()),
-		rae:       Lerpf(pp.EndRotationAccelVar0, pp.EndRotationAccelVar1, rng.Float64()),
-		vx:        pp.XVelocity + Lerpf(pp.XVelocityVar0, pp.XVelocityVar1, rng.Float64()),
-		vy:        pp.YVelocity + Lerpf(pp.YVelocityVar0, pp.YVelocityVar1, rng.Float64()),
-		sx:        initscale,
-		sy:        initscale,
-		bsx:       initscale,
-		bsy:       initscale,
-		esx:       endscale,
-		esy:       endscale,
-		t:         0,
-		hueshift:  pp.HueRotationSpeed,
-		hue:       0,
+		ax:       pp.XAccel + Lerpf(pp.XAccelVar0, pp.XAccelVar1, rng.Float64()),
+		ay:       pp.YAccel + Lerpf(pp.YAccelVar0, pp.YAccelVar1, rng.Float64()),
+		dur:      pp.Duration + Lerpf(pp.DurationVar0, pp.DurationVar1, rng.Float64()),
+		px:       pp.X + Lerpf(pp.XVar0, pp.XVar1, rng.Float64()),
+		py:       pp.Y + Lerpf(pp.YVar0, pp.YVar1, rng.Float64()),
+		r:        pp.Rotation + Lerpf(pp.RotationVar0, pp.RotationVar1, rng.Float64()),
+		rv:       Lerpf(pp.RotationVelocityVar0, pp.RotationVelocityVar1, rng.Float64()),
+		rab:      Lerpf(pp.RotationAccelVar0, pp.RotationAccelVar1, rng.Float64()),
+		rae:      Lerpf(pp.EndRotationAccelVar0, pp.EndRotationAccelVar1, rng.Float64()),
+		vx:       pp.XVelocity + Lerpf(pp.XVelocityVar0, pp.XVelocityVar1, rng.Float64()),
+		vy:       pp.YVelocity + Lerpf(pp.YVelocityVar0, pp.YVelocityVar1, rng.Float64()),
+		sx:       initscale,
+		sy:       initscale,
+		bsx:      initscale,
+		bsy:      initscale,
+		esx:      endscale,
+		esy:      endscale,
+		t:        0,
+		hueshift: pp.HueRotationSpeed,
+		hue:      0,
 	}
 	if len(pp.Source) == 1 {
 		p.img = pp.Source[0]
@@ -395,8 +285,6 @@ func (pp ParticleProps) NewParticle(rng *rand.Rand, e *ParticleEmitter) Particle
 		p.pox = applyOrigin(float64(xx), pp.OriginX)
 		p.poy = applyOrigin(float64(yy), pp.OriginY)
 	}
-	p.parenttr = e.parenttr
-	p.parenttre = e.parenttre
 	return p
 }
 
@@ -408,12 +296,12 @@ type EmissionProp struct {
 }
 
 type Particle struct {
-	px, py                 float64
+	px, py                 float64 // position
+	r                      float64 // rotation
+	sx, sy                 float64 // scale
 	vx, vy                 float64
 	ax, ay                 float64
-	sx, sy                 float64
 	bsx, bsy, esx, esy     float64
-	r                      float64
 	rv                     float64 // rotation velocity
 	rab, rae               float64 // rotation acceleration
 	pox, poy               float64 // precomputed origin
@@ -423,19 +311,19 @@ type Particle struct {
 	t, dur                 float64
 	hueshift               float64
 	hue                    float64
-	parenttre              ecs.Entity
-	parenttr               *Transform
+	parente                ecs.Entity
+	parent                 *Transform
 	img                    *ebiten.Image
 }
 
-//go:generate ecsgen -n DrawableParticleEmitter -p core -o particleemitter_drawablesystem.go --system-tpl --vars "Priority=10" --vars "EntityAdded=s.onEntityAdded(e)" --vars "EntityRemoved=s.onEntityRemoved(e)" --vars "OnResize=s.onResize()" --vars "OnWillResize=s.onWillResize()" --vars "UUID=627C4B36-EE45-40C6-91AE-617D5CFDD8FC" --components "Drawable" --components "ParticleEmitter"
+//go:generate ecsgen -n ParticleEmitter -p core -o particleemitter_drawablesystem.go --system-tpl --vars "Priority=10" --vars "EntityAdded=s.onEntityAdded(e)" --vars "EntityRemoved=s.onEntityRemoved(e)" --vars "OnResize=s.onResize()" --vars "OnWillResize=s.onWillResize()" --vars "UUID=627C4B36-EE45-40C6-91AE-617D5CFDD8FC" --components "Transform" --components "ParticleEmitter"
 
-var matchDrawableParticleEmitterSystem = func(eflag ecs.Flag, w ecs.BaseWorld) bool {
-	return eflag.Contains(GetDrawableComponent(w).Flag().Or(GetParticleEmitterComponent(w).Flag()))
+var matchParticleEmitterSystem = func(eflag ecs.Flag, w ecs.BaseWorld) bool {
+	return eflag.Contains(GetTransformComponent(w).Flag().Or(GetParticleEmitterComponent(w).Flag()))
 }
 
-var resizematchDrawableParticleEmitterSystem = func(eflag ecs.Flag, w ecs.BaseWorld) bool {
-	if eflag.Contains(GetDrawableComponent(w).Flag()) {
+var resizematchParticleEmitterSystem = func(eflag ecs.Flag, w ecs.BaseWorld) bool {
+	if eflag.Contains(GetTransformComponent(w).Flag()) {
 		return true
 	}
 	if eflag.Contains(GetParticleEmitterComponent(w).Flag()) {
@@ -444,42 +332,55 @@ var resizematchDrawableParticleEmitterSystem = func(eflag ecs.Flag, w ecs.BaseWo
 	return false
 }
 
-func (s *DrawableParticleEmitterSystem) onEntityAdded(e ecs.Entity) {
+func (s *ParticleEmitterSystem) onEntityAdded(e ecs.Entity) {
 
 }
 
-func (s *DrawableParticleEmitterSystem) onEntityRemoved(e ecs.Entity) {
+func (s *ParticleEmitterSystem) onEntityRemoved(e ecs.Entity) {
 	//if x := GetP
 }
 
-func (s *DrawableParticleEmitterSystem) onWillResize() {
+func (s *ParticleEmitterSystem) onWillResize() {
 	v := s.V()
 	for i := range v.entities {
-		v.entities[i].ParticleEmitter.parenttr = nil
-		v.entities[i].Drawable.drawer = nil
+		for k := range v.entities[i].ParticleEmitter.particles {
+			v.entities[i].ParticleEmitter.particles[k].parent = nil
+		}
 	}
 }
 
-func (s *DrawableParticleEmitterSystem) onResize() {
+func (s *ParticleEmitterSystem) onResize() {
+	etrs := make(map[ecs.Entity]*Transform)
 	for _, match := range s.V().Matches() {
-		match.ParticleEmitter.fetchTransform()
-		match.Drawable.drawer = match.ParticleEmitter
+		for k := range match.ParticleEmitter.particles {
+			if v := etrs[match.ParticleEmitter.particles[k].parente]; v != nil {
+				match.ParticleEmitter.particles[k].parent = v
+			} else {
+				if ce := match.ParticleEmitter.particles[k].parente; ce != 0 {
+					tr := GetTransformComponentData(s.world, ce)
+					if tr != nil {
+						etrs[ce] = tr
+						match.ParticleEmitter.particles[k].parent = tr
+					}
+				}
+			}
+		}
 	}
 }
 
 // DrawPriority noop
-func (s *DrawableParticleEmitterSystem) DrawPriority(ctx DrawCtx) {
+func (s *ParticleEmitterSystem) DrawPriority(ctx DrawCtx) {
 
 }
 
 // Draw noop (drawing is controlled by *Drawable)
-func (s *DrawableParticleEmitterSystem) Draw(ctx DrawCtx) {}
+func (s *ParticleEmitterSystem) Draw(ctx DrawCtx) {}
 
 // UpdatePriority noop
-func (s *DrawableParticleEmitterSystem) UpdatePriority(ctx UpdateCtx) {}
+func (s *ParticleEmitterSystem) UpdatePriority(ctx UpdateCtx) {}
 
 // Update computes labes if dirty
-func (s *DrawableParticleEmitterSystem) Update(ctx UpdateCtx) {
+func (s *ParticleEmitterSystem) Update(ctx UpdateCtx) {
 	dt := ctx.DT()
 	for _, v := range s.V().Matches() {
 		if v.ParticleEmitter.disabled {
@@ -491,7 +392,7 @@ func (s *DrawableParticleEmitterSystem) Update(ctx UpdateCtx) {
 		if e.emission.Enabled {
 			if e.emission.Fn != nil {
 				if e.emission.Fn(ctx, e) {
-					_ = e.Emit()
+					_ = e.Emit(v.Transform)
 				}
 			} else {
 				rng := e.rand
@@ -509,7 +410,7 @@ func (s *DrawableParticleEmitterSystem) Update(ctx UpdateCtx) {
 						nn = rng.Intn(e.emission.N1-e.emission.N0) + e.emission.N0
 					}
 					for i := 0; i < nn; i++ {
-						e.Emit()
+						e.Emit(v.Transform)
 					}
 					e.emissiont = 0
 					e.emissiontnext = Lerpf(e.emission.T0, e.emission.T1, rng.Float64())

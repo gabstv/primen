@@ -20,11 +20,6 @@ type Label struct {
 	filter   ebiten.Filter
 	disabled bool // if true, the DrawableSystem will not draw this
 	//
-	x              float64 // logical X position
-	y              float64 // logical Y position
-	angle          float64 // radians
-	scaleX         float64 // logical X scale (1 = 100%)
-	scaleY         float64 // logical Y scale (1 = 100%)
 	originX        float64 // X origin (0 = left; 0.5 = center; 1 = right)
 	originY        float64 // Y origin (0 = top; 0.5 = middle; 1 = bottom)
 	offsetX        float64 // Text rendering offset X (pixel unit)
@@ -44,8 +39,6 @@ type Label struct {
 func NewLabel() Label {
 	return Label{
 		textdirty:      true,
-		scaleX:         1,
-		scaleY:         1,
 		faceOffsetAuto: true,
 	}
 }
@@ -168,17 +161,16 @@ func (l *Label) renderText() {
 	l.textdirty = false
 }
 
-func (l *Label) Draw(ctx DrawCtx, d *Drawable) {
-	if d == nil {
-		return
-	}
+func (l *Label) Update(ctx UpdateCtx, tr *Transform) {}
+
+func (l *Label) Draw(ctx DrawCtx, tr *Transform) {
 	if l.disabled {
 		return
 	}
 	if l.base == nil {
 		return
 	}
-	g := d.G(l.scaleX, l.scaleY, l.angle, l.x, l.y)
+	g := tr.m
 	o := &l.opt
 	o.GeoM.Reset()
 	o.GeoM.Translate(applyOrigin(float64(l.realSize.X), l.originX)+l.offsetX, applyOrigin(float64(l.realSize.Y), l.originY)+l.offsetY)
@@ -201,28 +193,18 @@ func (l *Label) Draw(ctx DrawCtx, d *Drawable) {
 	}
 }
 
-//go:generate ecsgen -n Label -p core -o label_component.go --component-tpl --vars "UUID=1A74D1BE-BBF7-44F4-AC8B-18A00208EB76" --vars "BeforeRemove=c.beforeRemove(e)" --vars "OnAdd=c.onAdd(e)"
+//go:generate ecsgen -n Label -p core -o label_component.go --component-tpl --vars "UUID=1A74D1BE-BBF7-44F4-AC8B-18A00208EB76"  --vars "Setup=c.onCompSetup()"
 
-func (c *LabelComponent) beforeRemove(e ecs.Entity) {
-	if d := GetDrawableComponentData(c.world, e); d != nil {
-		d.drawer = nil
-	}
+func (c *LabelComponent) onCompSetup() {
+	RegisterDrawableComponent(c.world, c.flag, func(w ecs.BaseWorld, e ecs.Entity) Drawable {
+		return GetLabelComponentData(w, e)
+	})
 }
 
-func (c *LabelComponent) onAdd(e ecs.Entity) {
-	if d := GetDrawableComponentData(c.world, e); d != nil {
-		d.drawer = c.Data(e)
-	} else {
-		SetDrawableComponentData(c.world, e, Drawable{
-			drawer: c.Data(e),
-		})
-	}
-}
-
-//go:generate ecsgen -n DrawableLabel -p core -o label_drawablesystem.go --system-tpl --vars "Priority=10"  --vars "EntityAdded=s.onEntityAdded(e)" --vars "EntityRemoved=s.onEntityRemoved(e)" --vars "OnResize=s.onResize()" --vars "UUID=70EC2F13-4C71-4A3F-9F6D-FF11F5DE9384" --components "Drawable" --components "Label"
+//go:generate ecsgen -n DrawableLabel -p core -o label_drawablesystem.go --system-tpl --vars "Priority=10" --vars "UUID=70EC2F13-4C71-4A3F-9F6D-FF11F5DE9384" --components "Transform" --components "Label"
 
 var matchDrawableLabelSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
-	if !f.Contains(GetDrawableComponent(w).Flag()) {
+	if !f.Contains(GetTransformComponent(w).Flag()) {
 		return false
 	}
 	if !f.Contains(GetLabelComponent(w).Flag()) {
@@ -232,28 +214,13 @@ var matchDrawableLabelSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
 }
 
 var resizematchDrawableLabelSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
-	if f.Contains(GetDrawableComponent(w).Flag()) {
+	if f.Contains(GetTransformComponent(w).Flag()) {
 		return true
 	}
 	if f.Contains(GetLabelComponent(w).Flag()) {
 		return true
 	}
 	return false
-}
-
-func (s *DrawableLabelSystem) onEntityAdded(e ecs.Entity) {
-	d := GetDrawableComponentData(s.world, e)
-	d.drawer = GetLabelComponentData(s.world, e)
-}
-
-func (s *DrawableLabelSystem) onEntityRemoved(e ecs.Entity) {
-
-}
-
-func (s *DrawableLabelSystem) onResize() {
-	for _, v := range s.V().Matches() {
-		v.Drawable.drawer = v.Label
-	}
 }
 
 // DrawPriority noop

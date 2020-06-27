@@ -2,73 +2,63 @@ package core
 
 import (
 	"github.com/gabstv/ecs/v2"
-	"github.com/hajimehoshi/ebiten"
 )
 
-//FIXME: review (2)
-
-// DrawableObj is the interface of a custom drawable component to use inetead
-// of Drawable.Draw()
-type DrawableObj interface {
-	Draw(ctx DrawCtx, o *Drawable)
-}
-
 // Drawable is the component that controls drawing to the ebiten screen
-type Drawable struct {
-	concatm   ebiten.GeoM
-	concatset bool
-	drawer    DrawableObj
+type Drawable interface {
+	Draw(ctx DrawCtx, t *Transform)
+	Update(ctx UpdateCtx, t *Transform)
 }
 
-// Draw uses drawer or defaultDraw
-func (d *Drawable) Draw(ctx DrawCtx) {
-	if d.drawer != nil {
-		d.drawer.Draw(ctx, d)
+type GetDrawableFn func(w ecs.BaseWorld, e ecs.Entity) Drawable
+
+func RegisterDrawableComponent(w ecs.BaseWorld, f ecs.Flag, fn GetDrawableFn) {
+	gflags := w.FlagGroup("PrimenDrawables")
+	gflags = gflags.Or(f)
+	w.SetFlagGroup("PrimenDrawables", gflags)
+	vi := w.LGet("PrimenDrawables")
+	var vs map[uint8]GetDrawableFn
+	if vi != nil {
+		vs = vi.(map[uint8]GetDrawableFn)
+	} else {
+		vs = make(map[uint8]GetDrawableFn)
 	}
+	vs[f.Lowest()] = fn
+	w.LSet("PrimenDrawables", vs)
 }
 
-func (d *Drawable) SetConcatM(m ebiten.GeoM) {
-	d.concatm = m
-	d.concatset = true
-}
-
-// G returns the concatm (if set by a *Transform) or a pre calculated matrix using
-// sx, sy (scale)
-// r (radians)
-// x, y position
-func (d *Drawable) G(sx, sy, r, x, y float64) ebiten.GeoM {
-	if d.concatset {
-		return d.concatm
-	}
-	return GeoM().Scale(sx, sy).Rotate(r).Translate(x, y).MV()
-}
-
-//go:generate ecsgen -n Drawable -p core -o drawable_component.go --component-tpl --vars "UUID=E3086C37-F0F5-4BFD-8FEE-F9C451B1E57E" --vars "OnWillResize=c.willresize()"
-
-func (c *DrawableComponent) willresize() {
-	for i := range c.data {
-		c.data[i].Data.drawer = nil
-	}
+func GetDrawable(w ecs.BaseWorld, e ecs.Entity) Drawable {
+	eflag := w.CFlag(e)
+	dflag := eflag.And(w.FlagGroup("PrimenDrawables"))
+	vi := w.LGet("PrimenDrawables").(map[uint8]GetDrawableFn)
+	getter := vi[dflag.Lowest()]
+	return getter(w, e)
 }
 
 // ╔═╗╔═╗╦  ╔═╗  ╔═╗╦ ╦╔═╗
 // ╚═╗║ ║║  ║ ║  ╚═╗╚╦╝╚═╗
 // ╚═╝╚═╝╩═╝╚═╝  ╚═╝ ╩ ╚═╝
 
-//go:generate ecsgen -n SoloDrawable -p core -o drawable_solosystem.go --system-tpl --vars "Priority=0" --vars "UUID=6389F54D-76C9-49FC-B3E3-1C73B334EBB6" --components "Drawable"
+//go:generate ecsgen -n SoloDrawable -p core -o drawable_solosystem.go --system-tpl --vars "Priority=0" --vars "UUID=6389F54D-76C9-49FC-B3E3-1C73B334EBB6" --components "Drawable;Drawable;GetDrawable(v.world, e)" --components "Transform"
 
 var matchSoloDrawableSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
-	if !f.Contains(GetDrawableComponent(w).Flag()) {
-		return false
-	}
 	if f.Contains(GetDrawLayerComponent(w).Flag()) {
 		return false
 	}
-	return true
+	if !f.Contains(GetTransformComponent(w).Flag()) {
+		return false
+	}
+	if f.ContainsAny(w.FlagGroup("PrimenDrawables")) {
+		return true
+	}
+	return false
 }
 
 var resizematchSoloDrawableSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
-	if f.Contains(GetDrawableComponent(w).Flag()) {
+	if f.ContainsAny(w.FlagGroup("PrimenDrawables")) {
+		return true
+	}
+	if f.Contains(GetTransformComponent(w).Flag()) {
 		return true
 	}
 	return false
@@ -80,41 +70,47 @@ func (s *SoloDrawableSystem) DrawPriority(ctx DrawCtx) {}
 // Draw all solo drawables ordered by entity ID
 func (s *SoloDrawableSystem) Draw(ctx DrawCtx) {
 	for _, v := range s.V().Matches() {
-		v.Drawable.Draw(ctx)
+		v.Drawable.Draw(ctx, v.Transform)
 	}
 }
 
-// UpdatePriority sets v.Drawable.concatset to false on all Drawables
-func (s *SoloDrawableSystem) UpdatePriority(ctx UpdateCtx) {
+// UpdatePriority noop
+func (s *SoloDrawableSystem) UpdatePriority(ctx UpdateCtx) {}
+
+// Update calls drawable.Update()
+func (s *SoloDrawableSystem) Update(ctx UpdateCtx) {
 	for _, v := range s.V().Matches() {
-		v.Drawable.concatset = false
+		v.Drawable.Update(ctx, v.Transform)
 	}
 }
-
-// Update is noop as of now
-func (s *SoloDrawableSystem) Update(ctx UpdateCtx) {}
 
 //  ___   ___    __    _       _      __    _     ____  ___       __   _     __
 // | | \ | |_)  / /\  \ \    /| |    / /\  \ \_/ | |_  | |_)     ( (` \ \_/ ( (`
 // |_|_/ |_| \ /_/--\  \_\/\/ |_|__ /_/--\  |_|  |_|__ |_| \     _)_)  |_|  _)_)
 
-//go:generate ecsgen -n DrawLayerDrawable -p core -o drawable_layersystem.go --system-tpl --vars "Priority=-10" --vars "EntityAdded=s.onEntityAdded(e)" --vars "EntityRemoved=s.onEntityRemoved(e)" --vars "Setup=s.setupVars()" --vars "UUID=CBBC8DB4-4866-413E-A7A9-250A3C9ECDDC" --vars "OnWillResize=s.beforeCompResize()" --vars "OnResize=s.afterCompResize()" --components "Drawable" --components "DrawLayer" --members "layers=*drawLayerDrawers"
+//go:generate ecsgen -n DrawLayerDrawable -p core -o drawable_layersystem.go --system-tpl --vars "Priority=-10" --vars "EntityAdded=s.onEntityAdded(e)" --vars "EntityRemoved=s.onEntityRemoved(e)" --vars "Setup=s.setupVars()" --vars "UUID=CBBC8DB4-4866-413E-A7A9-250A3C9ECDDC" --vars "OnWillResize=s.beforeCompResize()" --vars "OnResize=s.afterCompResize()" --components "Drawable;Drawable;GetDrawable(v.world, e)" --components "DrawLayer" --components "Transform" --members "layers=*drawLayerDrawers"
 
 var matchDrawLayerDrawableSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
 	if !f.Contains(GetDrawLayerComponent(w).Flag()) {
 		return false
 	}
-	if !f.Contains(GetDrawableComponent(w).Flag()) {
+	if !f.Contains(GetTransformComponent(w).Flag()) {
 		return false
 	}
-	return true
+	if f.ContainsAny(w.FlagGroup("PrimenDrawables")) {
+		return true
+	}
+	return false
 }
 
 var resizematchDrawLayerDrawableSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
 	if f.Contains(GetDrawLayerComponent(w).Flag()) {
 		return true
 	}
-	if f.Contains(GetDrawableComponent(w).Flag()) {
+	if f.Contains(GetTransformComponent(w).Flag()) {
+		return true
+	}
+	if f.ContainsAny(w.FlagGroup("PrimenDrawables")) {
 		return true
 	}
 	return false
@@ -128,7 +124,7 @@ func (s *DrawLayerDrawableSystem) Draw(ctx DrawCtx) {
 	for _, l := range s.layers.All() {
 		l.Items.Each(func(key ecs.Entity, value SLVal) bool {
 			cache := value.(*drawLayerItemCache)
-			cache.Drawable.Draw(ctx)
+			cache.Drawable.Draw(ctx, cache.Transform)
 			return true
 		})
 	}
@@ -137,9 +133,6 @@ func (s *DrawLayerDrawableSystem) Draw(ctx DrawCtx) {
 // UpdatePriority updates layer changes
 func (s *DrawLayerDrawableSystem) UpdatePriority(ctx UpdateCtx) {
 	for _, v := range s.V().Matches() {
-		// reset concat matrix:
-		v.Drawable.concatset = false
-
 		if v.DrawLayer.Layer != v.DrawLayer.prevLayer {
 			// switch layers
 			if l := s.layers.UpsertLayer(v.DrawLayer.prevLayer); l != nil {
@@ -154,19 +147,21 @@ func (s *DrawLayerDrawableSystem) UpdatePriority(ctx UpdateCtx) {
 			// update index history since the layer changed anyway
 			s.resolveIndex(v)
 			v.DrawLayer.prevIndex = v.DrawLayer.ZIndex
-			// TODO: check for leaks on AddOrUpdate (*Drawable might leak)
+			// TODO: check for leaks on AddOrUpdate (Drawable might leak)
 			l.AddOrUpdate(v.Entity, &drawLayerItemCache{
-				ZIndex:   v.DrawLayer.ZIndex,
-				Entity:   v.Entity,
-				Drawable: v.Drawable,
+				ZIndex:    v.DrawLayer.ZIndex,
+				Entity:    v.Entity,
+				Drawable:  v.Drawable,
+				Transform: v.Transform,
 			})
 		} else if v.DrawLayer.ZIndex != v.DrawLayer.prevIndex {
 			s.resolveIndex(v)
 			v.DrawLayer.prevIndex = v.DrawLayer.ZIndex
 			if l := s.layers.UpsertLayer(v.DrawLayer.Layer); l != nil {
 				l.AddOrUpdate(v.Entity, &drawLayerItemCache{
-					ZIndex:   v.DrawLayer.ZIndex,
-					Drawable: v.Drawable,
+					ZIndex:    v.DrawLayer.ZIndex,
+					Drawable:  v.Drawable,
+					Transform: v.Transform,
 				})
 			}
 		}
@@ -196,7 +191,8 @@ func (s *DrawLayerDrawableSystem) resolveIndex(v VIDrawLayerDrawableSystem) {
 
 func (s *DrawLayerDrawableSystem) onEntityAdded(e ecs.Entity) {
 	dl := GetDrawLayerComponentData(s.world, e)
-	d := GetDrawableComponentData(s.world, e)
+	d := GetDrawable(s.world, e)
+	tr := GetTransformComponentData(s.world, e)
 	dl.prevLayer = dl.Layer
 	l := s.layers.UpsertLayer(dl.Layer)
 	if dl.ZIndex == ZIndexBottom {
@@ -215,8 +211,9 @@ func (s *DrawLayerDrawableSystem) onEntityAdded(e ecs.Entity) {
 	}
 	dl.prevIndex = dl.ZIndex
 	_ = l.AddOrUpdate(e, &drawLayerItemCache{
-		ZIndex:   dl.ZIndex,
-		Drawable: d,
+		ZIndex:    dl.ZIndex,
+		Drawable:  d,
+		Transform: tr,
 	})
 }
 
@@ -240,6 +237,7 @@ func (s *DrawLayerDrawableSystem) beforeCompResize() {
 	for _, l := range s.layers.All() {
 		l.Items.Each(func(key ecs.Entity, value SLVal) bool {
 			value.(*drawLayerItemCache).Drawable = nil
+			value.(*drawLayerItemCache).Transform = nil
 			return true
 		})
 	}
@@ -248,7 +246,8 @@ func (s *DrawLayerDrawableSystem) beforeCompResize() {
 func (s *DrawLayerDrawableSystem) afterCompResize() {
 	for _, l := range s.layers.All() {
 		l.Items.Each(func(key ecs.Entity, value SLVal) bool {
-			value.(*drawLayerItemCache).Drawable = GetDrawableComponentData(s.world, key)
+			value.(*drawLayerItemCache).Drawable = GetDrawable(s.world, key)
+			value.(*drawLayerItemCache).Transform = GetTransformComponentData(s.world, key)
 			return true
 		})
 	}

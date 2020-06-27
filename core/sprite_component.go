@@ -131,7 +131,7 @@ func (c *SpriteComponent) Upsert(e ecs.Entity, data interface{}) {
     if cap(c.data) == len(c.data) {
         rsz = true
         c.world.CWillResize(c, c.wkey)
-        c.willresize()
+        
     }
     newindex := len(c.data)
     c.data = append(c.data, drawerSpriteComponent{
@@ -141,14 +141,14 @@ func (c *SpriteComponent) Upsert(e ecs.Entity, data interface{}) {
     if len(c.data) > 1 {
         if c.data[newindex].Entity < c.data[newindex-1].Entity {
             c.world.CWillResize(c, c.wkey)
-            c.willresize()
+            
             sort.Sort(slcdrawerSpriteComponent(c.data))
             rsz = true
         }
     }
     
     if rsz {
-        c.resized()
+        
         c.world.CResized(c, c.wkey)
         c.world.Dispatch(ecs.Event{
             Type: ecs.EvtComponentsResized,
@@ -156,7 +156,7 @@ func (c *SpriteComponent) Upsert(e ecs.Entity, data interface{}) {
             ComponentID: "80C95DEC-DBBF-4529-BD27-739A69055BA0",
         })
     }
-    c.onAdd(e)
+    
     c.world.CAdded(e, c, c.wkey)
     c.world.Dispatch(ecs.Event{
         Type: ecs.EvtComponentAdded,
@@ -176,7 +176,7 @@ func (c *SpriteComponent) Remove(e ecs.Entity) {
     if i == -1 {
         return
     }
-    c.beforeRemove(e)
+    
     //c.data = append(c.data[:i], c.data[i+1:]...)
     c.data = c.data[:i+copy(c.data[i:], c.data[i+1:])]
     c.world.CRemoved(e, c, c.wkey)
@@ -216,6 +216,7 @@ func (c *SpriteComponent) Setup(w ecs.BaseWorld, f ecs.Flag, key [4]byte) {
     c.wkey = key
     c.data = make([]drawerSpriteComponent, 0, 256)
     c.initialized = true
+    c.onCompSetup()
 }
 
 

@@ -29,7 +29,7 @@ type viewDrawableLabelSystem struct {
 type VIDrawableLabelSystem struct {
     Entity ecs.Entity
     
-    Drawable *Drawable 
+    Transform *Transform 
     
     Label *Label 
     
@@ -80,7 +80,7 @@ func (v *viewDrawableLabelSystem) Add(e ecs.Entity) bool {
     }
     v.entities = append(v.entities, VIDrawableLabelSystem{
         Entity: e,
-        Drawable: GetDrawableComponent(v.world).Data(e),
+        Transform: GetTransformComponent(v.world).Data(e),
 Label: GetLabelComponent(v.world).Data(e),
 
     })
@@ -109,7 +109,7 @@ func (v *viewDrawableLabelSystem) clearpointers() {
     for i := range v.entities {
         e := v.entities[i].Entity
         
-        v.entities[i].Drawable = nil
+        v.entities[i].Transform = nil
         
         v.entities[i].Label = nil
         
@@ -123,7 +123,7 @@ func (v *viewDrawableLabelSystem) rescan() {
     for i := range v.entities {
         e := v.entities[i].Entity
         
-        v.entities[i].Drawable = GetDrawableComponent(v.world).Data(e)
+        v.entities[i].Transform = GetTransformComponent(v.world).Data(e)
         
         v.entities[i].Label = GetLabelComponent(v.world).Data(e)
         
@@ -188,12 +188,12 @@ func (s *DrawableLabelSystem) ComponentAdded(e ecs.Entity, eflag ecs.Flag) {
     if s.match(eflag) {
         if s.view.Add(e) {
             // TODO: dispatch event that this entity was added to this system
-            s.onEntityAdded(e)
+            
         }
     } else {
         if s.view.Remove(e) {
             // TODO: dispatch event that this entity was removed from this system
-            s.onEntityRemoved(e)
+            
         }
     }
 }
@@ -202,12 +202,12 @@ func (s *DrawableLabelSystem) ComponentRemoved(e ecs.Entity, eflag ecs.Flag) {
     if s.match(eflag) {
         if s.view.Add(e) {
             // TODO: dispatch event that this entity was added to this system
-            s.onEntityAdded(e)
+            
         }
     } else {
         if s.view.Remove(e) {
             // TODO: dispatch event that this entity was removed from this system
-            s.onEntityRemoved(e)
+            
         }
     }
 }
@@ -215,7 +215,7 @@ func (s *DrawableLabelSystem) ComponentRemoved(e ecs.Entity, eflag ecs.Flag) {
 func (s *DrawableLabelSystem) ComponentResized(cflag ecs.Flag) {
     if s.resizematch(cflag) {
         s.view.rescan()
-        s.onResize()
+        
     }
 }
 

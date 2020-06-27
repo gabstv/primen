@@ -72,7 +72,6 @@ func ready(engine primen.Engine) {
 		em.T0 = .05
 		em.T1 = .1
 		pen.ParticleEmitter().SetEmissionProp(em).SetStrategy(core.SpawnReplace)
-		pen.ParticleEmitter().SetEmissionParent(tr.Entity())
 	}
 	{
 		pen := primen.NewChildParticleEmitterNode(tr, primen.Layer0)
@@ -97,14 +96,14 @@ func ready(engine primen.Engine) {
 		props.XAccelVar1 = 50
 		props.YAccelVar0 = 0
 		props.YAccelVar1 = 10
-		pen.ParticleEmitter().SetProps(props).SetMaxParticles(200).SetX(-100)
+		pen.ParticleEmitter().SetProps(props).SetMaxParticles(200)
+		pen.Transform().SetX(-100)
 		em := pen.ParticleEmitter().EmissionProp()
 		em.N0 = 2
 		em.N1 = 10
 		em.T0 = .05
 		em.T1 = .1
 		pen.ParticleEmitter().SetEmissionProp(em).SetStrategy(core.SpawnReplace)
-		pen.ParticleEmitter().SetEmissionParent(tr.Entity())
 		pen.ParticleEmitter().SetCompositeMode(ebiten.CompositeModeLighter)
 	}
 	{
@@ -140,14 +139,14 @@ func ready(engine primen.Engine) {
 		props.RotationAccelVar0, props.RotationAccelVar1 = -10, 10
 		props.EndRotationAccelVar0, props.EndRotationAccelVar1 = -20, 20
 		props.HueRotationSpeed = math.Pi / 2
-		pen3.ParticleEmitter().SetProps(props).SetMaxParticles(2000).SetX(100)
+		pen3.ParticleEmitter().SetProps(props).SetMaxParticles(2000)
+		pen3.Transform().SetX(100)
 		em := pen3.ParticleEmitter().EmissionProp()
 		em.N0 = 5
 		em.N1 = 10
 		em.T0 = .05
 		em.T1 = .1
 		pen3.ParticleEmitter().SetEmissionProp(em).SetStrategy(core.SpawnReplace)
-		pen3.ParticleEmitter().SetEmissionParent(tr.Entity())
 	}
 	penm := primen.NewChildParticleEmitterNode(tr, primen.Layer0)
 	{
@@ -184,14 +183,25 @@ func ready(engine primen.Engine) {
 		em.T0 = .001
 		em.T1 = .005
 		penm.ParticleEmitter().SetEmissionProp(em).SetStrategy(core.SpawnReplace)
-		penm.ParticleEmitter().SetEmissionParent(tr.Entity())
 	}
 	//tr.Transform().SetScale(1.8, 1.8)
 	fn0 := primen.NewRootFnNode(w)
 	var pgx, pgy float64
 	var gx, gy float64
 	var lx, ly float64
+	dtt := 0.0
+	dag1 := 0.0
+	dag2 := math.Pi / 2
+	dag3 := math.Pi / 4
 	fn0.Function().Update = func(ctx core.UpdateCtx, e ecs.Entity) {
+		dag1 += math.Pi * ctx.DT() * 1.43123
+		dag2 += math.Pi * ctx.DT() * 1.653
+		dag3 += math.Pi * ctx.DT() * 0.3457823
+		ss := (math.Cos(dag1) + math.Cos(dag2) + math.Sin(dag3)) / 3
+		ssf := core.Lerpf(1, 1.6, (1+ss)/2)
+		tr.Transform().SetScale(ssf, ssf)
+		dtt += ctx.DT() / 4
+		tr.Transform().SetAngle(dtt)
 		tr.Transform().SetX(float64(ctx.Engine().Width()) / 2)
 		tr.Transform().SetY(float64(ctx.Engine().Height()) / 2)
 		//if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
@@ -200,7 +210,7 @@ func ready(engine primen.Engine) {
 		//fmt.Println(gx, gy)
 		lx, ly, _ = core.GetTransformSystem(w).GlobalToLocal(gx, gy, tr.Entity())
 		//fmt.Println(lx, ly)
-		penm.ParticleEmitter().SetX(lx).SetY(ly)
+		penm.Transform().SetX(lx).SetY(ly)
 		//}
 		if inpututil.IsKeyJustPressed(ebiten.Key1) {
 			ctx.Engine().SetScreenScale(ebiten.DeviceScaleFactor())

@@ -216,6 +216,7 @@ func (c *DrawLayerComponent) Setup(w ecs.BaseWorld, f ecs.Flag, key [4]byte) {
     c.wkey = key
     c.data = make([]drawerDrawLayerComponent, 0, 256)
     c.initialized = true
+    
 }
 
 
