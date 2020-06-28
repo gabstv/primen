@@ -62,6 +62,8 @@ type engine struct {
 	ebiScale     float64
 	eventManager *core.EventManager
 	debugfps     bool
+	sceneldrs    map[string]NewSceneFn
+	runfns       chan func()
 }
 
 // NewEngineInput is the input data of NewEngine
@@ -128,7 +130,7 @@ func NewEngine(v *NewEngineInput) Engine {
 			Width:             800,
 			Height:            600,
 			Scale:             1,
-			Title:             "tau",
+			Title:             "PRIMEN",
 			FS:                osfs.New(fbase),
 			FixedResolution:   false,
 			Fullscreen:        false,
@@ -177,7 +179,10 @@ func NewEngine(v *NewEngineInput) Engine {
 		ebiOutsideH:  v.Height,
 		ebiScale:     v.Scale,
 		eventManager: &core.EventManager{},
+		runfns:       make(chan func(), 128),
 	}
+
+	e.loadScenes() // load all registered scenes constructor
 
 	// create the default world
 	dw := core.NewWorld(e)
@@ -368,9 +373,18 @@ func (e *engine) Update(screen *ebiten.Image) error {
 		}
 	})
 
+	select {
+	case fn := <-e.runfns:
+		fn()
+	default:
+	}
+
 	ctx := core.NewUpdateCtx(e, frame, delta, ebiten.CurrentTPS())
 
 	for _, w := range worlds {
+		if !w.world.Enabled() {
+			continue
+		}
 		w.world.EachSystem(func(s ecs.BaseSystem) bool {
 			s.(core.System).UpdatePriority(ctx)
 			return true
@@ -397,6 +411,9 @@ func (e *engine) Draw(screen *ebiten.Image) {
 	ctx := core.NewDrawCtx(e, frame, delta, ebiten.CurrentTPS(), screen)
 
 	for _, w := range worlds {
+		if !w.world.Enabled() {
+			continue
+		}
 		w.world.EachSystem(func(s ecs.BaseSystem) bool {
 			s.(core.System).DrawPriority(ctx)
 			return true

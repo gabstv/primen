@@ -40,6 +40,7 @@ func NewLabel() Label {
 	return Label{
 		textdirty:      true,
 		faceOffsetAuto: true,
+		color:          color.White,
 	}
 }
 
