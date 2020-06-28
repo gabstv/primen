@@ -35,6 +35,7 @@ type ParticleEmitter struct {
 	compositeMode   ebiten.CompositeMode
 	disabled        bool
 	lockedparticles bool
+	parentlevel     uint
 }
 
 func NewParticleEmitter(w ecs.BaseWorld) ParticleEmitter {
@@ -65,6 +66,14 @@ func NewParticleEmitter(w ecs.BaseWorld) ParticleEmitter {
 		},
 		ew: w,
 	}
+}
+
+func (e *ParticleEmitter) SetParentLevel(level uint) *ParticleEmitter {
+	e.parentlevel = level
+}
+
+func (e *ParticleEmitter) SetLockedParticles(locked bool) *ParticleEmitter {
+	e.lockedparticles = locked
 }
 
 func (e *ParticleEmitter) MaxParticles() int {
@@ -131,8 +140,16 @@ func (e *ParticleEmitter) Emit(tr *Transform) bool {
 		particle.px += tr.x
 		particle.py += tr.y
 		particle.r += tr.angle
-		particle.parent = tr.parent
-		particle.parente = tr.pentity
+		ttp, ttpe := tr.parent, tr.pentity
+		for i := uint(0); i < e.parentlevel; i++ {
+			if ttp == nil {
+				break
+			}
+			ttpe = ttp.pentity
+			ttp = ttp.parent
+		}
+		particle.parent = ttp
+		particle.parente = ttpe
 		particle.sx *= tr.scaleX
 		particle.sy *= tr.scaleY
 	} else {
