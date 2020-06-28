@@ -2,6 +2,7 @@ package primen
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -66,6 +67,7 @@ type engine struct {
 	sceneldrs    map[string]NewSceneFn
 	runfns       chan func()
 	runctx       context.Context
+	exits        bool
 }
 
 // NewEngineInput is the input data of NewEngine
@@ -83,7 +85,7 @@ type NewEngineInput struct {
 	FixedHeight       int            // fixed logical screen resolution
 	MaxResolution     bool           // set width/height to max resolution
 	Title             string         // window title
-	FS                io.Filesystem  // TODO: drop this
+	FS                io.Filesystem  // the filesystem that the Scenes will use
 	OnReady           func(e Engine) // function to run once the window is opened
 }
 
@@ -374,6 +376,7 @@ func (e *engine) Update(screen *ebiten.Image) error {
 	delta := now.Sub(lastt).Seconds()
 	e.lock.Lock()
 	worlds := e.worlds
+	exits := e.exits
 	e.lock.Unlock()
 	frame := lastf + 1
 	e.updateInfo.Set(now, frame)
@@ -406,6 +409,11 @@ func (e *engine) Update(screen *ebiten.Image) error {
 			return true
 		})
 	}
+
+	if exits {
+		return errors.New("regular termination") // ebiten checks for this string
+	}
+
 	return nil
 }
 
