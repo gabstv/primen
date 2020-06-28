@@ -70,10 +70,12 @@ func NewParticleEmitter(w ecs.BaseWorld) ParticleEmitter {
 
 func (e *ParticleEmitter) SetParentLevel(level uint) *ParticleEmitter {
 	e.parentlevel = level
+	return e
 }
 
 func (e *ParticleEmitter) SetLockedParticles(locked bool) *ParticleEmitter {
 	e.lockedparticles = locked
+	return e
 }
 
 func (e *ParticleEmitter) MaxParticles() int {
