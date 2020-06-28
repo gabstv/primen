@@ -1,12 +1,15 @@
 package primen
 
 import (
+	"context"
+
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/io"
 )
 
 type Engine interface {
 	core.Engine
+	Ctx() context.Context
 	FS() io.Filesystem
 	LoadScene(name string) (scene Scene, sig chan struct{}, err error)
 	RunFn(fn func())

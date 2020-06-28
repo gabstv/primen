@@ -1,6 +1,7 @@
 package primen
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path"
@@ -64,6 +65,7 @@ type engine struct {
 	debugfps     bool
 	sceneldrs    map[string]NewSceneFn
 	runfns       chan func()
+	runctx       context.Context
 }
 
 // NewEngineInput is the input data of NewEngine
@@ -180,6 +182,7 @@ func NewEngine(v *NewEngineInput) Engine {
 		ebiScale:     v.Scale,
 		eventManager: &core.EventManager{},
 		runfns:       make(chan func(), 128),
+		runctx:       context.Background(), // redefined on Run()
 	}
 
 	e.loadScenes() // load all registered scenes constructor
@@ -255,8 +258,17 @@ func (e *engine) Default() *core.GameWorld {
 	return e.defaultWorld
 }
 
+// Ctx is the run context
+func (e *engine) Ctx() context.Context {
+	return e.runctx
+}
+
 // Run boots up the game engine
 func (e *engine) Run() error {
+	rctx, cf := context.WithCancel(e.runctx)
+	defer cf()
+	e.runctx = rctx
+	//
 	now := time.Now()
 	e.drawInfo.Set(now, 0)
 	e.updateInfo.Set(now, 0)
