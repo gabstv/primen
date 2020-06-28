@@ -1,7 +1,10 @@
 package primen
 
 import (
+	"context"
 	"sync"
+
+	"github.com/gabstv/primen/io"
 )
 
 type Scene interface {
@@ -59,4 +62,18 @@ func (e *engine) loadScene(name string) (scene Scene, sig chan struct{}, err err
 	scene = e.sceneldrs[name](e)
 	sig = scene.Load(e)
 	return
+}
+
+type SceneBase struct {
+	Engine    Engine
+	Container io.Container
+}
+
+func (s *SceneBase) Setup(engine Engine) {
+	s.Engine = engine
+	s.Container = io.NewContainer(context.Background(), engine.FS())
+}
+
+func (s *SceneBase) Destroy() {
+	s.Container.UnloadAll()
 }
