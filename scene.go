@@ -9,7 +9,7 @@ import (
 
 type Scene interface {
 	Name() string
-	Load(engine Engine) chan struct{}
+	Load() chan struct{}
 	Unload() chan struct{}
 	Start()
 	Message(msg string)
@@ -60,7 +60,7 @@ func (e *engine) loadScene(name string) (scene Scene, sig chan struct{}, err err
 		return nil, nil, ErrSceneNotFound
 	}
 	scene = e.sceneldrs[name](e)
-	sig = scene.Load(e)
+	sig = scene.Load()
 	return
 }
 

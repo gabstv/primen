@@ -41,16 +41,15 @@ func (*SceneA) Name() string {
 	return "scene1"
 }
 
-func (s *SceneA) Load(engine primen.Engine) chan struct{} {
-	s.engine = engine
+func (s *SceneA) Load() chan struct{} {
 	ch := make(chan struct{})
 	go func() {
 		defer close(ch)
-		w := engine.NewWorldWithDefaults(0)
+		w := s.engine.NewWorldWithDefaults(0)
 		w.SetEnabled(false)
 		s.w = w
 		// load sprites
-		s.container = io.NewContainer(context.Background(), engine.FS())
+		s.container = io.NewContainer(context.Background(), s.engine.FS())
 		_, done := s.container.LoadAll([]string{"particle2.png", "people.dat"})
 		<-done
 		atlas, err := s.container.GetAtlas("people.dat")
@@ -122,16 +121,15 @@ func (*SceneB) Name() string {
 	return "scene2"
 }
 
-func (s *SceneB) Load(engine primen.Engine) chan struct{} {
-	s.engine = engine
+func (s *SceneB) Load() chan struct{} {
 	ch := make(chan struct{})
 	go func() {
 		defer close(ch)
-		w := engine.NewWorldWithDefaults(0)
+		w := s.engine.NewWorldWithDefaults(0)
 		w.SetEnabled(false)
 		s.w = w
 		// load sprites
-		s.container = io.NewContainer(context.Background(), engine.FS())
+		s.container = io.NewContainer(context.Background(), s.engine.FS())
 		_, done := s.container.LoadAll([]string{"people.dat"})
 		<-done
 		atlas, err := s.container.GetAtlas("people.dat")
@@ -196,6 +194,6 @@ func (s *SceneB) gotoscene1() {
 ////////////////////////////////
 
 func init() {
-	primen.RegisterScene("scene1", func(engine primen.Engine) primen.Scene { return &SceneA{} })
-	primen.RegisterScene("scene2", func(engine primen.Engine) primen.Scene { return &SceneB{} })
+	primen.RegisterScene("scene1", func(engine primen.Engine) primen.Scene { return &SceneA{engine: engine} })
+	primen.RegisterScene("scene2", func(engine primen.Engine) primen.Scene { return &SceneB{engine: engine} })
 }
