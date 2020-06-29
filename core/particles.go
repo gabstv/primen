@@ -139,9 +139,13 @@ func (e *ParticleEmitter) Emit(tr *Transform) bool {
 	particle := e.props.NewParticle(rng)
 	//TODO: link position with transform!
 	if !e.lockedparticles {
-		particle.px += tr.x
-		particle.py += tr.y
-		particle.r += tr.angle
+		sys := GetTransformSystem(e.ew)
+		gx, gy := sys.LocalToGlobalTr(particle.px, particle.py, tr)
+		//a := particle.r + tr.angle
+		// particle.px += tr.x
+		// particle.py += tr.y
+		// particle.r += tr.angle
+
 		ttp, ttpe := tr.parent, tr.pentity
 		for i := uint(0); i < e.parentlevel; i++ {
 			if ttp == nil {
@@ -152,6 +156,12 @@ func (e *ParticleEmitter) Emit(tr *Transform) bool {
 		}
 		particle.parent = ttp
 		particle.parente = ttpe
+		if particle.parent != nil {
+			lx, ly, _ := sys.GlobalToLocal(gx, gy, particle.parente)
+			particle.px, particle.py = lx, ly
+		} else {
+			particle.px, particle.py = gx, gy
+		}
 		particle.sx *= tr.scaleX
 		particle.sy *= tr.scaleY
 	} else {

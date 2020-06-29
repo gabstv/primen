@@ -66,6 +66,8 @@ func ready(engine primen.Engine) {
 		props.InitScaleVar0 = .2
 		props.InitScaleVar1 = 1
 		pen.ParticleEmitter().SetProps(props).SetMaxParticles(200) //.SetX(50).SetY(50)
+		pen.ParticleEmitter().SetParentLevel(1)
+		pen.Transform().SetY(-100)
 		em := pen.ParticleEmitter().EmissionProp()
 		em.N0 = 2
 		em.N1 = 10

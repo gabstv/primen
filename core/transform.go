@@ -223,6 +223,14 @@ func (s *TransformSystem) LocalToGlobal(lx, ly float64, e ecs.Entity) (x, y floa
 	return x, y, true
 }
 
+func (s *TransformSystem) LocalToGlobalTr(lx, ly float64, tr *Transform) (x, y float64) {
+	pm := tr.m
+	//pm.Invert()
+	x, y = pm.Apply(lx, ly)
+
+	return x, y
+}
+
 // DrawPriority noop
 func (s *TransformSystem) DrawPriority(ctx DrawCtx) {
 	if !DebugDraw {
