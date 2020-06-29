@@ -40,10 +40,14 @@ func ready(engine primen.Engine) {
 	coretr3 := tr3.Transform()
 	coretr3.SetX(-40).SetY(50)
 	//
+	rnd := primen.NewRootNode(w)
+	//
 	core.SetFunctionComponentData(w, tr2.Entity(), core.Function{
 		Update: func(ctx core.UpdateCtx, e ecs.Entity) {
 			dd := core.GetTransformComponentData(w, e)
 			dd.SetAngle(dd.Angle() - .5*math.Pi*ctx.DT())
+			x, y, _ := core.GetTransformSystem(w).LocalToGlobal(0, 0, tr3.Entity())
+			rnd.Transform().SetX(x - 10).SetY(y - 10)
 		},
 	})
 }
