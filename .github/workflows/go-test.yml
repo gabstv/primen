@@ -25,6 +25,8 @@ jobs:
           sudo apt-get install libasound2-dev libglew-dev libgles2-mesa-dev libalut-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev libxxf86vm-dev
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Generate assets
+        run: cd examples/shared && go generate ./...
       - name: Test
         env:
           DISPLAY: ":99.0"
