@@ -35,6 +35,7 @@ type ParticleEmitter struct {
 	compositeMode   ebiten.CompositeMode
 	disabled        bool
 	lockedparticles bool
+	parentlevel     uint
 }
 
 func NewParticleEmitter(w ecs.BaseWorld) ParticleEmitter {
@@ -65,6 +66,16 @@ func NewParticleEmitter(w ecs.BaseWorld) ParticleEmitter {
 		},
 		ew: w,
 	}
+}
+
+func (e *ParticleEmitter) SetParentLevel(level uint) *ParticleEmitter {
+	e.parentlevel = level
+	return e
+}
+
+func (e *ParticleEmitter) SetLockedParticles(locked bool) *ParticleEmitter {
+	e.lockedparticles = locked
+	return e
 }
 
 func (e *ParticleEmitter) MaxParticles() int {
@@ -128,11 +139,29 @@ func (e *ParticleEmitter) Emit(tr *Transform) bool {
 	particle := e.props.NewParticle(rng)
 	//TODO: link position with transform!
 	if !e.lockedparticles {
-		particle.px += tr.x
-		particle.py += tr.y
-		particle.r += tr.angle
-		particle.parent = tr.parent
-		particle.parente = tr.pentity
+		sys := GetTransformSystem(e.ew)
+		gx, gy := sys.LocalToGlobalTr(particle.px, particle.py, tr)
+		//a := particle.r + tr.angle
+		// particle.px += tr.x
+		// particle.py += tr.y
+		// particle.r += tr.angle
+
+		ttp, ttpe := tr.parent, tr.pentity
+		for i := uint(0); i < e.parentlevel; i++ {
+			if ttp == nil {
+				break
+			}
+			ttpe = ttp.pentity
+			ttp = ttp.parent
+		}
+		particle.parent = ttp
+		particle.parente = ttpe
+		if particle.parent != nil {
+			lx, ly, _ := sys.GlobalToLocal(gx, gy, particle.parente)
+			particle.px, particle.py = lx, ly
+		} else {
+			particle.px, particle.py = gx, gy
+		}
 		particle.sx *= tr.scaleX
 		particle.sy *= tr.scaleY
 	} else {
@@ -173,7 +202,7 @@ func (e *ParticleEmitter) Draw(ctx DrawCtx, tr *Transform) {
 			opt.GeoM.Concat(p.parent.m)
 		}
 		opt.ColorM.Reset()
-		opt.ColorM.Scale(p.clr, p.clb, p.clg, p.cla)
+		opt.ColorM.Scale(p.clr, p.clg, p.clb, p.cla)
 		if p.hue != 0 {
 			opt.ColorM.RotateHue(p.hue)
 		}

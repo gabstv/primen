@@ -12,7 +12,8 @@ type TransformGetter interface {
 
 type Node struct {
 	*mObjectContainer
-	wtr core.WatchTransform
+	wtr    core.WatchTransform
+	wtrtwn core.WatchTrTweening
 }
 
 func NewRootNode(w World) *Node {
@@ -49,6 +50,14 @@ func NewChildNode(parent ObjectContainer) *Node {
 
 func (t *Node) Transform() *core.Transform {
 	return t.wtr.Data()
+}
+
+func (t *Node) TrTweening() *core.TrTweening {
+	if t.wtrtwn == nil {
+		core.SetTrTweeningComponentData(t.w, t.e, core.NewTrTweening())
+		t.wtrtwn = core.WatchTrTweeningComponentData(t.w, t.e)
+	}
+	return t.wtrtwn.Data()
 }
 
 func (t *Node) SetParent(parent ObjectContainer) {
