@@ -11,6 +11,12 @@ import (
 const sqrt2div2 = math.Sqrt2 / 2 // math.sqrt(2)/2.0
 const rad45 = math.Pi / 4        // 45º
 
+type PanStream interface {
+	audio.ReadSeekCloser
+	SetPan(pan float64)
+	Pan() float64
+}
+
 // StereoPanStream is an audio buffer that changes the stereo channel's signal
 // based on the Panning.
 type StereoPanStream struct {

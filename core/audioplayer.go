@@ -9,17 +9,18 @@ import (
 
 type AudioPlayer struct {
 	ebiplayer *audio.Player
-	panctrl   *paudio.StereoPanStream
+	panctrl   paudio.PanStream
 	//channels
 }
 
 type NewAudioPlayerInput struct {
-	RawAudio    []byte               // use RawAudio (for shared buffers) and sfx
-	Buffer      audio.ReadSeekCloser // use Buffer for large files
-	Panning     bool                 // use audio Panning feature
-	Infinite    bool
-	IntroLength int64
-	LoopLength  int64
+	RawAudio      []byte               // use RawAudio (for shared buffers) and sfx
+	Buffer        audio.ReadSeekCloser // use Buffer for large files
+	Panning       bool                 // use audio Panning feature
+	StereoPanning bool
+	Infinite      bool
+	IntroLength   int64
+	LoopLength    int64
 }
 
 func mustEbiPlayer(p *audio.Player, e error) *audio.Player {
@@ -39,9 +40,13 @@ func NewAudioPlayer(input NewAudioPlayerInput) AudioPlayer {
 	} else {
 		lsrk = input.Buffer
 	}
-	var pan *paudio.StereoPanStream
+	var pan paudio.PanStream
 	if input.Panning {
-		pan = paudio.NewStereoPanStreamFromReader(lsrk)
+		if input.StereoPanning {
+			pan = paudio.NewStereoPanStreamFromReader(lsrk)
+		} else {
+			pan = paudio.NewMonoPanStreamFromReader(lsrk)
+		}
 		lsrk = pan
 	}
 	if input.Infinite {
