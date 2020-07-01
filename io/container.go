@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"image"
+	"io"
 	"log"
 	"sync"
 	"sync/atomic"
@@ -21,6 +22,8 @@ type Container interface {
 	Get(name string) ([]byte, error)
 	GetImage(name string) (image.Image, error)
 	GetAtlas(name string) (*Atlas, error)
+	GetAudioStream(name string) (*AudioStream, error)
+	GetAudioBytes(name string) ([]byte, error)
 }
 
 type container struct {
@@ -32,6 +35,7 @@ type container struct {
 	loadedlen    int64 // atomic
 	loadinglen   int64 // atomic
 	loadingn     int32 // atomic
+	audiostreams []*AudioStream
 }
 
 func (c *container) Len() int64 {
@@ -200,6 +204,28 @@ func (c *container) GetAtlas(name string) (*Atlas, error) {
 		return nil, err
 	}
 	return ParseAtlas(b)
+}
+
+func (c *container) GetAudioStream(name string) (*AudioStream, error) {
+	b, err := c.Get(name)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAudioStream(name, b)
+}
+
+func (c *container) GetAudioBytes(name string) ([]byte, error) {
+	b, err := c.Get(name)
+	if err != nil {
+		return nil, err
+	}
+	stream, err := ParseAudioStream(name, b)
+	if err != nil {
+		return nil, err
+	}
+	buf := new(bytes.Buffer)
+	io.Copy(buf, stream.Data)
+	return buf.Bytes(), nil
 }
 
 func NewContainer(ctx context.Context, fs Filesystem) Container {

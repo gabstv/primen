@@ -202,7 +202,7 @@ func (e *ParticleEmitter) Draw(ctx DrawCtx, tr *Transform) {
 			opt.GeoM.Concat(p.parent.m)
 		}
 		opt.ColorM.Reset()
-		opt.ColorM.Scale(p.clr, p.clb, p.clg, p.cla)
+		opt.ColorM.Scale(p.clr, p.clg, p.clb, p.cla)
 		if p.hue != 0 {
 			opt.ColorM.RotateHue(p.hue)
 		}
