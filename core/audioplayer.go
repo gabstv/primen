@@ -8,18 +8,21 @@ import (
 )
 
 type AudioPlayer struct {
-	ebiplayer *audio.Player
-	panctrl   *paudio.StereoPanStream
+	ebiplayer    *audio.Player
+	panctrl      paudio.PanStream
+	pitchshifter *paudio.PitchShiftStream
 	//channels
 }
 
 type NewAudioPlayerInput struct {
-	RawAudio    []byte               // use RawAudio (for shared buffers) and sfx
-	Buffer      audio.ReadSeekCloser // use Buffer for large files
-	Panning     bool                 // use audio Panning feature
-	Infinite    bool
-	IntroLength int64
-	LoopLength  int64
+	RawAudio      []byte               // use RawAudio (for shared buffers) and sfx
+	Buffer        audio.ReadSeekCloser // use Buffer for large files
+	Panning       bool                 // use audio Panning feature
+	StereoPanning bool
+	PitchShift    bool
+	Infinite      bool
+	IntroLength   int64
+	LoopLength    int64
 }
 
 func mustEbiPlayer(p *audio.Player, e error) *audio.Player {
@@ -39,17 +42,27 @@ func NewAudioPlayer(input NewAudioPlayerInput) AudioPlayer {
 	} else {
 		lsrk = input.Buffer
 	}
-	var pan *paudio.StereoPanStream
+	var pan paudio.PanStream
 	if input.Panning {
-		pan = paudio.NewStereoPanStreamFromReader(lsrk)
+		if input.StereoPanning {
+			pan = paudio.NewStereoPanStreamFromReader(lsrk)
+		} else {
+			pan = paudio.NewMonoPanStreamFromReader(lsrk)
+		}
 		lsrk = pan
+	}
+	var pshift *paudio.PitchShiftStream
+	if input.PitchShift {
+		pshift = paudio.NewPitchShiftStreamFromReader(lsrk)
+		lsrk = pshift
 	}
 	if input.Infinite {
 		lsrk = audio.NewInfiniteLoopWithIntro(lsrk, input.IntroLength, input.LoopLength)
 	}
 	return AudioPlayer{
-		ebiplayer: mustEbiPlayer(audio.NewPlayer(paudio.Context(), lsrk)),
-		panctrl:   pan,
+		ebiplayer:    mustEbiPlayer(audio.NewPlayer(paudio.Context(), lsrk)),
+		panctrl:      pan,
+		pitchshifter: pshift,
 	}
 }
 
@@ -96,6 +109,19 @@ func (p *AudioPlayer) Pan() float64 {
 		return p.panctrl.Pan()
 	}
 	return 0
+}
+
+func (p *AudioPlayer) SetPitch(pan float64) {
+	if p.pitchshifter != nil {
+		p.pitchshifter.SetPitch(pan)
+	}
+}
+
+func (p *AudioPlayer) Pitch() float64 {
+	if p.pitchshifter != nil {
+		return p.pitchshifter.Pitch()
+	}
+	return 1
 }
 
 //go:generate ecsgen -n AudioPlayer -p core -o audioplayer_component.go --component-tpl --vars "UUID=9C7DB259-6A3E-4DD3-B277-4B35DA5709AF"
