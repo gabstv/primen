@@ -48,7 +48,8 @@ func main() {
 					xi, yi := ebiten.CursorPosition()
 					pan := (float64(xi)/float64(e.Width()))*2 - 1
 					ra.AudioPlayer().SetPan(pan)
-					ra.AudioPlayer().SetPitch((pan + 2) / 2)
+					pitch := core.Lerpf(0.5, 2, float64(yi)/float64(e.Height()))
+					ra.AudioPlayer().SetPitch(pitch)
 					ra.AudioPlayer().Seek(0)
 					ra.AudioPlayer().Play()
 					pem.Transform().SetX(float64(xi)).SetY(float64(yi))

@@ -29,6 +29,10 @@ func (s *PitchShiftStream) Pitch() float64 {
 	return s.pitchm1 + 1
 }
 
+//TODO: use FFT for smooth transforms
+// https://github.com/takatoh/fft/blob/master/fft.go
+// http://blog.bjornroche.com/2012/07/frequency-detection-using-fft-aka-pitch.html
+
 func (s *PitchShiftStream) Read(p []byte) (n int, err error) {
 	pitch := s.pitchm1 + 1
 	if pitch == 1.0 {
