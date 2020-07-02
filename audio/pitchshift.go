@@ -32,6 +32,10 @@ func (s *PitchShiftStream) Pitch() float64 {
 //TODO: use FFT for smooth transforms
 // https://github.com/takatoh/fft/blob/master/fft.go
 // http://blog.bjornroche.com/2012/07/frequency-detection-using-fft-aka-pitch.html
+// https://en.wikipedia.org/wiki/Pitch_correction
+// https://en.wikipedia.org/wiki/Window_function
+// https://en.wikipedia.org/wiki/Pitch_detection_algorithm
+// https://stackoverflow.com/questions/8288547/fft-pitch-detection-melody-extraction
 
 func (s *PitchShiftStream) Read(p []byte) (n int, err error) {
 	pitch := s.pitchm1 + 1
@@ -44,6 +48,9 @@ func (s *PitchShiftStream) Read(p []byte) (n int, err error) {
 
 	lcpos, _ := s.ReadSeekCloser.Seek(0, io.SeekCurrent)
 	limit := int(math.Ceil(float64(len(p))*pitch/4) * 4)
+	if limit < 0 {
+		return s.ReadSeekCloser.Read(p)
+	}
 	xn, err := s.ReadSeekCloser.Read(s.fb[:limit])
 	if err != nil {
 		return 0, err
