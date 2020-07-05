@@ -1,9 +1,12 @@
 package core
 
 import (
+	"image"
+
 	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen/dom"
 	"github.com/gabstv/primen/internal/z"
+	"github.com/hajimehoshi/ebiten"
 )
 
 type UINode struct {
@@ -52,15 +55,33 @@ func (m *UIManager) buildelement(elem dom.ElementNode, pentity ecs.Entity) {
 	}
 }
 
-func (m *UIManager) buildrect(elem dom.ElementNode, pentity ecs.Entity) {
+func (m *UIManager) buildrect(elem dom.ElementNode, pentity ecs.Entity) ecs.Entity {
 	entity := m.world.NewEntity()
 	SetUINodeComponentData(m.world, entity, UINode{
 		id:          z.S(elem.ID(), z.Rs()),
 		uimanagerid: m.id,
 	})
-	//TODO: add other components
-	// add components
-	_ = entity
+	attrs := elem.Attributes()
+	SetUIRectComponentData(m.world, entity, UIRect{
+		filter:      z.Filter(attrs["filter"], ebiten.FilterDefault),
+		bgColor:     z.Color(z.S(attrs["bgcolor"], attrs["background-color"]), z.White),
+		stroke:      z.Int(z.S(attrs["stroke-size"], attrs["strokesz"]), 0),
+		strokeColor: z.Color(z.S(attrs["strokec"], attrs["stroke-color"]), z.Black),
+		size: image.Point{
+			X: z.Int(z.S(attrs["width"], attrs["w"]), 0),
+			Y: z.Int(z.S(attrs["height"], attrs["h"]), 0),
+		},
+	})
+	SetTransformComponentData(m.world, entity, Transform{
+		x:       z.Float64("x", 0),
+		y:       z.Float64("y", 0),
+		pentity: pentity,
+		scaleX:  z.Float64(z.S(attrs["scalex"], attrs["sx"]), 1),
+		scaleY:  z.Float64(z.S(attrs["scaley"], attrs["sy"]), 1),
+		angle:   z.Float64(z.S(attrs["rotation"], attrs["rot"], attrs["angle"]), 0),
+	})
+	//TODO: add other components (?)
+	return entity
 }
 
 //go:generate ecsgen -n UIManager -p core -o uimanager_component.go --component-tpl --vars "UUID=D81D8469-5C53-4436-9323-74635C5BF624" --vars "Setup=c.onCompSetup()"
