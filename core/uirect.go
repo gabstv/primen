@@ -4,6 +4,7 @@ import (
 	"image"
 	"image/color"
 
+	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen/internal/ggebiten"
 
 	"github.com/hajimehoshi/ebiten"
@@ -55,4 +56,12 @@ func (r *UIRect) Update(ctx UpdateCtx, t *Transform) {
 		r.render()
 		r.notdirty = true
 	}
+}
+
+//go:generate ecsgen -n UIRect -p core -o uirect_component.go --component-tpl --vars "UUID=5895E095-CECF-4AA0-A3A2-44460FDFC3FB" --vars "Setup=c.onCompSetup()"
+
+func (c *UIRectComponent) onCompSetup() {
+	RegisterDrawableComponent(c.world, c.flag, func(w ecs.BaseWorld, e ecs.Entity) Drawable {
+		return GetUIRectComponentData(w, e)
+	})
 }
