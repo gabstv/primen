@@ -30,10 +30,14 @@ type UILinks struct {
 }
 
 type UIManager struct {
-	world    World
+	world    ecs.BaseWorld
 	id       string
 	disabled bool
 	document dom.ElementNode
+}
+
+func NewUIManager() UIManager {
+	return UIManager{}
 }
 
 func (m *UIManager) build() {
@@ -84,8 +88,13 @@ func (m *UIManager) buildrect(elem dom.ElementNode, pentity ecs.Entity) ecs.Enti
 	return entity
 }
 
-//go:generate ecsgen -n UIManager -p core -o uimanager_component.go --component-tpl --vars "UUID=D81D8469-5C53-4436-9323-74635C5BF624" --vars "Setup=c.onCompSetup()"
+//go:generate ecsgen -n UIManager -p core -o uimanager_component.go --component-tpl --vars "UUID=D81D8469-5C53-4436-9323-74635C5BF624" --vars "Setup=c.onCompSetup()" --vars "OnAdd=c.setupNewComp(e)"
 
 func (c *UIManagerComponent) onCompSetup() {
 
+}
+
+func (c *UIManagerComponent) setupNewComp(e ecs.Entity) {
+	d := c.Data(e)
+	d.world = c.world
 }

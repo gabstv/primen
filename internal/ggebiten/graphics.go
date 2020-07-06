@@ -25,7 +25,7 @@ func (g *Graphics) Ebimage() *ebiten.Image {
 }
 
 func f(v int) float64 {
-
+	return float64(v)
 }
 
 func (g *Graphics) DrawRect(x, y, w, h, strokewidth int, stroke, bg color.Color) {
@@ -49,4 +49,5 @@ func NewGraphicsSoftLink(width, height int, filter ebiten.Filter) *Graphics {
 		linked: NewSoftLinkedImage(width, height, filter),
 	}
 	gr.GG = gg.NewContextForRGBA(gr.linked.Image())
+	return gr
 }
