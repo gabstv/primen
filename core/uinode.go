@@ -40,6 +40,11 @@ func NewUIManager() UIManager {
 	return UIManager{}
 }
 
+func (m *UIManager) Setup(root dom.ElementNode) {
+	m.document = root
+	m.build()
+}
+
 func (m *UIManager) build() {
 	rdom := m.document
 	m.buildelement(rdom, 0)
