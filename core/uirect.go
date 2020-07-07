@@ -36,7 +36,7 @@ func (r *UIRect) render() {
 	r.cache = gfx.Ebimage()
 	//TODO: support gradients
 	// https://github.com/fogleman/gg#gradients--patterns
-	gfx.DrawRect(1, 1, r.size.X-1, r.size.Y-1, r.stroke, r.strokeColor, r.bgColor)
+	gfx.DrawRect(1, 1, r.size.X, r.size.Y, r.stroke, r.strokeColor, r.bgColor)
 	gfx.Sync()
 	gfx.Dispose()
 }

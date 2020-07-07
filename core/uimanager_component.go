@@ -156,7 +156,7 @@ func (c *UIManagerComponent) Upsert(e ecs.Entity, data interface{}) {
             ComponentID: "D81D8469-5C53-4436-9323-74635C5BF624",
         })
     }
-    
+    c.setupNewComp(e)
     c.world.CAdded(e, c, c.wkey)
     c.world.Dispatch(ecs.Event{
         Type: ecs.EvtComponentAdded,

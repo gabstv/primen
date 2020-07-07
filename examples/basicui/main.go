@@ -1,44 +1,31 @@
 package main
 
 import (
-	"encoding/xml"
-	"fmt"
-	"os"
+	"io/ioutil"
+
+	"github.com/gabstv/primen"
+	"github.com/gabstv/primen/core"
+	"github.com/gabstv/primen/dom"
 )
 
 func main() {
-	f, err := os.Open("ui.xml")
+	engine := primen.NewEngine(&primen.NewEngineInput{
+		Width:   800,
+		Height:  600,
+		Scale:   1,
+		OnReady: ready,
+	})
+	engine.Run()
+}
+
+func ready(e primen.Engine) {
+	fb, _ := ioutil.ReadFile("ui.xml")
+	root, err := dom.ParseXMLText(string(fb))
 	if err != nil {
 		panic(err)
 	}
-	defer f.Close()
-	xd := xml.NewDecoder(f)
-	for {
-		tkn, err := xd.Token()
-		if err != nil {
-			println(err.Error())
-			return
-		}
-		switch tkn.(type) {
-		case xml.StartElement:
-			v := tkn.(xml.StartElement)
-			fmt.Println("xml.StartElement", v)
-		case xml.EndElement:
-			v := tkn.(xml.EndElement)
-			fmt.Println("xml.EndElement", v)
-		case xml.CharData:
-			v := tkn.(xml.CharData)
-			fmt.Println("xml.CharData", v)
-		case xml.Comment:
-			v := tkn.(xml.Comment)
-			fmt.Println("xml.Comment", v)
-		case xml.ProcInst:
-			v := tkn.(xml.ProcInst)
-			fmt.Println("xml.ProcInst", v)
-		case xml.Directive:
-			v := tkn.(xml.Directive)
-			fmt.Println("xml.Directive", v)
-		}
-		//fmt.Println(tkn)
-	}
+	w := e.NewWorldWithDefaults(0)
+	entity := w.NewEntity()
+	core.SetUIManagerComponentData(w, entity, core.NewUIManager())
+	core.GetUIManagerComponentData(w, entity).Setup(root.(dom.ElementNode))
 }

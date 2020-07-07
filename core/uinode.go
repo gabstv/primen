@@ -82,8 +82,8 @@ func (m *UIManager) buildrect(elem dom.ElementNode, pentity ecs.Entity) ecs.Enti
 		},
 	})
 	SetTransformComponentData(m.world, entity, Transform{
-		x:       z.Float64("x", 0),
-		y:       z.Float64("y", 0),
+		x:       z.Float64(attrs["x"], 0),
+		y:       z.Float64(attrs["y"], 0),
 		pentity: pentity,
 		scaleX:  z.Float64(z.S(attrs["scalex"], attrs["sx"]), 1),
 		scaleY:  z.Float64(z.S(attrs["scaley"], attrs["sy"]), 1),
