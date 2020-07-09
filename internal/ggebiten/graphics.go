@@ -38,10 +38,12 @@ func (g *Graphics) DrawRect(x, y, w, h, strokewidth int, stroke, bg color.Color)
 	c.SetFillRule(gg.FillRuleWinding)
 	c.SetColor(bg)
 	c.DrawRectangle(f(x), f(y), f(w), f(h))
-	c.Fill()
 	if strokewidth > 0 {
+		c.FillPreserve()
 		c.SetColor(stroke)
 		c.Stroke()
+	} else {
+		c.Fill()
 	}
 }
 

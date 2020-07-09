@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 
 	"github.com/gabstv/primen"
-	"github.com/gabstv/primen/core"
+	"github.com/gabstv/primen/core/ui/ggui"
 	"github.com/gabstv/primen/dom"
 )
 
@@ -26,6 +26,6 @@ func ready(e primen.Engine) {
 	}
 	w := e.NewWorldWithDefaults(0)
 	entity := w.NewEntity()
-	core.SetUIManagerComponentData(w, entity, core.NewUIManager())
-	core.GetUIManagerComponentData(w, entity).Setup(root.(dom.ElementNode))
+	ggui.SetUIManagerComponentData(w, entity, ggui.NewUIManager())
+	ggui.GetUIManagerComponentData(w, entity).Setup(root.(dom.ElementNode))
 }

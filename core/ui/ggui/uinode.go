@@ -1,7 +1,9 @@
-package core
+package ggui
 
 import (
 	"image"
+
+	"github.com/gabstv/primen/core"
 
 	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen/dom"
@@ -81,14 +83,12 @@ func (m *UIManager) buildrect(elem dom.ElementNode, pentity ecs.Entity) ecs.Enti
 			Y: z.Int(z.S(attrs["height"], attrs["h"]), 0),
 		},
 	})
-	SetTransformComponentData(m.world, entity, Transform{
-		x:       z.Float64(attrs["x"], 0),
-		y:       z.Float64(attrs["y"], 0),
-		pentity: pentity,
-		scaleX:  z.Float64(z.S(attrs["scalex"], attrs["sx"]), 1),
-		scaleY:  z.Float64(z.S(attrs["scaley"], attrs["sy"]), 1),
-		angle:   z.Float64(z.S(attrs["rotation"], attrs["rot"], attrs["angle"]), 0),
-	})
+	core.SetTransformComponentData(m.world, entity, core.Transform{})
+	trtr := core.GetTransformComponentData(m.world, entity)
+	trtr.SetX(z.Float64(attrs["x"], 0)).SetY(z.Float64(attrs["y"], 0))
+	trtr.SetParent(pentity)
+	trtr.SetScale(z.Float64(z.S(attrs["scalex"], attrs["sx"]), 1), z.Float64(z.S(attrs["scaley"], attrs["sy"]), 1))
+	trtr.SetAngle(z.Float64(z.S(attrs["rotation"], attrs["rot"], attrs["angle"]), 0))
 	//TODO: add other components (?)
 	return entity
 }

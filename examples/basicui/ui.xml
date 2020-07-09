@@ -1,5 +1,9 @@
 <window xmlns="https://github.com/gabstv/primen" scale="2.0">
     <!-- 
     <button id="bt1" x="10" y="10" w="50" h="20" on-click="exit">Hello</button> -->
-    <rect x="10" y="10" w="390" h="580"></rect>
+    <rect x="10" y="10" w="390" h="20"></rect>
+    <rect x="10" y="40" w="390" h="20" bgcolor="#ddccffcc"></rect>
+    <rect x="10" y="70" w="390" h="20" bgcolor="#1abc9c"></rect>
+    <rect x="10" y="100" w="390" h="20" bgcolor="#e74c3c" strokesz="2" strokec="#ecf0f1"></rect>
+    <rect x="10" y="130" w="390" h="20" bgcolor="#8e44ad" strokesz="4" strokec="#ecf0f1"></rect>
 </window>
