@@ -33,6 +33,7 @@ type ElementNode interface {
 	SetAttribute(name, value string)
 	DeleteAttribute(name string)
 	FirstChildAsText() string
+	FindChildByID(id string) Node
 }
 
 type textNode struct {
@@ -100,6 +101,27 @@ func (n *elementNode) FirstChildAsText() string {
 		return n.children[0].(TextNode).Text()
 	}
 	return ""
+}
+
+func (n *elementNode) FindChildByID(id string) Node {
+	if len(n.children) < 1 {
+		return nil
+	}
+	for _, child := range n.children {
+		if child.Type() == NodeElement {
+			if child.(ElementNode).ID() == id {
+				return child
+			}
+		}
+	}
+	for _, child := range n.children {
+		if child.Type() == NodeElement {
+			if x := child.(ElementNode).FindChildByID(id); x != nil {
+				return x
+			}
+		}
+	}
+	return nil
 }
 
 func Text(str string) TextNode {
