@@ -1,0 +1,8 @@
+<window name="Hello Dudes!">
+    Hello!
+    Line 2
+</window>
+<window name="Window 2">
+    <button st-color-button="#ff0000">Close me</button>
+    <button label="close me 2"></button>
+</window>

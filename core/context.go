@@ -21,6 +21,7 @@ type DrawCtx interface {
 }
 
 type Engine interface {
+	AddModule(module Module, priority int)
 	NewWorld(priority int) World
 	NewWorldWithDefaults(priority int) World
 	RemoveWorld(w World)

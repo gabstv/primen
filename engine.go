@@ -49,6 +49,7 @@ type engine struct {
 	drawInfo     *StepInfo
 	lock         sync.Mutex
 	worlds       []worldContainer
+	modules      []moduleContainer
 	defaultWorld *core.GameWorld
 	dmap         Dict
 	options      EngineOptions
@@ -202,6 +203,8 @@ func NewEngine(v *NewEngineInput) Engine {
 	}
 	e.defaultWorld = dw
 
+	e.modules = make([]moduleContainer, 0)
+
 	return e
 }
 
@@ -263,6 +266,16 @@ func (e *engine) Default() *core.GameWorld {
 // Ctx is the run context
 func (e *engine) Ctx() context.Context {
 	return e.runctx
+}
+
+func (e *engine) AddModule(module core.Module, priority int) {
+	e.lock.Lock()
+	defer e.lock.Unlock()
+	e.modules = append(e.modules, moduleContainer{
+		module:   module,
+		priority: priority,
+	})
+	sort.Sort(sortedModuleContainer(e.modules))
 }
 
 // Run boots up the game engine
@@ -376,6 +389,7 @@ func (e *engine) Update(screen *ebiten.Image) error {
 	delta := now.Sub(lastt).Seconds()
 	e.lock.Lock()
 	worlds := e.worlds
+	modules := e.modules
 	exits := e.exits
 	e.lock.Unlock()
 	frame := lastf + 1
@@ -396,6 +410,10 @@ func (e *engine) Update(screen *ebiten.Image) error {
 
 	ctx := core.NewUpdateCtx(e, frame, delta, ebiten.CurrentTPS())
 
+	for _, modulec := range modules {
+		modulec.module.BeforeUpdate(ctx)
+	}
+
 	for _, w := range worlds {
 		if !w.world.Enabled() {
 			continue
@@ -408,6 +426,10 @@ func (e *engine) Update(screen *ebiten.Image) error {
 			s.(core.System).Update(ctx)
 			return true
 		})
+	}
+
+	for _, modulec := range modules {
+		modulec.module.AfterUpdate(ctx)
 	}
 
 	if exits {
@@ -424,11 +446,16 @@ func (e *engine) Draw(screen *ebiten.Image) {
 	//e.dmap.Set(TagDelta, delta) // set on update
 	e.lock.Lock()
 	worlds := e.worlds
+	modules := e.modules
 	e.lock.Unlock()
 	frame := lastf + 1
 	e.drawInfo.Set(now, frame)
 
 	ctx := core.NewDrawCtx(e, frame, delta, ebiten.CurrentTPS(), screen)
+
+	for _, modulec := range modules {
+		modulec.module.BeforeDraw(ctx)
+	}
 
 	for _, w := range worlds {
 		if !w.world.Enabled() {
@@ -443,6 +470,11 @@ func (e *engine) Draw(screen *ebiten.Image) {
 			return true
 		})
 	}
+
+	for _, modulec := range modules {
+		modulec.module.AfterDraw(ctx)
+	}
+
 	if e.debugfps {
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("TPS: %.2f", ebiten.CurrentTPS()), 10, 10)
 	}

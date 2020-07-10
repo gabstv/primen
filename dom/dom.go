@@ -30,6 +30,9 @@ type ElementNode interface {
 	ID() string
 	Classes() []string
 	Append(n Node)
+	SetAttribute(name, value string)
+	DeleteAttribute(name string)
+	FirstChildAsText() string
 }
 
 type textNode struct {
@@ -76,6 +79,27 @@ func (n *elementNode) Classes() []string {
 
 func (n *elementNode) Append(node Node) {
 	n.children = append(n.children, node)
+}
+
+func (n *elementNode) SetAttribute(name, value string) {
+	if n.attributes == nil {
+		n.attributes = make(map[string]string)
+	}
+	n.attributes[name] = value
+}
+
+func (n *elementNode) DeleteAttribute(name string) {
+	if n.attributes == nil {
+		return
+	}
+	delete(n.attributes, name)
+}
+
+func (n *elementNode) FirstChildAsText() string {
+	if len(n.children) > 0 && n.children[0].Type() == NodeText {
+		return n.children[0].(TextNode).Text()
+	}
+	return ""
 }
 
 func Text(str string) TextNode {
