@@ -9,3 +9,4 @@ I'm developing this project along with a game, so the features are being added a
 
 * https://github.com/dop251/goja
 * https://github.com/jakecoffman/cp
+* https://github.com/gorilla/css/scanner

@@ -77,3 +77,11 @@ func parseVec4(v string) (imgui.Vec4, bool) {
 	}
 	return imgui.Vec4{}, false
 }
+
+func varVisible(nodeid string) string {
+	return nodeid + "_visible"
+}
+
+func varPosition(nodeid string) string {
+	return nodeid + "_position"
+}

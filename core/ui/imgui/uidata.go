@@ -3,7 +3,6 @@ package imgui
 import (
 	"errors"
 	"sort"
-	"unsafe"
 
 	"github.com/inkyblackness/imgui-go/v2"
 )
@@ -38,13 +37,30 @@ func (m *uiMemory) Add(name string, value interface{}) error {
 	return nil
 }
 
-func (m *uiMemory) UpsertBool(name string, defaultv bool) *bool {
+func (m *uiMemory) MustBool(name string, defaultv bool) bool {
 	x := m.find(name)
 	if x != -1 {
-		return (*bool)(unsafe.Pointer(&m.variables[x].Value))
+		return m.variables[x].Value.(bool)
 	}
 	m.Add(name, defaultv)
-	return m.UpsertBool(name, defaultv)
+	return m.MustBool(name, defaultv)
+}
+
+func (m *uiMemory) MustInt(name string, defaultv int) int {
+	x := m.find(name)
+	if x != -1 {
+		return m.variables[x].Value.(int)
+	}
+	m.Add(name, defaultv)
+	return m.MustInt(name, defaultv)
+}
+
+func (m *uiMemory) Set(name string, v interface{}) {
+	x := m.find(name)
+	if x != -1 {
+		m.variables[x].Value = v
+	}
+	m.Add(name, v)
 }
 
 func (m *uiMemory) ImGuiVec4(name string) (imgui.Vec4, bool) {

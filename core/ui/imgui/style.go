@@ -1,6 +1,10 @@
 package imgui
 
 import (
+	"strings"
+
+	"github.com/dop251/goja"
+	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/internal/z"
 	"github.com/inkyblackness/imgui-go/v2"
 )
@@ -152,4 +156,77 @@ func pushStyles(attributes map[string]string, memory *uiMemory) (styles, colors 
 func popStyles(nstyles, ncolors int) {
 	imgui.PopStyleVarV(nstyles)
 	imgui.PopStyleColorV(ncolors)
+}
+
+// parse position attributes
+func setupWindowPos(ctx core.DrawCtx, attributes map[string]string, memory *uiMemory, jsvm *goja.Runtime) {
+	switch attributes["position"] {
+	case "fixed":
+		yset := false
+		y := float32(0)
+		xset := false
+		x := float32(0)
+		bset := false
+		b := float32(0)
+		rset := false
+		r := float32(0)
+		if vt := attributes["top"]; vt != "" {
+			if strings.HasPrefix(vt, "js:") {
+				if v, err := jsvm.RunString(vt[3:]); err == nil {
+					y = float32(v.ToFloat())
+					yset = true
+				}
+			} else {
+				y = z.Float32(vt, 0)
+				yset = true
+			}
+		}
+		if vt := attributes["left"]; vt != "" {
+			if strings.HasPrefix(vt, "js:") {
+				if v, err := jsvm.RunString(vt[3:]); err == nil {
+					x = float32(v.ToFloat())
+					xset = true
+				}
+			} else {
+				x = z.Float32(vt, 0)
+				xset = true
+			}
+		}
+		if xset && yset {
+			imgui.SetNextWindowPos(imgui.Vec2{
+				X: x,
+				Y: y,
+			})
+			if vt := attributes["bottom"]; vt != "" {
+				if strings.HasPrefix(vt, "js:") {
+					if v, err := jsvm.RunString(vt[3:]); err == nil {
+						b = float32(v.ToFloat())
+						bset = true
+					}
+				} else {
+					b = z.Float32(vt, 0)
+					bset = true
+				}
+			}
+			if vt := attributes["right"]; vt != "" {
+				if strings.HasPrefix(vt, "js:") {
+					if v, err := jsvm.RunString(vt[3:]); err == nil {
+						r = float32(v.ToFloat())
+						rset = true
+					}
+				} else {
+					r = z.Float32(vt, 0)
+					rset = true
+				}
+			}
+			if rset && bset {
+				w, h := ctx.Renderer().Screen().Size()
+				sz := imgui.Vec2{
+					X: float32(w) - r - x,
+					Y: float32(h) - b - y,
+				}
+				imgui.SetNextWindowSize(sz)
+			}
+		}
+	}
 }

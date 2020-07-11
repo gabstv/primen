@@ -5,7 +5,6 @@ import (
 
 	"github.com/gabstv/ebiten-imgui/renderer"
 	"github.com/gabstv/primen/core"
-	"github.com/gabstv/primen/css"
 	"github.com/gabstv/primen/dom"
 	"github.com/hajimehoshi/ebiten"
 )
@@ -19,6 +18,7 @@ var (
 	renderTarget *ebiten.Image
 	uiinsts      []*UI
 	lastid       UID
+	lastEngine   core.Engine
 )
 
 func (uiModule) BeforeUpdate(ctx core.UpdateCtx) {
@@ -63,17 +63,19 @@ func Setup(engine core.Engine) {
 	//fa.AddFontDefault()
 	//mainRenderer = renderer.New(&fa)
 	mainRenderer = renderer.New(nil)
+	mainRenderer.ClipMask = true
 	engine.AddModule(uiModule(0), 0)
+	lastEngine = engine
 }
 
-func AddUI(doc dom.ElementNode, styles ...*css.Stylesheet) UID {
+func AddUI(doc dom.ElementNode) UID {
 	lock.Lock()
 	defer lock.Unlock()
 
 	lastid++
 	id := lastid
 
-	ui := newUI(id, doc, styles...)
+	ui := newUI(id, doc)
 
 	uiinsts = append(uiinsts, ui)
 	return id

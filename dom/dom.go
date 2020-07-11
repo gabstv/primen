@@ -3,6 +3,7 @@
 package dom
 
 import (
+	"strconv"
 	"strings"
 )
 
@@ -12,6 +13,17 @@ const (
 	NodeElement NodeType = iota
 	NodeText    NodeType = iota
 )
+
+type Attributes map[string]string
+
+func (a Attributes) BoolD(name string, defaultv bool) bool {
+	vs := a[name]
+	if vs == "" {
+		return defaultv
+	}
+	v, _ := strconv.ParseBool(vs)
+	return v
+}
 
 type Node interface {
 	Type() NodeType
@@ -26,7 +38,7 @@ type ElementNode interface {
 	Node
 	TagName() string
 	Children() []Node
-	Attributes() map[string]string
+	Attributes() Attributes
 	ID() string
 	Classes() []string
 	Append(n Node)
@@ -50,7 +62,7 @@ func (n *textNode) Text() string {
 
 type elementNode struct {
 	tagname    string
-	attributes map[string]string
+	attributes Attributes
 	children   []Node
 }
 
@@ -66,7 +78,7 @@ func (n *elementNode) Children() []Node {
 	return n.children
 }
 
-func (n *elementNode) Attributes() map[string]string {
+func (n *elementNode) Attributes() Attributes {
 	return n.attributes
 }
 
@@ -133,11 +145,11 @@ func Text(str string) TextNode {
 func Element(tagname string, attributes map[string]string, children ...Node) ElementNode {
 	n := &elementNode{
 		tagname:    tagname,
-		attributes: attributes,
+		attributes: Attributes(attributes),
 		children:   make([]Node, 0, len(children)),
 	}
 	if n.attributes == nil {
-		n.attributes = make(map[string]string)
+		n.attributes = make(Attributes)
 	}
 	for _, v := range children {
 		n.children = append(n.children, v)
