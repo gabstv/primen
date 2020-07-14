@@ -4,6 +4,8 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/gabstv/primen/core/js"
+
 	"github.com/dop251/goja"
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/dom"
@@ -33,6 +35,8 @@ func newUI(id UID, doc dom.ElementNode) *UI {
 func (ui *UI) inlineJs() {
 	vm := ui.jsvm
 	//
+	js.Stdlib(lastEngine, vm)
+
 	vm.Set("dispatch", func(name goja.Value, value goja.Value) error {
 		if vs, ok := name.Export().(string); ok {
 			lastEngine.DispatchEvent(vs, value.Export())

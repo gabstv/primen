@@ -14,6 +14,7 @@ type Engine interface {
 	FS() io.Filesystem
 	LoadScene(name string) (scene Scene, sig chan struct{}, err error)
 	RunFn(fn func())
+	LastLoadedScene() Scene
 }
 
 type World = core.World
@@ -30,4 +31,10 @@ func (e *engine) Exit() {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 	e.exits = true
+}
+
+func (e *engine) LastLoadedScene() Scene {
+	e.lock.Lock()
+	defer e.lock.Unlock()
+	return e.lastScn
 }

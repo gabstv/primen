@@ -22,9 +22,8 @@ func main() {
 		FS:     osfs.New("../shared"),
 		Title:  "PRIMEN - Scenes",
 		OnReady: func(e primen.Engine) {
-			scene, ch, _ := e.LoadScene("scene1")
+			_, ch, _ := e.LoadScene("scene1")
 			<-ch
-			scene.Start()
 		},
 	})
 	_ = engine.Run()
@@ -37,11 +36,15 @@ type SceneA struct {
 	invalid   bool
 }
 
+func (s *SceneA) Engine() primen.Engine {
+	return s.engine
+}
+
 func (*SceneA) Name() string {
 	return "scene1"
 }
 
-func (s *SceneA) Load() chan struct{} {
+func (s *SceneA) load() chan struct{} {
 	ch := make(chan struct{})
 	go func() {
 		defer close(ch)
@@ -71,11 +74,8 @@ func (s *SceneA) Load() chan struct{} {
 		ttl.Label().SetText("Scene: "+s.Name()).SetOrigin(.5, .5)
 		ttl.Transform().SetY(-30).SetScale(sf*.1, sf*.1)
 	}()
-	return ch
-}
-
-func (s *SceneA) Start() {
 	s.w.SetEnabled(true)
+	return ch
 }
 
 func (s *SceneA) Unload() chan struct{} {
@@ -83,12 +83,11 @@ func (s *SceneA) Unload() chan struct{} {
 	s.w.SetEnabled(false)
 	s.engine.RemoveWorld(s.w)
 	s.container.UnloadAll()
+	s.w = nil
+	//s.engine = nil
+	s.container = nil
 	close(ch)
 	return ch
-}
-
-func (s *SceneA) Message(msg string) {
-
 }
 
 func (s *SceneA) gotoscene2() {
@@ -97,9 +96,9 @@ func (s *SceneA) gotoscene2() {
 	}
 	s.invalid = true
 	go func() {
-		s2, sig, _ := s.engine.LoadScene("scene2")
+		_, sig, _ := s.engine.LoadScene("scene2")
 		<-sig
-		s2.Start()
+		// s2.Start()
 		s.engine.RunFn(func() {
 			s.w.SetEnabled(false)
 		})
@@ -117,11 +116,15 @@ type SceneB struct {
 	invalid   bool
 }
 
+func (s *SceneB) Engine() primen.Engine {
+	return s.engine
+}
+
 func (*SceneB) Name() string {
 	return "scene2"
 }
 
-func (s *SceneB) Load() chan struct{} {
+func (s *SceneB) load() chan struct{} {
 	ch := make(chan struct{})
 	go func() {
 		defer close(ch)
@@ -142,6 +145,9 @@ func (s *SceneB) Load() chan struct{} {
 			if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 				s.gotoscene1()
 			}
+			if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
+				s.Unload()
+			}
 		}
 		sf := ebiten.DeviceScaleFactor()
 		root.Transform().SetScale(sf*4, sf*4)
@@ -151,14 +157,11 @@ func (s *SceneB) Load() chan struct{} {
 		ttl.Label().SetText("Scene: "+s.Name()).SetOrigin(.5, .5)
 		ttl.Transform().SetY(-30).SetScale(sf*.1, sf*.1)
 	}()
-	return ch
-}
-
-func (s *SceneB) Start() {
 	s.engine.RunFn(func() {
 		// runs on main thread
 		s.w.SetEnabled(true)
 	})
+	return ch
 }
 
 func (s *SceneB) Unload() chan struct{} {
@@ -167,11 +170,10 @@ func (s *SceneB) Unload() chan struct{} {
 	s.engine.RemoveWorld(s.w)
 	s.container.UnloadAll()
 	close(ch)
+	s.w = nil
+	//s.engine = nil
+	s.container = nil
 	return ch
-}
-
-func (s *SceneB) Message(msg string) {
-
 }
 
 func (s *SceneB) gotoscene1() {
@@ -180,9 +182,8 @@ func (s *SceneB) gotoscene1() {
 	}
 	s.invalid = true
 	go func() {
-		s2, sig, _ := s.engine.LoadScene("scene1")
+		_, sig, _ := s.engine.LoadScene("scene1")
 		<-sig
-		s2.Start()
 		s.engine.RunFn(func() {
 			s.w.SetEnabled(false)
 		})
@@ -194,6 +195,14 @@ func (s *SceneB) gotoscene1() {
 ////////////////////////////////
 
 func init() {
-	primen.RegisterScene("scene1", func(engine primen.Engine) primen.Scene { return &SceneA{engine: engine} })
-	primen.RegisterScene("scene2", func(engine primen.Engine) primen.Scene { return &SceneB{engine: engine} })
+	primen.RegisterScene("scene1", func(engine primen.Engine) (primen.Scene, chan struct{}) {
+		scn := &SceneA{engine: engine}
+		ch := scn.load()
+		return scn, ch
+	})
+	primen.RegisterScene("scene2", func(engine primen.Engine) (primen.Scene, chan struct{}) {
+		scn := &SceneB{engine: engine}
+		ch := scn.load()
+		return scn, ch
+	})
 }

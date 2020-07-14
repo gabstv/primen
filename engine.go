@@ -69,6 +69,8 @@ type engine struct {
 	runfns       chan func()
 	runctx       context.Context
 	exits        bool
+
+	lastScn Scene
 }
 
 // NewEngineInput is the input data of NewEngine

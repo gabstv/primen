@@ -9,13 +9,10 @@ import (
 
 type Scene interface {
 	Name() string
-	Load() chan struct{}
 	Unload() chan struct{}
-	Start()
-	Message(msg string)
 }
 
-type NewSceneFn func(engine Engine) Scene
+type NewSceneFn func(engine Engine) (Scene, chan struct{})
 
 var registeredScenes map[string]NewSceneFn
 var registeredScenesM sync.Mutex
@@ -59,9 +56,43 @@ func (e *engine) loadScene(name string) (scene Scene, sig chan struct{}, err err
 		//TODO: log error
 		return nil, nil, ErrSceneNotFound
 	}
-	scene = e.sceneldrs[name](e)
-	sig = scene.Load()
+	scene, sig = e.sceneldrs[name](e)
+	e.lock.Lock()
+	e.lastScn = scene
+	e.lock.Unlock()
+	// sig = scene.Load()
 	return
+}
+
+func (e *engine) LastLoadedSceneJS() interface{} {
+	return e.LastLoadedScene()
+}
+
+func (e *engine) LoadSceneJS(name string) interface{} {
+	scn, ch, err := e.LoadScene(name)
+	return &sceneLoaderHJS{
+		scene: scn,
+		sig:   ch,
+		err:   err,
+	}
+}
+
+type sceneLoaderHJS struct {
+	scene Scene
+	sig   chan struct{}
+	err   error
+}
+
+func (sjs *sceneLoaderHJS) Scene() interface{} {
+	return sjs.scene
+}
+
+func (sjs *sceneLoaderHJS) Ch() chan struct{} {
+	return sjs.sig
+}
+
+func (sjs *sceneLoaderHJS) Err() error {
+	return sjs.err
 }
 
 type SceneBase struct {
