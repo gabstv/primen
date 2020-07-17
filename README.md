@@ -1,4 +1,4 @@
-# ![Primen](assets/primen_logo_iso.png)
+<img src="assets/primen_logo_iso.png" alt="Primen" width="200" height="200">
 
 Primen is a 2D game engine written in Go following the Entity Component System paradigm. Primen is powered by the [Ebiten](https://github.com/hajimehoshi/ebiten) game library.
 
