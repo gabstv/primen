@@ -121,6 +121,10 @@ func (t *Transform) ScaleY() float64 {
 	return t.scaleY
 }
 
+func (t *Transform) GeoM() ebiten.GeoM {
+	return t.m
+}
+
 //go:generate ecsgen -n Transform -p core -o transform_component.go --component-tpl --vars "UUID=45E8849D-7EA9-4CDC-8AB1-86DB8705C253" --vars "OnAdd=c.setupTransform(e)" --vars "OnResize=c.resized()" --vars "OnWillResize=c.willresize()" --vars "OnRemove=c.removed(e)"
 
 func (c *TransformComponent) setupTransform(e ecs.Entity) {

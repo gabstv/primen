@@ -1,0 +1,3 @@
+<window>
+    <button w="js:__column_width" onclick="$scenes.load('default')">go to default scene</button>
+</window>

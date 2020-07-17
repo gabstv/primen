@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"image/color"
 	"os"
 	"path"
 	"sort"
@@ -49,13 +50,17 @@ type engine struct {
 	drawInfo     *StepInfo
 	lock         sync.Mutex
 	worlds       []worldContainer
+	modules      []moduleContainer
 	defaultWorld *core.GameWorld
 	dmap         Dict
 	options      EngineOptions
 	f            io.Filesystem
 	donech       chan struct{}
+	screencopych chan *screenCopyRequest
+	tempDrawFns  []drawFuncContainer
 	once         sync.Once
 	ready        func(e Engine)
+	startScene   string
 	ebilock      sync.RWMutex
 	ebiOutsideW  int
 	ebiOutsideH  int
@@ -68,6 +73,8 @@ type engine struct {
 	runfns       chan func()
 	runctx       context.Context
 	exits        bool
+
+	lastScn Scene
 }
 
 // NewEngineInput is the input data of NewEngine
@@ -87,6 +94,7 @@ type NewEngineInput struct {
 	Title             string         // window title
 	FS                io.Filesystem  // the filesystem that the Scenes will use
 	OnReady           func(e Engine) // function to run once the window is opened
+	Scene             string         // Autoloads a starting scene on ready
 }
 
 // EngineOptions is used to setup Ebiten @ Engine.boot
@@ -176,7 +184,10 @@ func NewEngine(v *NewEngineInput) Engine {
 		options:      v.Options(),
 		f:            v.FS,
 		donech:       make(chan struct{}),
+		screencopych: make(chan *screenCopyRequest, 8),
+		tempDrawFns:  make([]drawFuncContainer, 0),
 		ready:        v.OnReady,
+		startScene:   v.Scene,
 		ebiLogicalW:  iw,
 		ebiLogicalH:  ih,
 		ebiOutsideW:  v.Width,
@@ -201,6 +212,8 @@ func NewEngine(v *NewEngineInput) Engine {
 		},
 	}
 	e.defaultWorld = dw
+
+	e.modules = make([]moduleContainer, 0)
 
 	return e
 }
@@ -263,6 +276,16 @@ func (e *engine) Default() *core.GameWorld {
 // Ctx is the run context
 func (e *engine) Ctx() context.Context {
 	return e.runctx
+}
+
+func (e *engine) AddModule(module core.Module, priority int) {
+	e.lock.Lock()
+	defer e.lock.Unlock()
+	e.modules = append(e.modules, moduleContainer{
+		module:   module,
+		priority: priority,
+	})
+	sort.Sort(sortedModuleContainer(e.modules))
 }
 
 // Run boots up the game engine
@@ -376,6 +399,7 @@ func (e *engine) Update(screen *ebiten.Image) error {
 	delta := now.Sub(lastt).Seconds()
 	e.lock.Lock()
 	worlds := e.worlds
+	modules := e.modules
 	exits := e.exits
 	e.lock.Unlock()
 	frame := lastf + 1
@@ -386,6 +410,11 @@ func (e *engine) Update(screen *ebiten.Image) error {
 		if e.ready != nil {
 			e.ready(e)
 		}
+		if e.startScene != "" {
+			if _, _, err := e.LoadScene(e.startScene); err != nil {
+				println("ERROR STARTING SCENE: " + err.Error())
+			}
+		}
 	})
 
 	select {
@@ -395,6 +424,10 @@ func (e *engine) Update(screen *ebiten.Image) error {
 	}
 
 	ctx := core.NewUpdateCtx(e, frame, delta, ebiten.CurrentTPS())
+
+	for _, modulec := range modules {
+		modulec.module.BeforeUpdate(ctx)
+	}
 
 	for _, w := range worlds {
 		if !w.world.Enabled() {
@@ -408,6 +441,10 @@ func (e *engine) Update(screen *ebiten.Image) error {
 			s.(core.System).Update(ctx)
 			return true
 		})
+	}
+
+	for _, modulec := range modules {
+		modulec.module.AfterUpdate(ctx)
 	}
 
 	if exits {
@@ -424,11 +461,16 @@ func (e *engine) Draw(screen *ebiten.Image) {
 	//e.dmap.Set(TagDelta, delta) // set on update
 	e.lock.Lock()
 	worlds := e.worlds
+	modules := e.modules
 	e.lock.Unlock()
 	frame := lastf + 1
 	e.drawInfo.Set(now, frame)
 
 	ctx := core.NewDrawCtx(e, frame, delta, ebiten.CurrentTPS(), screen)
+
+	for _, modulec := range modules {
+		modulec.module.BeforeDraw(ctx)
+	}
 
 	for _, w := range worlds {
 		if !w.world.Enabled() {
@@ -443,8 +485,45 @@ func (e *engine) Draw(screen *ebiten.Image) {
 			return true
 		})
 	}
+
+	for _, modulec := range modules {
+		modulec.module.AfterDraw(ctx)
+	}
+
+	e.lock.Lock()
+	tdfns := make([]drawFuncContainer, len(e.tempDrawFns))
+	copy(tdfns, e.tempDrawFns)
+	e.lock.Unlock()
+	di := make([]int, 0, len(tdfns))
+	for i, v := range tdfns {
+		if !v.Func(ctx) {
+			di = append(di, i)
+		}
+	}
+	if len(di) > 0 {
+		e.lock.Lock()
+		for i := len(di) - 1; i >= 0; i-- {
+			x := di[i]
+			e.tempDrawFns = e.tempDrawFns[:x+copy(e.tempDrawFns[x:], e.tempDrawFns[x+1:])]
+		}
+		e.lock.Unlock()
+	}
+
 	if e.debugfps {
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("TPS: %.2f", ebiten.CurrentTPS()), 10, 10)
+	}
+
+	select {
+	case grabrq := <-e.screencopych:
+		grabrq.Lock()
+		w, h := screen.Size()
+		grabrq.img, _ = ebiten.NewImage(w, h, ebiten.FilterDefault)
+		grabrq.img.Fill(color.RGBA{0, 0, 0, 255})
+		grabrq.img.DrawImage(screen, &ebiten.DrawImageOptions{})
+		grabrq.Unlock()
+		close(grabrq.ch)
+	default:
+		// nothing to copy
 	}
 }
 

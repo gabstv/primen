@@ -1,0 +1,10 @@
+<window position="fixed" top="js:(__height/2)-100" bottom="js:(__height/2)+100" left="js:(__width/2)-200" right="js:(__width/2)+200" flags="no-title-bar|no-collapse|no-move|no-resize" st-window-padding="20,10">
+    <spacing />
+    <!-- <columns count="3">
+        <column w="30"></column>
+        <column> -->
+    <button w="js:__column_width" onclick="$scenes.load('game')">hey</button>
+    <!-- </column>
+        <column w="30"></column>
+    </columns> -->
+</window>
