@@ -14,6 +14,7 @@ func Stdlib(e core.Engine, r *goja.Runtime) {
 	r.Set("$events", events)
 
 	scenes := r.NewObject()
-	scenes.Set("last", sceneLast(e, r))
+	scenes.Set("last", scenesLast(e, r))
+	scenes.Set("load", scenesLoad(e, r))
 	r.Set("$scenes", scenes)
 }

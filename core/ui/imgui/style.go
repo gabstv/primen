@@ -197,22 +197,26 @@ func setupWindowPos(ctx core.DrawCtx, attributes map[string]string, memory *uiMe
 				X: x,
 				Y: y,
 			})
+			bjs := false
 			if vt := attributes["bottom"]; vt != "" {
 				if strings.HasPrefix(vt, "js:") {
 					if v, err := jsvm.RunString(vt[3:]); err == nil {
 						b = float32(v.ToFloat())
 						bset = true
+						bjs = true
 					}
 				} else {
 					b = z.Float32(vt, 0)
 					bset = true
 				}
 			}
+			rjs := false
 			if vt := attributes["right"]; vt != "" {
 				if strings.HasPrefix(vt, "js:") {
 					if v, err := jsvm.RunString(vt[3:]); err == nil {
 						r = float32(v.ToFloat())
 						rset = true
+						rjs = true
 					}
 				} else {
 					r = z.Float32(vt, 0)
@@ -221,9 +225,20 @@ func setupWindowPos(ctx core.DrawCtx, attributes map[string]string, memory *uiMe
 			}
 			if rset && bset {
 				w, h := ctx.Renderer().Screen().Size()
+				var xx, yy float32
+				if bjs {
+					yy = b - y
+				} else {
+					yy = float32(h) - b - y
+				}
+				if rjs {
+					xx = r - x
+				} else {
+					xx = float32(w) - r - x
+				}
 				sz := imgui.Vec2{
-					X: float32(w) - r - x,
-					Y: float32(h) - b - y,
+					X: xx,
+					Y: yy,
 				}
 				imgui.SetNextWindowSize(sz)
 			}

@@ -25,6 +25,43 @@ func (a Attributes) BoolD(name string, defaultv bool) bool {
 	return v
 }
 
+func (a Attributes) IntD(name string, defaultv int) int {
+	vs := a[name]
+	if vs == "" {
+		return defaultv
+	}
+	v, _ := strconv.Atoi(vs)
+	return v
+}
+
+func (a Attributes) String(name string) string {
+	return a[name]
+}
+
+func (a Attributes) HasAttr(name string, names ...string) bool {
+	if _, ok := a[name]; ok {
+		return true
+	}
+	for _, nm := range names {
+		if _, ok := a[nm]; ok {
+			return true
+		}
+	}
+	return false
+}
+
+func (a Attributes) FirstAttr(name string, names ...string) string {
+	if v, ok := a[name]; ok {
+		return v
+	}
+	for _, nm := range names {
+		if v, ok := a[nm]; ok {
+			return v
+		}
+	}
+	return ""
+}
+
 type Node interface {
 	Type() NodeType
 }

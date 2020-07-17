@@ -46,7 +46,7 @@ func jsScene(runtime *goja.Runtime, e core.Engine, s Scene) *goja.Object {
 	return obj
 }
 
-func sceneLast(e core.Engine, runtime *goja.Runtime) func(call goja.FunctionCall) goja.Value {
+func scenesLast(e core.Engine, runtime *goja.Runtime) func(call goja.FunctionCall) goja.Value {
 	return func(call goja.FunctionCall) goja.Value {
 		si := e.(sceneLoader).LastLoadedSceneJS()
 		if si == nil {
@@ -60,6 +60,7 @@ func scenesLoad(e core.Engine, runtime *goja.Runtime) func(call goja.FunctionCal
 	return func(call goja.FunctionCall) goja.Value {
 		hh := e.(sceneLoader).LoadSceneJS(call.Argument(0).String()).(sceneLoadH)
 		if hh.Err() != nil {
+			println("LoadSceneJS: " + hh.Err().Error())
 			return runtime.NewGoError(hh.Err())
 		}
 		so := jsScene(runtime, e, hh.Scene().(Scene))

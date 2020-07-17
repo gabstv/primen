@@ -66,11 +66,16 @@ func Setup(engine core.Engine) {
 	mainRenderer.ClipMask = true
 	engine.AddModule(uiModule(0), 0)
 	lastEngine = engine
+	// call Update once to ensure that the screen is updated before the first Draw() call
+	mainRenderer.Update(1.0/60, float32(engine.Width()), float32(engine.Height()))
 }
 
 func AddUI(doc dom.ElementNode) UID {
 	lock.Lock()
 	defer lock.Unlock()
+	if mainRenderer == nil {
+		panic("imgui.Setup(engine) needs to be called before AddUI")
+	}
 
 	lastid++
 	id := lastid
@@ -81,4 +86,17 @@ func AddUI(doc dom.ElementNode) UID {
 	return id
 }
 
-// TODO: RemoveUI(id)
+func RemoveUI(id UID) {
+	lock.Lock()
+	defer lock.Unlock()
+	index := -1
+	for i := range uiinsts {
+		if uiinsts[i].id == id {
+			index = i
+		}
+	}
+	if index == -1 {
+		return
+	}
+	uiinsts = uiinsts[:index+copy(uiinsts[index:], uiinsts[index+1:])]
+}

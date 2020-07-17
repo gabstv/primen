@@ -12,6 +12,11 @@ type Scene interface {
 	Unload() chan struct{}
 }
 
+type AutoScene interface {
+	Scene
+	PrevSceneCh(ch <-chan struct{})
+}
+
 type NewSceneFn func(engine Engine) (Scene, chan struct{})
 
 var registeredScenes map[string]NewSceneFn
@@ -58,9 +63,16 @@ func (e *engine) loadScene(name string) (scene Scene, sig chan struct{}, err err
 	}
 	scene, sig = e.sceneldrs[name](e)
 	e.lock.Lock()
+	if e.lastScn != nil {
+		if scn, ok := e.lastScn.(AutoScene); ok {
+			lscnch := scn.Unload()
+			if nscn, ok := scene.(AutoScene); ok {
+				nscn.PrevSceneCh(lscnch)
+			}
+		}
+	}
 	e.lastScn = scene
 	e.lock.Unlock()
-	// sig = scene.Load()
 	return
 }
 
