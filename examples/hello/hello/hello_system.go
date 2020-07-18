@@ -103,10 +103,10 @@ func (v *viewHelloSystem) Remove(e ecs.Entity) bool {
 func (v *viewHelloSystem) clearpointers() {
     
     
-    for _, x := range v.entities {
-        e := x.Entity
+    for i := range v.entities {
+        e := v.entities[i].Entity
         
-        x.Hello = nil
+        v.entities[i].Hello = nil
         
         _ = e
     }
@@ -115,10 +115,10 @@ func (v *viewHelloSystem) clearpointers() {
 func (v *viewHelloSystem) rescan() {
     
     
-    for _, x := range v.entities {
-        e := x.Entity
+    for i := range v.entities {
+        e := v.entities[i].Entity
         
-        x.Hello = GetHelloComponent(v.world).Data(e)
+        v.entities[i].Hello = GetHelloComponent(v.world).Data(e)
         
         _ = e
         

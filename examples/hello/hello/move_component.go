@@ -131,6 +131,7 @@ func (c *MoveComponent) Upsert(e ecs.Entity, data interface{}) {
     if cap(c.data) == len(c.data) {
         rsz = true
         c.world.CWillResize(c, c.wkey)
+        
     }
     newindex := len(c.data)
     c.data = append(c.data, drawerMoveComponent{
@@ -140,6 +141,7 @@ func (c *MoveComponent) Upsert(e ecs.Entity, data interface{}) {
     if len(c.data) > 1 {
         if c.data[newindex].Entity < c.data[newindex-1].Entity {
             c.world.CWillResize(c, c.wkey)
+            
             sort.Sort(slcdrawerMoveComponent(c.data))
             rsz = true
         }
@@ -214,6 +216,7 @@ func (c *MoveComponent) Setup(w ecs.BaseWorld, f ecs.Flag, key [4]byte) {
     c.wkey = key
     c.data = make([]drawerMoveComponent, 0, 256)
     c.initialized = true
+    
 }
 
 

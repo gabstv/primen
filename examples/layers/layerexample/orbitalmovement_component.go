@@ -216,6 +216,7 @@ func (c *OrbitalMovementComponent) Setup(w ecs.BaseWorld, f ecs.Flag, key [4]byt
     c.wkey = key
     c.data = make([]drawerOrbitalMovementComponent, 0, 256)
     c.initialized = true
+    
 }
 
 
