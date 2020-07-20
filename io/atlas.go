@@ -6,7 +6,7 @@ import (
 	"image/png"
 	"sort"
 
-	"github.com/gabstv/primen/core"
+	"github.com/gabstv/primen/components/graphics"
 	"github.com/gabstv/primen/io/pb"
 	proto "github.com/golang/protobuf/proto"
 	"github.com/hajimehoshi/ebiten"
@@ -15,8 +15,8 @@ import (
 type Atlas struct {
 	ebimg     []*ebiten.Image
 	frames    map[string]*Sprite
-	anims     map[string]*core.PrecomputedAnimation
-	animClips map[string]core.PcAnimClip
+	anims     map[string]*graphics.PrecomputedAnimation
+	animClips map[string]graphics.PcAnimClip
 }
 
 type Sprite struct {
@@ -40,7 +40,7 @@ func (a *Atlas) GetSubImages() []*Sprite {
 	return out
 }
 
-func (a *Atlas) GetAnimClip(name string) core.AnimationClip {
+func (a *Atlas) GetAnimClip(name string) graphics.AnimationClip {
 	return a.animClips[name]
 }
 
@@ -55,7 +55,7 @@ func (a *Atlas) GetAnimClips() []ClipG {
 	return out
 }
 
-func (a *Atlas) GetAnimation(name string) core.Animation {
+func (a *Atlas) GetAnimation(name string) graphics.Animation {
 	return a.anims[name]
 }
 
@@ -103,16 +103,16 @@ func ParseAtlas(b []byte) (*Atlas, error) {
 		}
 	}
 	// anim clips
-	clips := make(map[string]core.PcAnimClip)
+	clips := make(map[string]graphics.PcAnimClip)
 	for k, v := range src.Clips {
 		cl := importAnimClip(k, v, frames)
 		clips[cl.Name] = cl
 	}
 	// anim groups
-	animgs := make(map[string]*core.PrecomputedAnimation)
+	animgs := make(map[string]*graphics.PrecomputedAnimation)
 	for k, v := range src.Animations {
-		anim := &core.PrecomputedAnimation{
-			Clips: make([]core.PcAnimClip, 0),
+		anim := &graphics.PrecomputedAnimation{
+			Clips: make([]graphics.PcAnimClip, 0),
 		}
 		for _, clipv := range v.Clips {
 			cc := importAnimClip(clipv.Name, clipv, frames)
@@ -129,28 +129,28 @@ func ParseAtlas(b []byte) (*Atlas, error) {
 	}, nil
 }
 
-func importAnimClip(name string, v *pb.AnimationClip, frames map[string]*Sprite) core.PcAnimClip {
-	cl := core.PcAnimClip{
+func importAnimClip(name string, v *pb.AnimationClip, frames map[string]*Sprite) graphics.PcAnimClip {
+	cl := graphics.PcAnimClip{
 		Name:   name,
 		Fps:    float64(v.Fps),
-		Events: make([]*core.AnimationEvent, 0),
-		Frames: make([]core.PcFrame, 0),
+		Events: make([]*graphics.AnimationEvent, 0),
+		Frames: make([]graphics.PcFrame, 0),
 	}
 	if v.EndedEvent != nil {
-		cl.EndedEvent = &core.AnimationEvent{
+		cl.EndedEvent = &graphics.AnimationEvent{
 			Name:  v.EndedEvent.Name,
 			Value: v.EndedEvent.Value,
 		}
 	}
 	switch v.ClipMode {
 	case pb.AnimationClipMode_PING_PONG:
-		cl.ClipMode = core.AnimPingPong
+		cl.ClipMode = graphics.AnimPingPong
 	case pb.AnimationClipMode_ONCE:
-		cl.ClipMode = core.AnimOnce
+		cl.ClipMode = graphics.AnimOnce
 	case pb.AnimationClipMode_LOOP:
-		cl.ClipMode = core.AnimLoop
+		cl.ClipMode = graphics.AnimLoop
 	case pb.AnimationClipMode_CLAMP_FOREVER:
-		cl.ClipMode = core.AnimClampForever
+		cl.ClipMode = graphics.AnimClampForever
 	}
 	for _, vf := range v.Frames {
 		realf := frames[vf.FrameName]
@@ -160,13 +160,13 @@ func importAnimClip(name string, v *pb.AnimationClip, frames map[string]*Sprite)
 		if vf.Event == nil {
 			cl.Events = append(cl.Events, nil)
 		} else {
-			cl.Events = append(cl.Events, &core.AnimationEvent{
+			cl.Events = append(cl.Events, &graphics.AnimationEvent{
 				Name:  vf.Event.Name,
 				Value: vf.Event.Value,
 			})
 		}
 		sz := realf.Image.Bounds().Size()
-		cf := core.PcFrame{
+		cf := graphics.PcFrame{
 			OffsetX: float64(realf.Pivot.X),
 			OffsetY: float64(realf.Pivot.Y),
 			Rect:    image.Rect(0, 0, sz.X, sz.Y),
@@ -184,10 +184,10 @@ type SubImageG struct {
 
 type ClipG struct {
 	Name     string
-	AnimClip core.AnimationClip
+	AnimClip graphics.AnimationClip
 }
 
 type AnimG struct {
 	Name string
-	Anim core.Animation
+	Anim graphics.Animation
 }

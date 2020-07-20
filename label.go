@@ -1,26 +1,26 @@
 package primen
 
 import (
-	"github.com/gabstv/primen/core"
+	"github.com/gabstv/primen/components/graphics"
 )
 
 type LabelNode struct {
 	*Node
-	wdl core.WatchDrawLayer
-	wll core.WatchLabel
+	wdl graphics.WatchDrawLayer
+	wll graphics.WatchTextLabel
 }
 
 func NewRootLabelNode(w World, layer Layer) *LabelNode {
 	lbn := &LabelNode{
 		Node: NewRootNode(w),
 	}
-	core.SetDrawLayerComponentData(w, lbn.e, core.DrawLayer{
+	graphics.SetDrawLayerComponentData(w, lbn.e, graphics.DrawLayer{
 		Layer:  layer,
-		ZIndex: core.ZIndexTop,
+		ZIndex: graphics.ZIndexTop,
 	})
-	core.SetLabelComponentData(w, lbn.e, core.NewLabel())
-	lbn.wdl = core.WatchDrawLayerComponentData(w, lbn.e)
-	lbn.wll = core.WatchLabelComponentData(w, lbn.e)
+	graphics.SetTextLabelComponentData(w, lbn.e, graphics.NewTextLabel())
+	lbn.wdl = graphics.WatchDrawLayerComponentData(w, lbn.e)
+	lbn.wll = graphics.WatchTextLabelComponentData(w, lbn.e)
 	return lbn
 }
 
@@ -28,17 +28,17 @@ func NewChildLabelNode(parent ObjectContainer, layer Layer) *LabelNode {
 	lbn := &LabelNode{
 		Node: NewChildNode(parent),
 	}
-	core.SetDrawLayerComponentData(parent.World(), lbn.e, core.DrawLayer{
+	graphics.SetDrawLayerComponentData(parent.World(), lbn.e, graphics.DrawLayer{
 		Layer:  layer,
-		ZIndex: core.ZIndexTop,
+		ZIndex: graphics.ZIndexTop,
 	})
-	core.SetLabelComponentData(parent.World(), lbn.e, core.NewLabel())
-	lbn.wdl = core.WatchDrawLayerComponentData(parent.World(), lbn.e)
-	lbn.wll = core.WatchLabelComponentData(parent.World(), lbn.e)
+	graphics.SetTextLabelComponentData(parent.World(), lbn.e, graphics.NewTextLabel())
+	lbn.wdl = graphics.WatchDrawLayerComponentData(parent.World(), lbn.e)
+	lbn.wll = graphics.WatchTextLabelComponentData(parent.World(), lbn.e)
 	return lbn
 }
 
-func (n *LabelNode) Label() *core.Label {
+func (n *LabelNode) Label() *graphics.TextLabel {
 	return n.wll.Data()
 }
 

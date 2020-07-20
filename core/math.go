@@ -2,13 +2,13 @@ package core
 
 import "image/color"
 
-func applyOrigin(length, origin float64) float64 {
+func ApplyOrigin(length, origin float64) float64 {
 	return length * (-origin)
 }
 
-// nonzeroval will return the first non zero value.
+// Nonzeroval will return the first non zero value.
 // It will return 0 if all input values are 0
-func nonzeroval(vals ...float64) float64 {
+func Nonzeroval(vals ...float64) float64 {
 	for _, v := range vals {
 		if v != 0 {
 			return v
@@ -52,7 +52,7 @@ func Lerpc(a, b color.RGBA, t float64) color.RGBA {
 	}
 }
 
-func intmax(a, b int) int {
+func Intmax(a, b int) int {
 	if a > b {
 		return a
 	}

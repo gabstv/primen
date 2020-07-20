@@ -8,7 +8,9 @@ import (
 
     "github.com/gabstv/ecs/v2"
     
-    "github.com/gabstv/primen/core"
+    "github.com/gabstv/primen/components"
+    
+    "github.com/gabstv/primen/components/graphics"
     
     "github.com/hajimehoshi/ebiten"
     
@@ -35,11 +37,11 @@ type VIOrbitalMovementSystem struct {
     
     OrbitalMovement *OrbitalMovement 
     
-    Sprite *core.Sprite 
+    Sprite *graphics.Sprite 
     
-    DrawLayer *core.DrawLayer 
+    DrawLayer *graphics.DrawLayer 
     
-    Transform *core.Transform 
+    Transform *components.Transform 
     
 }
 
@@ -89,9 +91,9 @@ func (v *viewOrbitalMovementSystem) Add(e ecs.Entity) bool {
     v.entities = append(v.entities, VIOrbitalMovementSystem{
         Entity: e,
         OrbitalMovement: GetOrbitalMovementComponent(v.world).Data(e),
-Sprite: core.GetSpriteComponent(v.world).Data(e),
-DrawLayer: core.GetDrawLayerComponent(v.world).Data(e),
-Transform: core.GetTransformComponent(v.world).Data(e),
+Sprite: graphics.GetSpriteComponent(v.world).Data(e),
+DrawLayer: graphics.GetDrawLayerComponent(v.world).Data(e),
+Transform: components.GetTransformComponent(v.world).Data(e),
 
     })
     if len(v.entities) > 1 {
@@ -139,11 +141,11 @@ func (v *viewOrbitalMovementSystem) rescan() {
         
         v.entities[i].OrbitalMovement = GetOrbitalMovementComponent(v.world).Data(e)
         
-        v.entities[i].Sprite = core.GetSpriteComponent(v.world).Data(e)
+        v.entities[i].Sprite = graphics.GetSpriteComponent(v.world).Data(e)
         
-        v.entities[i].DrawLayer = core.GetDrawLayerComponent(v.world).Data(e)
+        v.entities[i].DrawLayer = graphics.GetDrawLayerComponent(v.world).Data(e)
         
-        v.entities[i].Transform = core.GetTransformComponent(v.world).Data(e)
+        v.entities[i].Transform = components.GetTransformComponent(v.world).Data(e)
         
         _ = e
         

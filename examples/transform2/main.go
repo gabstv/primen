@@ -6,7 +6,9 @@ import (
 
 	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen"
+	"github.com/gabstv/primen/components"
 	"github.com/gabstv/primen/core"
+	"github.com/gabstv/primen/core/debug"
 	"github.com/gabstv/primen/examples/layers/res"
 	"github.com/gabstv/primen/io"
 	"github.com/hajimehoshi/ebiten"
@@ -26,7 +28,7 @@ func main() {
 		atlas.GetSubImage("box3").Image,
 		atlas.GetSubImage("box4").Image,
 	}
-	core.DebugDraw = true
+	debug.Draw = true
 	//
 	ctx, cf := context.WithCancel(context.Background())
 	defer cf()
@@ -76,9 +78,9 @@ func dogamesetup(ctx context.Context, engine primen.Engine, bgs []*ebiten.Image)
 		nspr3.Sprite().SetImage(bgs[2])
 		nspr3.Transform().SetX(16).SetY(16).SetScale(2, 1)
 
-		core.SetFunctionComponentData(w, nspr3.Entity(), core.Function{
+		components.SetFunctionComponentData(w, nspr3.Entity(), components.Function{
 			Update: func(ctx core.UpdateCtx, e ecs.Entity) {
-				dd := core.GetTransformComponentData(w, e)
+				dd := components.GetTransformComponentData(w, e)
 				dd.SetAngle(dd.Angle() + .1*math.Pi*ctx.DT())
 			},
 		})
@@ -89,9 +91,9 @@ func dogamesetup(ctx context.Context, engine primen.Engine, bgs []*ebiten.Image)
 		nspr4.Transform().SetX(32).SetY(32).SetScale(.25, .5)
 	}
 
-	core.SetFunctionComponentData(w, nspr.Entity(), core.Function{
+	components.SetFunctionComponentData(w, nspr.Entity(), components.Function{
 		Update: func(ctx core.UpdateCtx, e ecs.Entity) {
-			dd := core.GetTransformComponentData(w, e)
+			dd := components.GetTransformComponentData(w, e)
 			dd.SetAngle(dd.Angle() - .5*math.Pi*ctx.DT())
 		},
 	})

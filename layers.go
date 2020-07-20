@@ -1,11 +1,11 @@
 package primen
 
 import (
-	"github.com/gabstv/primen/core"
+	"github.com/gabstv/primen/components/graphics"
 )
 
 // Layer index type
-type Layer = core.LayerIndex
+type Layer = graphics.LayerIndex
 
 // LAYERS
 const (

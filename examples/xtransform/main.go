@@ -4,13 +4,14 @@ import (
 	"math"
 
 	"github.com/gabstv/ecs/v2"
-
 	"github.com/gabstv/primen"
+	"github.com/gabstv/primen/components"
 	"github.com/gabstv/primen/core"
+	"github.com/gabstv/primen/core/debug"
 )
 
 func main() {
-	core.DebugDraw = true
+	debug.Draw = true
 	engine := primen.NewEngine(&primen.NewEngineInput{
 		Width:     800,
 		Height:    600,
@@ -29,9 +30,9 @@ func ready(engine primen.Engine) {
 	coretr2 := tr2.Transform()
 	coretr2.SetX(10).SetY(20)
 	coretr.SetAngle(-math.Pi / 2)
-	core.SetFunctionComponentData(w, tr.Entity(), core.Function{
+	components.SetFunctionComponentData(w, tr.Entity(), components.Function{
 		Update: func(ctx core.UpdateCtx, e ecs.Entity) {
-			dd := core.GetTransformComponentData(w, e)
+			dd := components.GetTransformComponentData(w, e)
 			dd.SetAngle(dd.Angle() + math.Pi*ctx.DT())
 		},
 	})
@@ -42,11 +43,11 @@ func ready(engine primen.Engine) {
 	//
 	rnd := primen.NewRootNode(w)
 	//
-	core.SetFunctionComponentData(w, tr2.Entity(), core.Function{
+	components.SetFunctionComponentData(w, tr2.Entity(), components.Function{
 		Update: func(ctx core.UpdateCtx, e ecs.Entity) {
-			dd := core.GetTransformComponentData(w, e)
+			dd := components.GetTransformComponentData(w, e)
 			dd.SetAngle(dd.Angle() - .5*math.Pi*ctx.DT())
-			x, y, _ := core.GetTransformSystem(w).LocalToGlobal(0, 0, tr3.Entity())
+			x, y, _ := components.GetTransformSystem(w).LocalToGlobal(0, 0, tr3.Entity())
 			rnd.Transform().SetX(x - 10).SetY(y - 10)
 		},
 	})

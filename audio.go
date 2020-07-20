@@ -1,15 +1,15 @@
 package primen
 
 import (
-	"github.com/gabstv/primen/core"
+	"github.com/gabstv/primen/components"
 )
 
 type AudioPlayerNode struct {
 	*mObjectContainer
-	wap core.WatchAudioPlayer
+	wap components.WatchAudioPlayer
 }
 
-func NewRootAudioPlayerNode(w World, input core.NewAudioPlayerInput) *AudioPlayerNode {
+func NewRootAudioPlayerNode(w World, input components.NewAudioPlayerInput) *AudioPlayerNode {
 	tr := &AudioPlayerNode{
 		mObjectContainer: &mObjectContainer{
 			mObject: &mObject{
@@ -18,12 +18,12 @@ func NewRootAudioPlayerNode(w World, input core.NewAudioPlayerInput) *AudioPlaye
 			},
 		},
 	}
-	core.SetAudioPlayerComponentData(w, tr.e, core.NewAudioPlayer(input))
-	tr.wap = core.WatchAudioPlayerComponentData(w, tr.Entity())
+	components.SetAudioPlayerComponentData(w, tr.e, components.NewAudioPlayer(input))
+	tr.wap = components.WatchAudioPlayerComponentData(w, tr.Entity())
 	return tr
 }
 
-func NewChildAudioPlayerNode(parent ObjectContainer, input core.NewAudioPlayerInput) *AudioPlayerNode {
+func NewChildAudioPlayerNode(parent ObjectContainer, input components.NewAudioPlayerInput) *AudioPlayerNode {
 	if parent == nil {
 		panic("parent can't be nil")
 	}
@@ -35,13 +35,13 @@ func NewChildAudioPlayerNode(parent ObjectContainer, input core.NewAudioPlayerIn
 			},
 		},
 	}
-	core.SetAudioPlayerComponentData(tr.w, tr.e, core.NewAudioPlayer(input))
-	tr.wap = core.WatchAudioPlayerComponentData(tr.w, tr.Entity())
+	components.SetAudioPlayerComponentData(tr.w, tr.e, components.NewAudioPlayer(input))
+	tr.wap = components.WatchAudioPlayerComponentData(tr.w, tr.Entity())
 	tr.SetParent(parent)
 	return tr
 }
 
-func (t *AudioPlayerNode) AudioPlayer() *core.AudioPlayer {
+func (t *AudioPlayerNode) AudioPlayer() *components.AudioPlayer {
 	return t.wap.Data()
 }
 
