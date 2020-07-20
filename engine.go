@@ -13,6 +13,7 @@ import (
 
 	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen/core"
+	"github.com/gabstv/primen/geom"
 	"github.com/gabstv/primen/io"
 	osfs "github.com/gabstv/primen/io/os"
 	"github.com/hajimehoshi/ebiten"
@@ -361,6 +362,12 @@ func (e *engine) Height() int {
 	e.ebilock.RLock()
 	defer e.ebilock.RUnlock()
 	return e.ebiLogicalH
+}
+
+func (e *engine) SizeVec() geom.Vec {
+	wi := e.Width()
+	hi := e.Height()
+	return geom.Vec{float64(wi), float64(hi)}
 }
 
 // EBITEN Game interface

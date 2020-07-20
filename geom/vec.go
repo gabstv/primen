@@ -2,12 +2,6 @@ package geom
 
 import "math"
 
-const (
-	// Epsilon is the default value to compare is scalars are nearly equal
-	// It can be as low as math.SmallestNonzeroFloat64
-	Epsilon = 0.0000000000000001
-)
-
 // ZV = Vec{0,0}
 var ZV = Vec{}
 
@@ -37,6 +31,14 @@ func (v Vec) EqualsEpsilon2(other Vec, epsilon float64) bool {
 // IsZero returns true if both axes are 0
 func (v Vec) IsZero() bool {
 	return v.Equals(ZV)
+}
+
+func (v Vec) Add(other Vec) Vec {
+	return Vec{v.X + other.X, v.Y + other.Y}
+}
+
+func (v Vec) Sub(other Vec) Vec {
+	return Vec{v.X - other.X, v.Y - other.Y}
 }
 
 // Dot product

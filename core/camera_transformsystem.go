@@ -18,7 +18,7 @@ import (
 
 
 
-const uuidCameraSystem = "6389F54D-76C9-49FC-B3E3-1C73B334EBB6"
+const uuidCameraSystem = "E19B710D-139B-47BD-AF0C-340414BC7226"
 
 type viewCameraSystem struct {
     entities []VICameraSystem
@@ -163,7 +163,7 @@ func (s *CameraSystem) Enabled() bool {
 
 // UUID implements ecs.BaseSystem
 func (CameraSystem) UUID() string {
-    return "6389F54D-76C9-49FC-B3E3-1C73B334EBB6"
+    return "E19B710D-139B-47BD-AF0C-340414BC7226"
 }
 
 func (CameraSystem) Name() string {

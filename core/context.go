@@ -1,6 +1,9 @@
 package core
 
-import "github.com/hajimehoshi/ebiten"
+import (
+	"github.com/gabstv/primen/geom"
+	"github.com/hajimehoshi/ebiten"
+)
 
 type Context interface {
 	Frame() int64
@@ -31,6 +34,7 @@ type Engine interface {
 	DrawFrame() int64
 	Width() int
 	Height() int
+	SizeVec() geom.Vec
 	AddEventListener(eventName string, fn EventFn) EventID
 	RemoveEventListener(id EventID) bool
 	DispatchEvent(eventName string, data interface{})

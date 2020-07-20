@@ -2,6 +2,7 @@ package core
 
 import (
 	"github.com/gabstv/ecs/v2"
+	"github.com/gabstv/primen/geom"
 	"github.com/hajimehoshi/ebiten"
 )
 
@@ -72,6 +73,12 @@ func (t *Transform) SetX(x float64) *Transform {
 
 func (t *Transform) SetY(y float64) *Transform {
 	t.y = y
+	return t
+}
+
+func (t *Transform) SetPos(p geom.Vec) *Transform {
+	t.x = p.X
+	t.y = p.Y
 	return t
 }
 
@@ -199,19 +206,20 @@ func (s *TransformSystem) GlobalToLocal(gx, gy float64, e ecs.Entity) (x, y floa
 	if !ok {
 		return 0, 0, false
 	}
-	// M_loc = M_parent_inv * M
-	// pm := ts.Transform.m
-	// pm.Invert()
-	// m := ebiten.GeoM{}
-	// m.Translate(gx, gy)
-	// pm.Concat(m)
-	// x, y = pm.Apply(0, 0)
 
 	pm := ts.Transform.m
 	pm.Invert()
 	x, y = pm.Apply(gx, gy)
 
 	return x, y, true
+}
+
+func (s *TransformSystem) GlobalToLocalTr(gx, gy float64, tr *Transform) (x, y float64) {
+	pm := tr.m
+	pm.Invert()
+	x, y = pm.Apply(gx, gy)
+
+	return x, y
 }
 
 func (s *TransformSystem) LocalToGlobal(lx, ly float64, e ecs.Entity) (x, y float64, ok bool) {
