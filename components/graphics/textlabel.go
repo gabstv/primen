@@ -37,10 +37,21 @@ type TextLabel struct {
 	realSize  image.Point
 	//
 	opt ebiten.DrawImageOptions
+
+	drawMask core.DrawMask
+}
+
+func (l *TextLabel) DrawMask() core.DrawMask {
+	return l.drawMask
+}
+
+func (l *TextLabel) SetDrawMask(mask core.DrawMask) {
+	l.drawMask = mask
 }
 
 func NewTextLabel() TextLabel {
 	return TextLabel{
+		drawMask:       core.DrawMaskDefault,
 		textdirty:      true,
 		faceOffsetAuto: true,
 		color:          color.White,

@@ -38,10 +38,13 @@ type ParticleEmitter struct {
 	disabled        bool
 	lockedparticles bool
 	parentlevel     uint
+
+	drawMask core.DrawMask
 }
 
 func NewParticleEmitter(w ecs.BaseWorld) ParticleEmitter {
 	return ParticleEmitter{
+		drawMask:  core.DrawMaskDefault,
 		particles: make([]Particle, 0, 64),
 		max:       64,
 		strategy:  SpawnPause,
@@ -68,6 +71,14 @@ func NewParticleEmitter(w ecs.BaseWorld) ParticleEmitter {
 		},
 		ew: w,
 	}
+}
+
+func (e *ParticleEmitter) DrawMask() core.DrawMask {
+	return e.drawMask
+}
+
+func (e *ParticleEmitter) SetDrawMask(mask core.DrawMask) {
+	e.drawMask = mask
 }
 
 func (e *ParticleEmitter) SetParentLevel(level uint) *ParticleEmitter {

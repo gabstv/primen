@@ -25,11 +25,22 @@ type TileSet struct {
 
 	isValid bool
 	opt     ebiten.DrawImageOptions
+
+	drawMask core.DrawMask
+}
+
+func (s *TileSet) DrawMask() core.DrawMask {
+	return s.drawMask
+}
+
+func (s *TileSet) SetDrawMask(mask core.DrawMask) {
+	s.drawMask = mask
 }
 
 func NewTileSet(db []*ebiten.Image, rows, cols int, cellwidthpx, cellheightpx float64, cells []int) TileSet {
 	tset := TileSet{
-		db: db,
+		drawMask: core.DrawMaskDefault,
+		db:       db,
 		cSize: image.Point{
 			X: cols,
 			Y: rows,

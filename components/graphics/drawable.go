@@ -10,6 +10,8 @@ import (
 
 // Drawable is the component that controls drawing to the ebiten screen
 type Drawable interface {
+	DrawMask() core.DrawMask
+	SetDrawMask(mask core.DrawMask)
 	Draw(ctx core.DrawCtx, t *components.Transform)
 	Update(ctx core.UpdateCtx, t *components.Transform)
 }

@@ -22,6 +22,16 @@ type Sprite struct {
 	imageWidth  float64 // last calculated image width
 	imageHeight float64 // last calculated image height
 	opt         ebiten.DrawImageOptions
+
+	drawMask core.DrawMask
+}
+
+func (s *Sprite) DrawMask() core.DrawMask {
+	return s.drawMask
+}
+
+func (s *Sprite) SetDrawMask(mask core.DrawMask) {
+	s.drawMask = mask
 }
 
 func getImageSize(img *ebiten.Image) (w, h float64) {
@@ -36,6 +46,7 @@ func getImageSize(img *ebiten.Image) (w, h float64) {
 func NewSprite(x, y float64, quad *ebiten.Image) Sprite {
 	iw, ih := getImageSize(quad)
 	return Sprite{
+		drawMask:    core.DrawMaskDefault,
 		image:       quad,
 		imageWidth:  iw,
 		imageHeight: ih,

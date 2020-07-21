@@ -6,9 +6,18 @@ import "github.com/hajimehoshi/ebiten"
 type DrawMask uint64
 
 const (
-	DrawMaskDefault DrawMask = 1
-	DrawMaskNone    DrawMask = 0
-	DrawMaskAll     DrawMask = 0xffffffffffffffff
+	// DrawMaskNone sets all bits to 0
+	DrawMaskNone DrawMask = 0
+	// DrawMaskAll sets all bits to 1
+	DrawMaskAll DrawMask = 0xffffffffffffffff
+)
+
+var (
+	// DrawMaskDefault can be changed to make all new drawable components
+	// start with a different value.
+	//
+	// The initial value of DrawMaskDefault is DrawMaskAll
+	DrawMaskDefault DrawMask = DrawMaskAll
 )
 
 type DrawTarget interface {
