@@ -66,7 +66,7 @@ func (s *DefaultScene) Unload() chan struct{} {
 		s.engine.AddTempDrawFn(0, func(ctx primen.DrawCtx) bool {
 			opt.ColorM.Reset()
 			opt.ColorM.Scale(1, 1, 1, t)
-			ctx.Renderer().DrawImageRaw(img, opt)
+			ctx.Renderer().DrawImage(img, opt)
 			t -= 1.0 / 120.0
 			if t <= 0 {
 				t = 0
@@ -125,7 +125,7 @@ func (s *GameScene) Unload() chan struct{} {
 		s.engine.AddTempDrawFn(0, func(ctx primen.DrawCtx) bool {
 			opt.ColorM.Reset()
 			opt.ColorM.Scale(1, 1, 1, t)
-			ctx.Renderer().DrawImageRaw(img, opt)
+			ctx.Renderer().DrawImage(img, opt)
 			t -= 1.0 / 120.0
 			if t <= 0 {
 				t = 0

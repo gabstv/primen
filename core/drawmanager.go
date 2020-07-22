@@ -5,7 +5,7 @@ import (
 )
 
 type DrawManager interface {
-	DrawImageRaw(image *ebiten.Image, opt *ebiten.DrawImageOptions)
+	DrawImage(image *ebiten.Image, opt *ebiten.DrawImageOptions)
 	Screen() *ebiten.Image
 }
 
@@ -28,7 +28,7 @@ func (m *drawManager) screen() *ebiten.Image {
 	return m.__screen
 }
 
-func (m *drawManager) DrawImageRaw(image *ebiten.Image, opt *ebiten.DrawImageOptions) {
+func (m *drawManager) DrawImage(image *ebiten.Image, opt *ebiten.DrawImageOptions) {
 	_ = m.screen().DrawImage(image, opt)
 }
 

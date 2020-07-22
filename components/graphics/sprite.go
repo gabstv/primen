@@ -110,7 +110,7 @@ func (s *Sprite) Draw(ctx core.DrawCtx, t *components.Transform) {
 	o.GeoM.Concat(g)
 
 	//TODO: reimplement colormode and composite mode
-	ctx.Renderer().DrawImageRaw(s.image, o)
+	ctx.Renderer().DrawImage(s.image, o)
 
 	if debug.Draw {
 		x0, y0 := 0.0, 0.0

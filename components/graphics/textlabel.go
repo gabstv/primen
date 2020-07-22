@@ -191,7 +191,7 @@ func (l *TextLabel) Draw(ctx core.DrawCtx, tr *components.Transform) {
 	o.GeoM.Translate(core.ApplyOrigin(float64(l.realSize.X), l.originX)+l.offsetX, core.ApplyOrigin(float64(l.realSize.Y), l.originY)+l.offsetY)
 	o.GeoM.Concat(g)
 	//TODO: reimplement colormode and composite mode
-	ctx.Renderer().DrawImageRaw(l.base, o)
+	ctx.Renderer().DrawImage(l.base, o)
 
 	if debug.Draw {
 		x0, y0 := 0.0, 0.0
