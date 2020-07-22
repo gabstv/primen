@@ -127,7 +127,7 @@ func (t *TileSet) Draw(ctx core.DrawCtx, tr *components.Transform) {
 	o.GeoM.Reset()
 	o.GeoM.Translate(core.ApplyOrigin(t.cellWidth*float64(t.cSize.X), t.originX)+t.offsetX, core.ApplyOrigin(t.cellHeight*float64(t.cSize.Y), t.originY)+t.offsetY)
 	o.GeoM.Concat(g)
-	tilem := core.GeoM()
+	imopt := &ebiten.DrawImageOptions{}
 	if t.cSize.X <= 0 {
 		// invalid tile size
 		return
@@ -136,9 +136,10 @@ func (t *TileSet) Draw(ctx core.DrawCtx, tr *components.Transform) {
 	for i, p := range t.cells {
 		y := i / t.cSize.X
 		x := i % t.cSize.X
-		tilem.Reset().Translate(float64(x)*t.cellWidth, float64(y)*t.cellHeight)
-		tilem.Concat(o.GeoM)
-		renderer.DrawImage(t.db[p], tilem)
+		imopt.GeoM.Reset()
+		imopt.GeoM.Translate(float64(x)*t.cellWidth, float64(y)*t.cellHeight)
+		imopt.GeoM.Concat(o.GeoM)
+		renderer.DrawImageRaw(t.db[p], imopt)
 	}
 	//TODO: debug draw
 }
