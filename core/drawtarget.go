@@ -24,7 +24,8 @@ type DrawTarget interface {
 	ID() uint64
 	DrawMask() DrawMask
 	Image() *ebiten.Image
-	Draw(screen *ebiten.Image)
+	DrawToScreen(screen *ebiten.Image)
+	DrawImage(image *ebiten.Image, opt *ebiten.DrawImageOptions, mask DrawMask)
 }
 
 type drawTarget struct {

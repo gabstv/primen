@@ -79,12 +79,12 @@ func NewUpdateCtx(e Engine, frame int64, dt, tps float64) UpdateCtx {
 	}
 }
 
-func NewDrawCtx(e Engine, frame int64, dt, tps float64, screen *ebiten.Image) DrawCtx {
+func NewDrawCtx(e Engine, frame int64, dt, tps float64, screen *ebiten.Image, rt ...DrawTarget) DrawCtx {
 	return &ctxt{
 		frame:  frame,
 		dt:     dt,
 		tps:    tps,
-		r:      newDrawManager(screen),
+		r:      newDrawManager(screen, rt...),
 		engine: e,
 	}
 }
