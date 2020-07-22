@@ -219,7 +219,7 @@ func (e *ParticleEmitter) Draw(ctx core.DrawCtx, tr *components.Transform) {
 		if p.hue != 0 {
 			opt.ColorM.RotateHue(p.hue)
 		}
-		ctx.Renderer().DrawImage(p.img, opt)
+		ctx.Renderer().DrawImage(p.img, opt, e.drawMask)
 	}
 }
 

@@ -139,7 +139,7 @@ func (t *TileSet) Draw(ctx core.DrawCtx, tr *components.Transform) {
 		imopt.GeoM.Reset()
 		imopt.GeoM.Translate(float64(x)*t.cellWidth, float64(y)*t.cellHeight)
 		imopt.GeoM.Concat(o.GeoM)
-		renderer.DrawImage(t.db[p], imopt)
+		renderer.DrawImage(t.db[p], imopt, t.drawMask)
 	}
 	//TODO: debug draw
 }
