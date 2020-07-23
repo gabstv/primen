@@ -153,7 +153,7 @@ func doubleCameraExample(e primen.Engine) {
 		ftr := components.GetFollowTransformComponentData(w, camtr.Entity())
 		ftr.SetTarget(player1.Entity())
 		ftr.SetBounds(geom.Rect{
-			Min: e.SizeVec().Scaled(.5),
+			Min: e.SizeVec().Scaled(.5).ScaledXY(.5, 1),
 			Max: geom.Vec{2048, 2048},
 		})
 		ftr.SetDeadZone(geom.Vec{80, 40})
@@ -169,7 +169,7 @@ func doubleCameraExample(e primen.Engine) {
 		ftr := components.GetFollowTransformComponentData(w, camtr.Entity())
 		ftr.SetTarget(player2.Entity())
 		ftr.SetBounds(geom.Rect{
-			Min: e.SizeVec().Scaled(.5),
+			Min: e.SizeVec().Scaled(.5).ScaledXY(.5, 1),
 			Max: geom.Vec{2048, 2048},
 		})
 		ftr.SetDeadZone(geom.Vec{80, 40})
@@ -207,6 +207,30 @@ func doubleCameraExample(e primen.Engine) {
 		}
 		if ebiten.IsKeyPressed(ebiten.KeyW) {
 			dtr2.SetY(dtr2.Y() - (ctx.DT() * 200))
+		}
+		if dtr.X() < 20 {
+			dtr.SetX(20)
+		}
+		if dtr2.X() < 20 {
+			dtr2.SetX(20)
+		}
+		if dtr.Y() < 10 {
+			dtr.SetY(10)
+		}
+		if dtr2.Y() < 10 {
+			dtr2.SetY(10)
+		}
+		if dtr.X() > 2038 {
+			dtr.SetX(2038)
+		}
+		if dtr2.X() > 2038 {
+			dtr2.SetX(2038)
+		}
+		if dtr.Y() > 2038 {
+			dtr.SetY(2038)
+		}
+		if dtr2.Y() > 2038 {
+			dtr2.SetY(2038)
 		}
 	}
 }
