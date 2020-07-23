@@ -204,6 +204,10 @@ func (s *TransformSystem) setupTransforms() {
 }
 
 func (s *TransformSystem) GlobalToLocal(gx, gy float64, e ecs.Entity) (x, y float64, ok bool) {
+	if e == 0 {
+		// special case where the transform would be nil (if the obj has no parent)
+		return gx, gy, true
+	}
 	ts, ok := s.V().Fetch(e)
 	if !ok {
 		return 0, 0, false
@@ -217,6 +221,9 @@ func (s *TransformSystem) GlobalToLocal(gx, gy float64, e ecs.Entity) (x, y floa
 }
 
 func (s *TransformSystem) GlobalToLocalTr(gx, gy float64, tr *Transform) (x, y float64) {
+	if tr == nil {
+		return gx, gy
+	}
 	pm := tr.m
 	pm.Invert()
 	x, y = pm.Apply(gx, gy)

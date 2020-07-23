@@ -1,6 +1,8 @@
 package primen
 
 import (
+	"sort"
+
 	"github.com/gabstv/primen/core"
 	"github.com/hajimehoshi/ebiten"
 )
@@ -36,6 +38,10 @@ func (m *soloDrawManager) DrawTargets() {
 	// solo draw manager doesn't have draw targets
 }
 
+func (m *soloDrawManager) DrawTarget(id core.DrawTargetID) core.DrawTarget {
+	return nil
+}
+
 type dtDrawManager struct {
 	screen *ebiten.Image
 	dts    []EngineDrawTarget
@@ -67,6 +73,16 @@ func (m *dtDrawManager) DrawTargets() {
 	for _, dt := range m.dts {
 		dt.DrawFrame(m.screen)
 	}
+}
+
+func (m *dtDrawManager) DrawTarget(id core.DrawTargetID) core.DrawTarget {
+	i := sort.Search(len(m.dts), func(i int) bool {
+		return m.dts[i].ID() >= id
+	})
+	if i < len(m.dts) && m.dts[i].ID() == id {
+		return m.dts[i]
+	}
+	return nil
 }
 
 func (e *engine) newDrawManager(screen *ebiten.Image) EngineDrawManager {

@@ -1,157 +1,152 @@
 package components
 
-// import (
-// 	"image/color"
+import (
+	"image/color"
 
-// 	"github.com/gabstv/ecs/v2"
-// 	"github.com/gabstv/primen/geom"
-// 	"github.com/hajimehoshi/ebiten"
-// )
+	"github.com/gabstv/ecs/v2"
+	"github.com/gabstv/primen/core"
+	"github.com/gabstv/primen/core/debug"
+	"github.com/gabstv/primen/geom"
+	"github.com/hajimehoshi/ebiten"
+)
 
-// type CameraRealTimeEasingFn func(curp, targetp geom.Vec, dt float64) geom.Vec
+type CameraRealTimeEasingFn func(curp, targetp geom.Vec, dt float64) geom.Vec
 
-// type Camera struct {
-// 	targetE ecs.Entity
-// 	// we not to track the transform data since cameras are not very common
-// 	//targetTr *Transform
-// 	withRotation bool
-// 	viewRect     geom.Vec
-// 	deadZone     geom.Rect
-// 	offset       geom.Vec
-// 	rteasing     CameraRealTimeEasingFn
-// 	inverted     bool
-// }
+// we choose not to track the transform data since cameras are not very common
+// so "targetTr *Transform" is not used. we get from targetE every frame
 
-// func (c *Camera) SetViewRect(r geom.Vec) {
-// 	c.viewRect = r
-// }
+type Camera struct {
+	targetE       ecs.Entity
+	withRotation  bool
+	viewRect      geom.Vec
+	deadZone      geom.Rect
+	offset        geom.Vec
+	rteasing      CameraRealTimeEasingFn
+	inverted      bool
+	drawTarget    core.DrawTargetID
+	lastTargetPos geom.Vec
+}
 
-// func (c *Camera) SetDeadZone(dz geom.Rect) {
-// 	c.deadZone = dz
-// }
+func NewCamera(drawTarget core.DrawTargetID) Camera {
+	return Camera{
+		drawTarget: drawTarget,
+	}
+}
 
-// func (c *Camera) SetTarget(e ecs.Entity) {
-// 	c.targetE = e
-// }
+func (c *Camera) SetViewRect(r geom.Vec) {
+	c.viewRect = r
+}
 
-// func (c *Camera) SetInverted(inverted bool) {
-// 	c.inverted = inverted
-// }
+func (c *Camera) SetDeadZone(dz geom.Rect) {
+	c.deadZone = dz
+}
 
-// //go:generate ecsgen -n Camera -p core -o camera_component.go --component-tpl --vars "UUID=02167024-81F4-4FEB-AC18-36564FCAC20B"
+func (c *Camera) SetTarget(e ecs.Entity) {
+	c.targetE = e
+}
 
-// //go:generate ecsgen -n Camera -p core -o camera_transformsystem.go --system-tpl --vars "Priority=50" --vars "UUID=E19B710D-139B-47BD-AF0C-340414BC7226" --components "Transform" --components "Camera"
+func (c *Camera) SetInverted(inverted bool) {
+	c.inverted = inverted
+}
 
-// var matchCameraSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
-// 	return f.Contains(GetTransformComponent(w).Flag().Or(GetCameraComponent(w).Flag()))
-// }
+func (c *Camera) ease(curp geom.Vec, dt float64) geom.Vec {
+	if c.rteasing == nil {
+		return defaultCameraEasing(curp, c.lastTargetPos, dt)
+	}
+	return c.rteasing(curp, c.lastTargetPos, dt)
+}
 
-// var resizematchCameraSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
-// 	if f.Contains(GetTransformComponent(w).Flag()) {
-// 		return true
-// 	}
-// 	if f.Contains(GetCameraComponent(w).Flag()) {
-// 		return true
-// 	}
-// 	return false
-// }
+//go:generate ecsgen -n Camera -p components -o camera_component.go --component-tpl --vars "UUID=02167024-81F4-4FEB-AC18-36564FCAC20B"
 
-// // DrawPriority noop
-// func (s *CameraSystem) DrawPriority(ctx DrawCtx) {}
+//go:generate ecsgen -n Camera -p components -o camera_transformsystem.go --system-tpl --vars "Priority=50" --vars "UUID=E19B710D-139B-47BD-AF0C-340414BC7226" --components "Transform" --components "Camera"
 
-// // Draw noop
-// func (s *CameraSystem) Draw(ctx DrawCtx) {
-// 	if !DebugDraw {
-// 		return
-// 	}
-// 	// #ebd951
-// 	boundsC := color.RGBA{
-// 		R: 0xeb,
-// 		G: 0xd9,
-// 		B: 0x51,
-// 		A: 200,
-// 	}
-// 	for _, v := range s.V().Matches() {
-// 		if !v.Camera.deadZone.IsZero() {
-// 			x1, y1 := v.Camera.deadZone.Min.X, v.Camera.deadZone.Min.Y
-// 			x2, y2 := v.Camera.deadZone.Max.X, v.Camera.deadZone.Max.Y
-// 			debugLineM(ctx.Renderer().Screen(), ebiten.GeoM{}, x1, y1, x2, y1, boundsC)
-// 			debugLineM(ctx.Renderer().Screen(), ebiten.GeoM{}, x2, y1, x2, y2, boundsC)
-// 			debugLineM(ctx.Renderer().Screen(), ebiten.GeoM{}, x2, y2, x1, y2, boundsC)
-// 			debugLineM(ctx.Renderer().Screen(), ebiten.GeoM{}, x1, y2, x1, y1, boundsC)
-// 		}
-// 	}
-// }
+var matchCameraSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
+	return f.Contains(GetTransformComponent(w).Flag().Or(GetCameraComponent(w).Flag()))
+}
 
-// // UpdatePriority noop
-// func (s *CameraSystem) UpdatePriority(ctx UpdateCtx) {}
+var resizematchCameraSystem = func(f ecs.Flag, w ecs.BaseWorld) bool {
+	if f.Contains(GetTransformComponent(w).Flag()) {
+		return true
+	}
+	if f.Contains(GetCameraComponent(w).Flag()) {
+		return true
+	}
+	return false
+}
 
-// // Update calculates all transform matrices
-// func (s *CameraSystem) Update(ctx UpdateCtx) {
-// 	// tick := s.tick
-// 	// s.tick++
-// 	//
-// 	ts := GetTransformSystem(s.world)
-// 	dt := ctx.DT()
-// 	for _, v := range s.V().Matches() {
-// 		s.updateCamera(v, ts, dt)
-// 	}
-// }
+// DrawPriority noop
+func (s *CameraSystem) DrawPriority(ctx core.DrawCtx) {}
 
-// func (s *CameraSystem) updateCamera(v VICameraSystem, ts *TransformSystem, dt float64) {
-// 	targetTr := GetTransformComponentData(s.world, v.Camera.targetE)
-// 	if targetTr == nil {
-// 		//TODO: move by easing and final position etc
-// 		return
-// 	}
-// 	gpos := getCameraGlobalPos(v.Camera, targetTr, ts)
-// 	if !v.Camera.deadZone.IsZero() {
-// 		// don't move if inside the dead zone
-// 		x, y := ts.LocalToGlobalTr(0, 0, v.Transform)
-// 		x -= v.Camera.viewRect.X / 2
-// 		y -= v.Camera.viewRect.Y / 2
-// 		curgpos := geom.Vec{x, y}
-// 		ds := v.Camera.deadZone.SubVec(v.Camera.viewRect)
-// 		if ds.ContainsVec(curgpos) &&
-// 			ds.ContainsVec(gpos) {
-// 			// do nothing
-// 			return
-// 		}
-// 	}
-// 	lpos := getCameraLocalPos(gpos, v.Camera, v.Transform, ts)
-// 	if v.Camera.inverted {
-// 		lpos = lpos.Scaled(-1)
-// 	}
-// 	cpos := geom.Vec{v.Transform.x, v.Transform.y}
-// 	if v.Camera.rteasing == nil {
-// 		cpos = defaultCameraEasing(cpos, lpos, dt)
-// 		v.Transform.x, v.Transform.y = cpos.X, cpos.Y
-// 	} else {
-// 		cpos = v.Camera.rteasing(cpos, lpos, dt)
-// 		v.Transform.x, v.Transform.y = cpos.X, cpos.Y
-// 	}
-// 	//TODO: camera rotation
-// }
+// Draw noop
+func (s *CameraSystem) Draw(ctx core.DrawCtx) {
+	ts := GetTransformSystem(s.world)
+	for _, v := range s.V().Matches() {
+		dt := ctx.Renderer().DrawTarget(v.Camera.drawTarget)
+		if dt == nil {
+			continue
+		}
+		dt.ResetTransform()
+		//TODO: dt.Scale()
+		//TODO: dt.Rotate()
+		gx, gy := ts.LocalToGlobalTr(0, 0, v.Transform)
+		// dt.Translate(geom.Vec{v.Transform.X(), v.Transform.Y()})
+		dt.Translate(geom.Vec{-gx, -gy}.Add(v.Camera.viewRect.Scaled(.5)))
+	}
+	if !debug.Draw {
+		return
+	}
+	// #ebd951
+	boundsC := color.RGBA{
+		R: 0xeb,
+		G: 0xd9,
+		B: 0x51,
+		A: 200,
+	}
+	for _, v := range s.V().Matches() {
+		if !v.Camera.deadZone.IsZero() {
+			x1, y1 := v.Camera.deadZone.Min.X, v.Camera.deadZone.Min.Y
+			x2, y2 := v.Camera.deadZone.Max.X, v.Camera.deadZone.Max.Y
+			debug.LineM(ctx.Renderer().Screen(), ebiten.GeoM{}, x1, y1, x2, y1, boundsC)
+			debug.LineM(ctx.Renderer().Screen(), ebiten.GeoM{}, x2, y1, x2, y2, boundsC)
+			debug.LineM(ctx.Renderer().Screen(), ebiten.GeoM{}, x2, y2, x1, y2, boundsC)
+			debug.LineM(ctx.Renderer().Screen(), ebiten.GeoM{}, x1, y2, x1, y1, boundsC)
+		}
+	}
+}
 
-// func defaultCameraEasing(curp, targetp geom.Vec, dt float64) geom.Vec {
-// 	spdv := targetp.Sub(curp)
-// 	//mag := spdv.Magnitude()
-// 	addv := spdv.Scaled(.5)
-// 	return curp.Add(addv)
-// }
+// UpdatePriority noop
+func (s *CameraSystem) UpdatePriority(ctx core.UpdateCtx) {}
 
-// func getCameraGlobalPos(c *Camera, target *Transform, tsys *TransformSystem) geom.Vec {
-// 	// if p := target.ParentTransform(); p != nil {
-// 	// 	gx, gy := tsys.LocalToGlobalTr(target.x, target.y, p)
-// 	// 	return geom.Vec{gx, gy}
-// 	// }
-// 	gx, gy := tsys.LocalToGlobalTr(0, 0, target)
-// 	gx -= c.viewRect.X / 2
-// 	gy -= c.viewRect.Y / 2
-// 	return geom.Vec{gx, gy}
-// }
+// Update calculates all transform matrices
+func (s *CameraSystem) Update(ctx core.UpdateCtx) {
+	// tick := s.tick
+	// s.tick++
+	//
+	ts := GetTransformSystem(s.world)
+	dt := ctx.DT()
+	for _, v := range s.V().Matches() {
 
-// func getCameraLocalPos(gpos geom.Vec, c *Camera, tr *Transform, tsys *TransformSystem) geom.Vec {
-// 	lx, ly := tsys.GlobalToLocalTr(gpos.X, gpos.Y, tr)
-// 	return geom.Vec{lx + c.offset.X, ly + c.offset.Y}
-// }
+		targetTr := GetTransformComponentData(s.world, v.Camera.targetE)
+		if targetTr == nil {
+			//TODO: move by easing and final position etc
+			mvpos := v.Camera.ease(geom.Vec{v.Transform.X(), v.Transform.Y()}, dt)
+			v.Transform.SetX(mvpos.X).SetY(mvpos.Y)
+			continue
+		}
+		gx, gy := ts.LocalToGlobalTr(0, 0, targetTr)
+		lx, ly := ts.GlobalToLocalTr(gx, gy, v.Transform.parent)
+		//TODO: use deadzone
+		v.Camera.lastTargetPos = geom.Vec{lx, ly}
+		//
+		mvpos := v.Camera.ease(geom.Vec{v.Transform.X(), v.Transform.Y()}, dt)
+		v.Transform.SetX(mvpos.X).SetY(mvpos.Y)
+		//
+	}
+}
+
+func defaultCameraEasing(curp, targetp geom.Vec, dt float64) geom.Vec {
+	spdv := targetp.Sub(curp)
+	//mag := spdv.Magnitude()
+	addv := spdv.Scaled(.5)
+	return curp.Add(addv)
+}
