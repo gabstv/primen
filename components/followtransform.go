@@ -207,6 +207,6 @@ func (s *FollowTransformSystem) Update(ctx core.UpdateCtx) {
 func defaultRTEasing(curp, targetp geom.Vec, dt float64) geom.Vec {
 	spdv := targetp.Sub(curp)
 	//mag := spdv.Magnitude()
-	addv := spdv.Scaled(.8 * dt)
+	addv := spdv.Scaled(2 * dt)
 	return curp.Add(addv)
 }

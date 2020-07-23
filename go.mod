@@ -16,6 +16,7 @@ require (
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/hajimehoshi/ebiten v1.12.0-alpha.1.0.20200514190429-f7f507e912dc
 	github.com/inkyblackness/imgui-go/v2 v2.4.1
+	github.com/pkg/profile v1.4.0
 	github.com/stretchr/testify v1.5.1
 	github.com/urfave/cli v1.22.4
 	golang.org/x/image v0.0.0-20200119044424-58c23975cae1

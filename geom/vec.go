@@ -93,6 +93,10 @@ func (v Vec) RectClamp(r Rect) Vec {
 	return v.Clamp(r.Min, r.Max)
 }
 
+func (v Vec) Angle() float64 {
+	return math.Atan2(v.Y, v.X)
+}
+
 func (v Vec) Applyed() {
 
 }

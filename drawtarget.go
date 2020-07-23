@@ -67,9 +67,15 @@ func (d *baseDrawTarget) drawImage(dst, image *ebiten.Image, opt *ebiten.DrawIma
 		return
 	}
 	if d.mset {
-		m := d.m
+		// m := d.m
+		// pm := opt.GeoM
+		// m.Concat(pm)
+		// opt.GeoM = m
+		// _ = dst.DrawImage(image, opt)
+		// opt.GeoM = pm
+		m := opt.GeoM
 		pm := opt.GeoM
-		m.Concat(pm)
+		m.Concat(d.m)
 		opt.GeoM = m
 		_ = dst.DrawImage(image, opt)
 		opt.GeoM = pm

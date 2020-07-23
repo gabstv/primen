@@ -92,6 +92,10 @@ func (t *Transform) Y() float64 {
 	return t.y
 }
 
+func (t *Transform) Pos() geom.Vec {
+	return geom.Vec{t.x, t.y}
+}
+
 // SetAngle sets the angle (in radians)
 func (t *Transform) SetAngle(r float64) *Transform {
 	t.angle = r
