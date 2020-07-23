@@ -75,7 +75,10 @@ type engine struct {
 	runctx       context.Context
 	exits        bool
 
-	lastScn Scene
+	lastScn          Scene
+	drawTargetLock   sync.Mutex
+	drawTargets      []EngineDrawTarget
+	lastDrawTargetID core.DrawTargetID
 }
 
 // NewEngineInput is the input data of NewEngine
@@ -197,6 +200,7 @@ func NewEngine(v *NewEngineInput) Engine {
 		eventManager: &core.EventManager{},
 		runfns:       make(chan func(), 128),
 		runctx:       context.Background(), // redefined on Run()
+		drawTargets:  make([]EngineDrawTarget, 0, 8),
 	}
 
 	e.loadScenes() // load all registered scenes constructor
@@ -473,7 +477,10 @@ func (e *engine) Draw(screen *ebiten.Image) {
 	frame := lastf + 1
 	e.drawInfo.Set(now, frame)
 
-	ctx := core.NewDrawCtx(e, frame, delta, ebiten.CurrentTPS(), screen)
+	mgr := e.newDrawManager(screen)
+	ctx := core.NewDrawCtx(e, frame, delta, ebiten.CurrentTPS(), mgr)
+
+	mgr.PrepareTargets()
 
 	for _, modulec := range modules {
 		modulec.module.BeforeDraw(ctx)
@@ -492,6 +499,8 @@ func (e *engine) Draw(screen *ebiten.Image) {
 			return true
 		})
 	}
+
+	mgr.DrawTargets()
 
 	for _, modulec := range modules {
 		modulec.module.AfterDraw(ctx)

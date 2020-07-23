@@ -1,6 +1,11 @@
 package core
 
-import "github.com/hajimehoshi/ebiten"
+import (
+	"strconv"
+
+	"github.com/gabstv/primen/geom"
+	"github.com/hajimehoshi/ebiten"
+)
 
 // DrawMask is a flag to choose the draw target(s) of a drawable component
 type DrawMask uint64
@@ -20,16 +25,21 @@ var (
 	DrawMaskDefault DrawMask = DrawMaskAll
 )
 
-type DrawTarget interface {
-	ID() uint64
-	DrawMask() DrawMask
-	Image() *ebiten.Image
-	DrawToScreen(screen *ebiten.Image)
-	DrawImage(image *ebiten.Image, opt *ebiten.DrawImageOptions, mask DrawMask)
+type DrawTargetID uint64
+
+func (d DrawTargetID) String() string {
+	return "DrawTarget#" + strconv.FormatUint(uint64(d), 10)
 }
 
-type drawTarget struct {
-	id        uint64
-	layerMask uint64
-	img       *ebiten.Image
+type DrawTarget interface {
+	ID() DrawTargetID
+	DrawMask() DrawMask
+	Image() *ebiten.Image
+	//DrawToScreen(screen *ebiten.Image)
+	DrawImage(image *ebiten.Image, opt *ebiten.DrawImageOptions, mask DrawMask)
+	Size() geom.Vec
+	Translate(v geom.Vec)
+	Scale(v geom.Vec)
+	Rotate(rad float64)
+	ResetTransform()
 }

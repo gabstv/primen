@@ -41,6 +41,10 @@ func (v Vec) Sub(other Vec) Vec {
 	return Vec{v.X - other.X, v.Y - other.Y}
 }
 
+func (v Vec) Mul(other Vec) Vec {
+	return Vec{v.X * other.X, v.Y * other.Y}
+}
+
 // Dot product
 func (v Vec) Dot(other Vec) float64 {
 	return v.X*other.X + v.Y*other.Y
@@ -69,6 +73,11 @@ func (v Vec) Normalized() Vec {
 // Scaled returns {v.X * s, v.Y * s}
 func (v Vec) Scaled(s float64) Vec {
 	return Vec{v.X * s, v.Y * s}
+}
+
+// ScaledXY returns {v.X * sx, v.Y * sy}
+func (v Vec) ScaledXY(sx, sy float64) Vec {
+	return Vec{v.X * sx, v.Y * sy}
 }
 
 func (v Vec) Applyed() {

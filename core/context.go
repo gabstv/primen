@@ -2,7 +2,6 @@ package core
 
 import (
 	"github.com/gabstv/primen/geom"
-	"github.com/hajimehoshi/ebiten"
 )
 
 type Context interface {
@@ -79,12 +78,12 @@ func NewUpdateCtx(e Engine, frame int64, dt, tps float64) UpdateCtx {
 	}
 }
 
-func NewDrawCtx(e Engine, frame int64, dt, tps float64, screen *ebiten.Image, rt ...DrawTarget) DrawCtx {
+func NewDrawCtx(e Engine, frame int64, dt, tps float64, m DrawManager) DrawCtx {
 	return &ctxt{
 		frame:  frame,
 		dt:     dt,
 		tps:    tps,
-		r:      newDrawManager(screen, rt...),
+		r:      m,
 		engine: e,
 	}
 }

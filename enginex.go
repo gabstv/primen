@@ -5,7 +5,9 @@ import (
 	"sort"
 
 	"github.com/gabstv/primen/core"
+	"github.com/gabstv/primen/geom"
 	"github.com/gabstv/primen/io"
+	"github.com/hajimehoshi/ebiten"
 )
 
 type Engine interface {
@@ -19,6 +21,11 @@ type Engine interface {
 	NewContainer() io.Container
 	WaitAndGrabScreenImage() ScreenCopyRequest
 	AddTempDrawFn(priority int, fn func(ctx core.DrawCtx) bool)
+	NewDrawTarget(mask core.DrawMask, bounds geom.Rect, filter ebiten.Filter) core.DrawTargetID
+	NewScreenOffsetDrawTarget(mask core.DrawMask) core.DrawTargetID
+	NewProgrammableDrawTarget(input ProgrammableDrawTargetInput) core.DrawTargetID
+	DrawTarget(id core.DrawTargetID) core.DrawTarget
+	RemoveDrawTarget(id core.DrawTargetID) bool
 }
 
 type DrawCtx = core.DrawCtx

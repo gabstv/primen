@@ -10,7 +10,7 @@ import (
 	"math"
 
 	"github.com/gabstv/primen"
-	"github.com/gabstv/primen/core"
+	"github.com/gabstv/primen/components/graphics"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
@@ -42,8 +42,8 @@ func einit(engine primen.Engine) {
 }
 
 func createCharacter(dw primen.World, ebimg *ebiten.Image) {
-	sn := primen.NewRootAnimatedSpriteNode(dw, primen.Layer0, 14, &core.TiledAnimation{
-		Clips: []core.TiledAnimationClip{
+	sn := primen.NewRootAnimatedSpriteNode(dw, primen.Layer0, 14, &graphics.TiledAnimation{
+		Clips: []graphics.TiledAnimationClip{
 			{
 				Image: ebimg,
 				Name:  "default",
@@ -54,7 +54,7 @@ func createCharacter(dw primen.World, ebimg *ebiten.Image) {
 					image.Rect(80*3, 0, 80*4, 110), // 3
 					image.Rect(0, 0, 80, 110),      // 0
 				},
-				ClipMode: core.AnimLoop,
+				ClipMode: graphics.AnimLoop,
 			},
 		},
 	})
@@ -64,8 +64,8 @@ func createCharacter(dw primen.World, ebimg *ebiten.Image) {
 }
 
 func createPingPonger(dw primen.World, ebimg *ebiten.Image, x, y float64, frame int) {
-	sn := primen.NewRootAnimatedSpriteNode(dw, primen.Layer0, 24, &core.TiledAnimation{
-		Clips: []core.TiledAnimationClip{
+	sn := primen.NewRootAnimatedSpriteNode(dw, primen.Layer0, 24, &graphics.TiledAnimation{
+		Clips: []graphics.TiledAnimationClip{
 			{
 				Name:  "default",
 				Image: ebimg,
@@ -75,7 +75,7 @@ func createPingPonger(dw primen.World, ebimg *ebiten.Image, x, y float64, frame 
 					image.Rect(8*2, 0, 8*3, 32),
 					image.Rect(8*3, 0, 8*4, 32),
 				},
-				ClipMode: core.AnimPingPong,
+				ClipMode: graphics.AnimPingPong,
 			},
 		},
 	})
