@@ -10,7 +10,9 @@ import (
 
 	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen"
+	"github.com/gabstv/primen/components"
 	"github.com/gabstv/primen/core"
+	"github.com/gabstv/primen/core/debug"
 	"github.com/gabstv/primen/examples/layers/layerexample"
 	"github.com/gabstv/primen/examples/layers/res"
 	"github.com/gabstv/primen/io"
@@ -91,7 +93,7 @@ func dogamesetup(ctx context.Context, engine primen.Engine, bgs, fgs []*ebiten.I
 	rootnode.Transform().SetX(320 / 2).SetY(240 / 2)
 
 	rootnode.Function().Update = func(ctx core.UpdateCtx, e ecs.Entity) {
-		ttx := core.GetTransformComponentData(w, e)
+		ttx := components.GetTransformComponentData(w, e)
 		xx := uintptr(unsafe.Pointer(ttx))
 		_ = xx
 		ttx.SetX(float64(ctx.Engine().Width() / 2)).SetY(float64(ctx.Engine().Height() / 2))
@@ -155,7 +157,7 @@ func dogamesetup(ctx context.Context, engine primen.Engine, bgs, fgs []*ebiten.I
 	fnss.Function().Update = func(ctx core.UpdateCtx, e ecs.Entity) {
 		mvsys := layerexample.GetOrbitalMovementSystem(w)
 		if inpututil.IsKeyJustPressed(ebiten.KeyD) {
-			core.DebugDraw = !core.DebugDraw
+			debug.Draw = !debug.Draw
 		}
 		if inpututil.IsKeyJustPressed(ebiten.KeyP) {
 			mvsys.TogglePause()
