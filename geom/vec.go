@@ -80,6 +80,19 @@ func (v Vec) ScaledXY(sx, sy float64) Vec {
 	return Vec{v.X * sx, v.Y * sy}
 }
 
+// Clamp returns a new Vec between that is "min >= v <= max"
+func (v Vec) Clamp(min, max Vec) Vec {
+	nv := Vec{math.Max(min.X, v.X), math.Max(min.Y, v.Y)}
+	nv.X = math.Min(max.X, nv.X)
+	nv.Y = math.Min(max.Y, nv.Y)
+	return nv
+}
+
+// RectClamp returns a new Vec between that is "min >= v <= max"
+func (v Vec) RectClamp(r Rect) Vec {
+	return v.Clamp(r.Min, r.Max)
+}
+
 func (v Vec) Applyed() {
 
 }

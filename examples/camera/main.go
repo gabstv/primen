@@ -31,31 +31,38 @@ func main() {
 			wtrn := primen.NewRootNode(w)
 			ctr := primen.NewChildNode(wtrn)
 			components.SetCameraComponentData(w, ctr.Entity(), components.NewCamera(e.NewScreenOffsetDrawTarget(core.DrawMaskDefault)))
-			c := components.GetCameraComponentData(w, ctr.Entity())
-			c.SetDeadZone(geom.Rect{geom.ZV, geom.Vec{100, 100}}.At(e.SizeVec().Scaled(.5).Sub(geom.Vec{50, 50})))
+			cam := components.GetCameraComponentData(w, ctr.Entity())
+			cam.SetViewRect(e.SizeVec())
+			components.SetFollowTransformComponentData(w, ctr.Entity(), components.FollowTransform{})
+			c := components.GetFollowTransformComponentData(w, ctr.Entity())
+			//c.SetDeadZone(geom.Rect{geom.ZV, geom.Vec{100, 100}}.At(e.SizeVec().Scaled(.5).Sub(geom.Vec{50, 50})))
 			tiled := primen.NewChildTileSetNode(wtrn, primen.Layer0, []*ebiten.Image{bgimage}, 16, 16, 256, 256, make([]int, 16*16))
 			_ = tiled
 			dude := primen.NewChildSpriteNode(wtrn, primen.Layer1)
 			dude.Sprite().SetImage(fgimage).SetOrigin(.5, .5)
 			dude.Transform().SetPos(e.SizeVec().Scaled(.5))
+			ctr.Transform().SetPos(e.SizeVec().Scaled(.5))
 			c.SetTarget(dude.Entity())
-			c.SetInverted(true)
-			c.SetViewRect(e.SizeVec())
+			c.SetBounds(geom.Rect{
+				Min: e.SizeVec().Scaled(.5),
+				Max: geom.Vec{2048, 2048},
+			})
+			c.SetDeadZone(geom.Vec{100, 40})
 			//
 			fnn := primen.NewRootFnNode(w)
 			fnn.Function().Update = func(ctx core.UpdateCtx, e ecs.Entity) {
 				dtr := dude.Transform()
 				if ebiten.IsKeyPressed(ebiten.KeyRight) {
-					dtr.SetX(dtr.X() + (ctx.DT() * 100))
+					dtr.SetX(dtr.X() + (ctx.DT() * 200))
 				}
 				if ebiten.IsKeyPressed(ebiten.KeyLeft) {
-					dtr.SetX(dtr.X() - (ctx.DT() * 100))
+					dtr.SetX(dtr.X() - (ctx.DT() * 200))
 				}
 				if ebiten.IsKeyPressed(ebiten.KeyDown) {
-					dtr.SetY(dtr.Y() + (ctx.DT() * 100))
+					dtr.SetY(dtr.Y() + (ctx.DT() * 200))
 				}
 				if ebiten.IsKeyPressed(ebiten.KeyUp) {
-					dtr.SetY(dtr.Y() - (ctx.DT() * 100))
+					dtr.SetY(dtr.Y() - (ctx.DT() * 200))
 				}
 			}
 		},
