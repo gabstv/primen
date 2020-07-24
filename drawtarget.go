@@ -1,6 +1,7 @@
 package primen
 
 import (
+	"math"
 	"sort"
 
 	"github.com/gabstv/primen/core"
@@ -67,6 +68,9 @@ func (d *baseDrawTarget) drawImage(dst, image *ebiten.Image, opt *ebiten.DrawIma
 		return
 	}
 	if d.mset {
+		if opt == nil {
+			opt = &ebiten.DrawImageOptions{}
+		}
 		// m := d.m
 		// pm := opt.GeoM
 		// m.Concat(pm)
@@ -76,10 +80,29 @@ func (d *baseDrawTarget) drawImage(dst, image *ebiten.Image, opt *ebiten.DrawIma
 		m := opt.GeoM
 		pm := opt.GeoM
 		m.Concat(d.m)
+		//TODO: check if offscreen
+		x1, y1 := m.Element(0, 2), m.Element(1, 2) //m.Apply(0,0)
+		w, h := image.Size()
+		x2, y2 := m.Apply(float64(w), float64(h))
+		dx, dy := math.Abs(x2-x1), math.Abs(y2-y1)
+		hh := math.Hypot(dx, dy)
+		if !d.size.IsZero() && ((x1+hh < 0 || x1-hh > d.size.X) && (y1+hh < 0 || y1-hh > d.size.Y)) {
+			return
+		}
 		opt.GeoM = m
 		_ = dst.DrawImage(image, opt)
 		opt.GeoM = pm
 		return
+	}
+	if opt != nil {
+		m := opt.GeoM
+		x1, y1 := m.Element(0, 2), m.Element(1, 2) //m.Apply(0,0)
+		w, h := image.Size()
+		x2, y2 := m.Apply(float64(w), float64(h))
+		hh := math.Hypot(x2-x1, y2-y1)
+		if !d.size.IsZero() && ((x1+hh < 0 || x1-hh > d.size.X) && (y1+hh < 0 || y1-hh > d.size.Y)) {
+			return
+		}
 	}
 	dst.DrawImage(image, opt)
 }

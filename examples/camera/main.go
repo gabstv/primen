@@ -12,6 +12,9 @@ import (
 	"github.com/gabstv/primen"
 	"github.com/gabstv/primen/components"
 	"github.com/gabstv/primen/core"
+	"github.com/gabstv/primen/core/ui/imgui"
+	"github.com/gabstv/primen/dom"
+	"github.com/gabstv/primen/examples/camera/res"
 	"github.com/gabstv/primen/geom"
 	"github.com/hajimehoshi/ebiten"
 	//"github.com/pkg/profile"
@@ -34,36 +37,85 @@ func main() {
 	engine := primen.NewEngine(&primen.NewEngineInput{
 		Width:  800,
 		Height: 600,
+		FS:     res.FS(),
 		OnReady: func(e primen.Engine) {
 			if !double {
 				singleCameraExample(e)
 			} else {
 				doubleCameraExample(e)
 			}
+			e.LoadScene("main_menu")
 		},
 	})
+	imgui.Setup(engine)
 	engine.Run()
 }
 
 func load() {
-	b, err := ioutil.ReadFile("cambg.png")
+	b, err := ioutil.ReadFile("res/public/cambg.png")
 	if err != nil {
 		panic(err)
 	}
 	rawbgimage, _, _ := image.Decode(bytes.NewReader(b))
 	bgimage, _ = ebiten.NewImageFromImage(rawbgimage, ebiten.FilterNearest)
-	b2, err := ioutil.ReadFile("target.png")
+	b2, err := ioutil.ReadFile("res/public/target.png")
 	if err != nil {
 		panic(err)
 	}
 	rawfgimage, _, _ := image.Decode(bytes.NewReader(b2))
 	fgimage, _ = ebiten.NewImageFromImage(rawfgimage, ebiten.FilterNearest)
-	b3, err := ioutil.ReadFile("arrow.png")
+	b3, err := ioutil.ReadFile("res/public/arrow.png")
 	if err != nil {
 		panic(err)
 	}
 	rawarrow, _, _ := image.Decode(bytes.NewReader(b3))
 	arimage, _ = ebiten.NewImageFromImage(rawarrow, ebiten.FilterNearest)
+}
+
+type MainMenuScene struct {
+	engine primen.Engine
+	ui     imgui.UID
+}
+
+var _ primen.Scene = (*MainMenuScene)(nil)
+
+func (*MainMenuScene) Name() string {
+	return "main_menu"
+}
+
+func (s *MainMenuScene) Unload() chan struct{} {
+	ch := make(chan struct{})
+	close(ch)
+	imgui.RemoveUI(s.ui)
+	return ch
+}
+
+func (s *MainMenuScene) setup() chan struct{} {
+	ch := make(chan struct{})
+	c := s.engine.NewContainer()
+	go func() {
+		defer close(ch)
+		_, done := c.LoadAll([]string{
+			"public/mainmenu.xml",
+		})
+		<-done
+		// run on main thread
+		s.engine.RunFn(func() {
+			node, _ := c.GetXMLDOM("public/mainmenu.xml")
+			s.ui = imgui.AddUI(node.(dom.ElementNode))
+		})
+	}()
+	return ch
+}
+
+func init() {
+	primen.RegisterScene((*MainMenuScene)(nil).Name(), func(engine primen.Engine) (primen.Scene, chan struct{}) {
+		scn := &MainMenuScene{
+			engine: engine,
+		}
+		ch := scn.setup()
+		return scn, ch
+	})
 }
 
 func singleCameraExample(e primen.Engine) {
@@ -77,7 +129,7 @@ func singleCameraExample(e primen.Engine) {
 	components.SetFollowTransformComponentData(w, ctr.Entity(), components.FollowTransform{})
 	c := components.GetFollowTransformComponentData(w, ctr.Entity())
 	//c.SetDeadZone(geom.Rect{geom.ZV, geom.Vec{100, 100}}.At(e.SizeVec().Scaled(.5).Sub(geom.Vec{50, 50})))
-	tiled := primen.NewChildTileSetNode(wtrn, primen.Layer0, []*ebiten.Image{bgimage}, 16, 16, 256, 256, make([]int, 16*16))
+	tiled := primen.NewChildTileSetNode(wtrn, primen.Layer0, []*ebiten.Image{bgimage}, 32, 32, 256, 256, make([]int, 32*32))
 	_ = tiled
 	dude := primen.NewChildSpriteNode(wtrn, primen.Layer1)
 	dude.Sprite().SetImage(fgimage).SetOrigin(.5, .5)
