@@ -114,6 +114,7 @@ func renderButtonNode(ctx core.DrawCtx, node dom.ElementNode, data *uiMemory, js
 				println("js err: " + err.Error())
 				bubbles = false
 			} else {
+				println("js fn ok")
 				if rv == nil || !rv.ToBoolean() {
 					bubbles = false
 				}
@@ -227,42 +228,50 @@ func updateLocalJS(inited *bool, jsvm *goja.Runtime) {
 	*inited = true
 }
 
-func getattrparsejsInt(jsvm *goja.Runtime, inited *bool, attrv string) (int, bool) {
+func getattrparsejsInt(jsvm *goja.Runtime, inited *bool, attrv string) (val int, relative, ok bool) {
 	if attrv == "" {
-		return 0, false
+		return 0, false, false
 	}
 	if hjs, strjs := vhasJS(attrv); hjs {
 		updateLocalJS(inited, jsvm)
 		vv, err := jsvm.RunString(strjs)
 		if err != nil {
-			return 0, false
+			return 0, false, false
 		}
-		return int(vv.ToInteger()), true
+		return int(vv.ToInteger()), false, true
+	}
+	if strings.HasSuffix(attrv, "%") {
+		relative = true
+		attrv = attrv[:len(attrv)-1]
 	}
 	vv, err := strconv.Atoi(attrv)
 	if err != nil {
-		return 0, false
+		return 0, relative, false
 	}
-	return vv, true
+	return vv, relative, true
 }
 
-func getattrparsejsNumber(jsvm *goja.Runtime, inited *bool, attrv string) (float64, bool) {
+func getattrparsejsNumber(jsvm *goja.Runtime, inited *bool, attrv string) (val float64, relative, ok bool) {
 	if attrv == "" {
-		return 0, false
+		return 0, false, false
 	}
 	if hjs, strjs := vhasJS(attrv); hjs {
 		updateLocalJS(inited, jsvm)
 		vv, err := jsvm.RunString(strjs)
 		if err != nil {
-			return 0, false
+			return 0, false, false
 		}
-		return vv.ToFloat(), true
+		return vv.ToFloat(), false, true
+	}
+	if strings.HasSuffix(attrv, "%") {
+		relative = true
+		attrv = attrv[:len(attrv)-1]
 	}
 	vv, err := strconv.ParseFloat(attrv, 64)
 	if err != nil {
-		return 0, false
+		return 0, relative, false
 	}
-	return vv, true
+	return vv, relative, true
 }
 
 func getattrparsejsString(jsvm *goja.Runtime, inited *bool, attrv string) (string, bool) {
@@ -289,11 +298,21 @@ func setNodeLayout(node dom.ElementNode, data *uiMemory, jsvm *goja.Runtime) (la
 	initjs := false
 	attrs := node.Attributes()
 	//if attrs.HasAttr("w", "width")
-	if v, ok := getattrparsejsInt(jsvm, &initjs, attrs.FirstAttr("w", "width")); ok {
-		layout.Size.X = float32(v)
+	if v, rel, ok := getattrparsejsNumber(jsvm, &initjs, attrs.FirstAttr("w", "width")); ok {
+		if rel {
+			cravail := imgui.ContentRegionAvail()
+			layout.Size.X = cravail.X * (float32(v) / 100.0)
+		} else {
+			layout.Size.X = float32(v)
+		}
 	}
-	if v, ok := getattrparsejsInt(jsvm, &initjs, attrs.FirstAttr("h", "height")); ok {
-		layout.Size.Y = float32(v)
+	if v, rel, ok := getattrparsejsNumber(jsvm, &initjs, attrs.FirstAttr("h", "height")); ok {
+		if rel {
+			cravail := imgui.ContentRegionAvail()
+			layout.Size.X = cravail.Y * (float32(v) / 100.0)
+		} else {
+			layout.Size.X = float32(v)
+		}
 	}
 	return
 }

@@ -1,4 +1,4 @@
 <window id="centered" flags="no-saved-settings|no-decoration" position="fixed" top="js: __height/5" left="200" right="200" bottom="js: __height/5">
-    <button onclick="show('single')">SINGLE CAMERA</button>
-    <button onclick="show('double')">SPLIT SCREEN</button>
+    <button onclick="$scenes.load('single')" w="100%">SINGLE CAMERA</button>
+    <button onclick="$scenes.load('double')" w="100%">SPLIT SCREEN</button>
 </window>
