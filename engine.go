@@ -526,7 +526,7 @@ func (e *engine) Draw(screen *ebiten.Image) {
 	}
 
 	if e.debugfps {
-		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("TPS: %.2f", ebiten.CurrentTPS()), 10, 10)
+		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("FPS: %.2f", ebiten.CurrentFPS()), 10, 10)
 	}
 
 	select {
