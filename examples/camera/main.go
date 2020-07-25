@@ -437,7 +437,7 @@ func particleSys(parent primen.ObjectContainer, img *ebiten.Image) *primen.Parti
 	pe := p.ParticleEmitter()
 	pe.SetCompositeMode(ebiten.CompositeModeLighter)
 	props := pe.Props()
-	props.DurationVar1 = .5
+	props.DurationVar1 = .3
 	props.Source = []*ebiten.Image{img}
 	props.EndColor = primen.ColorFromHex("#ff000000")
 	props.InitScale = 0.2
