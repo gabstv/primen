@@ -454,7 +454,7 @@ func particleSys(parent primen.ObjectContainer, img *ebiten.Image) *primen.Parti
 	props.YVelocityVar1 = 10
 	pe.SetProps(props)
 	eprop := pe.EmissionProp()
-	eprop.N0 = 3
+	eprop.N0 = 2
 	eprop.N1 = 6
 	eprop.T0 = 1 / 60
 	eprop.T1 = 2 / 60
