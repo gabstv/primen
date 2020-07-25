@@ -3,8 +3,8 @@ package components
 import (
 	"time"
 
+	"github.com/gabstv/ebiten/audio"
 	paudio "github.com/gabstv/primen/audio"
-	"github.com/hajimehoshi/ebiten/audio"
 )
 
 type AudioPlayer struct {

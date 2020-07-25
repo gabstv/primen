@@ -5,10 +5,10 @@ import (
 	"math"
 	"math/rand"
 
+	"github.com/gabstv/ebiten"
 	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen/components"
 	"github.com/gabstv/primen/core"
-	"github.com/hajimehoshi/ebiten"
 )
 
 type SpawnStrategy int

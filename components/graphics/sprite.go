@@ -1,11 +1,11 @@
 package graphics
 
 import (
+	"github.com/gabstv/ebiten"
 	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen/components"
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/core/debug"
-	"github.com/hajimehoshi/ebiten"
 )
 
 // Sprite is the data of a sprite component.

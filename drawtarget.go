@@ -4,9 +4,9 @@ import (
 	"math"
 	"sort"
 
+	"github.com/gabstv/ebiten"
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/geom"
-	"github.com/hajimehoshi/ebiten"
 )
 
 type EngineDrawTarget interface {
@@ -158,7 +158,7 @@ func (d *drawTarget) setSize(screen *ebiten.Image) {
 			d.image.Dispose()
 			d.image = nil
 		}
-		d.image, _ = ebiten.NewImage(int(tsize.X), int(tsize.Y), d.filter)
+		d.image = ebiten.NewScreenBufferImage(int(tsize.X), int(tsize.Y), d.filter)
 		d.size = tsize
 	}
 }

@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"path"
 
-	"github.com/hajimehoshi/ebiten/audio/mp3"
-	"github.com/hajimehoshi/ebiten/audio/wav"
+	"github.com/gabstv/ebiten/audio/mp3"
+	"github.com/gabstv/ebiten/audio/wav"
 
+	"github.com/gabstv/ebiten/audio"
+	"github.com/gabstv/ebiten/audio/vorbis"
 	paudio "github.com/gabstv/primen/audio"
-	"github.com/hajimehoshi/ebiten/audio"
-	"github.com/hajimehoshi/ebiten/audio/vorbis"
 )
 
 type AudioType int

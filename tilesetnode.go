@@ -1,8 +1,8 @@
 package primen
 
 import (
+	"github.com/gabstv/ebiten"
 	"github.com/gabstv/primen/components/graphics"
-	"github.com/hajimehoshi/ebiten"
 )
 
 type TileSetNode struct {

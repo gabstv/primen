@@ -4,12 +4,12 @@ import (
 	"math"
 	"os"
 
+	"github.com/gabstv/ebiten/audio"
+	"github.com/gabstv/ebiten/audio/wav"
 	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen"
 	paudio "github.com/gabstv/primen/audio"
 	"github.com/gabstv/primen/core"
-	"github.com/hajimehoshi/ebiten/audio"
-	"github.com/hajimehoshi/ebiten/audio/wav"
 )
 
 func main() {

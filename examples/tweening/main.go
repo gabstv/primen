@@ -5,13 +5,13 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/gabstv/ebiten"
+	"github.com/gabstv/ebiten/ebitenutil"
 	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen"
 	"github.com/gabstv/primen/components"
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/easing"
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
 
 var pimg *ebiten.Image

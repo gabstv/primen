@@ -6,10 +6,10 @@ import (
 	"image/png"
 	"sort"
 
+	"github.com/gabstv/ebiten"
 	"github.com/gabstv/primen/components/graphics"
 	"github.com/gabstv/primen/io/pb"
 	proto "github.com/golang/protobuf/proto"
-	"github.com/hajimehoshi/ebiten"
 )
 
 type Atlas struct {

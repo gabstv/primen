@@ -4,10 +4,10 @@ import (
 	"context"
 	"sort"
 
+	"github.com/gabstv/ebiten"
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/geom"
 	"github.com/gabstv/primen/io"
-	"github.com/hajimehoshi/ebiten"
 )
 
 type Engine interface {

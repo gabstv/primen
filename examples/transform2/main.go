@@ -11,7 +11,7 @@ import (
 	"github.com/gabstv/primen/core/debug"
 	"github.com/gabstv/primen/examples/layers/res"
 	"github.com/gabstv/primen/io"
-	"github.com/hajimehoshi/ebiten"
+	"github.com/gabstv/ebiten"
 )
 
 func main() {

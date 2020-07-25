@@ -1,6 +1,6 @@
 package z
 
-import "github.com/hajimehoshi/ebiten"
+import "github.com/gabstv/ebiten"
 
 func Filter(a string, f ebiten.Filter) ebiten.Filter {
 	if a == "" {

@@ -3,7 +3,7 @@ package primen
 import (
 	"sync"
 
-	"github.com/hajimehoshi/ebiten"
+	"github.com/gabstv/ebiten"
 )
 
 type ScreenCopyRequest interface {

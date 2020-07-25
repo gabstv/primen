@@ -4,13 +4,13 @@ import (
 	"image"
 	"image/color"
 
+	"github.com/gabstv/ebiten"
+	"github.com/gabstv/ebiten/text"
 	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen/components"
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/core/debug"
 	"github.com/gabstv/primen/rx"
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/text"
 	"golang.org/x/image/font"
 )
 

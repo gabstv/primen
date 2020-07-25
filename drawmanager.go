@@ -3,8 +3,8 @@ package primen
 import (
 	"sort"
 
+	"github.com/gabstv/ebiten"
 	"github.com/gabstv/primen/core"
-	"github.com/hajimehoshi/ebiten"
 )
 
 type EngineDrawManager interface {

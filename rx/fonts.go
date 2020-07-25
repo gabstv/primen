@@ -4,8 +4,8 @@ import (
 	"io/ioutil"
 	"sync"
 
+	"github.com/gabstv/ebiten"
 	"github.com/golang/freetype/truetype"
-	"github.com/hajimehoshi/ebiten"
 	"golang.org/x/image/font"
 )
 

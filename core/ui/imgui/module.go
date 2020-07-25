@@ -3,10 +3,10 @@ package imgui
 import (
 	"sync"
 
+	"github.com/gabstv/ebiten"
 	"github.com/gabstv/ebiten-imgui/renderer"
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/dom"
-	"github.com/hajimehoshi/ebiten"
 )
 
 type UID int64

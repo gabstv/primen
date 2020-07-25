@@ -9,10 +9,10 @@ import (
 	_ "image/png"
 	"math"
 
+	"github.com/gabstv/ebiten"
+	"github.com/gabstv/ebiten/ebitenutil"
 	"github.com/gabstv/primen"
 	"github.com/gabstv/primen/components/graphics"
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
 
 func main() {

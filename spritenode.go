@@ -3,8 +3,8 @@ package primen
 import (
 	"image/color"
 
+	"github.com/gabstv/ebiten"
 	"github.com/gabstv/primen/components/graphics"
-	"github.com/hajimehoshi/ebiten"
 )
 
 var (

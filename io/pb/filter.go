@@ -1,7 +1,7 @@
 package pb
 
 import (
-	"github.com/hajimehoshi/ebiten"
+	"github.com/gabstv/ebiten"
 )
 
 func ToEbitenFilter(t ImageFilter) ebiten.Filter {

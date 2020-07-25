@@ -5,6 +5,8 @@ import (
 	_ "image/png"
 	"math/rand"
 
+	"github.com/gabstv/ebiten"
+	"github.com/gabstv/ebiten/inpututil"
 	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen"
 	"github.com/gabstv/primen/components"
@@ -12,8 +14,6 @@ import (
 	"github.com/gabstv/primen/examples/shared"
 	"github.com/gabstv/primen/io"
 	"github.com/gabstv/primen/io/broccolifs"
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/inpututil"
 )
 
 func main() {

@@ -4,12 +4,12 @@ import (
 	"math"
 	"math/rand"
 
+	"github.com/gabstv/ebiten"
 	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen"
 	"github.com/gabstv/primen/components"
 	"github.com/gabstv/primen/components/graphics"
 	"github.com/gabstv/primen/core"
-	"github.com/hajimehoshi/ebiten"
 )
 
 type OrbitalMovement struct {
@@ -26,7 +26,7 @@ type OrbitalMovement struct {
 
 //go:generate ecsgen -n OrbitalMovement -p layerexample -o orbitalmovement_component.go --component-tpl --vars "UUID=DAD60C25-6B0D-4D3D-BF8E-5EB424FD8F1B"
 
-//go:generate ecsgen -n OrbitalMovement -p layerexample -o orbitalmovement_system.go --system-tpl --vars "Priority=0" --vars "UUID=826684C9-E190-4BF2-93D7-2FA61A5BCEEC" --vars "Setup=s.setupVars()" --components "OrbitalMovement" --components "Sprite;*graphics.Sprite;graphics.GetSpriteComponent(v.world).Data(e)" --components "DrawLayer;*graphics.DrawLayer;graphics.GetDrawLayerComponent(v.world).Data(e)" --components "Transform;*components.Transform;components.GetTransformComponent(v.world).Data(e)" --go-import "\"github.com/gabstv/primen/components\"" --go-import "\"github.com/gabstv/primen/components/graphics\"" --go-import "\"github.com/hajimehoshi/ebiten\"" --members "paused bool" --members "globalScale float64" --members "radiusScale float64" --members "xframes chan struct{}" --members "wave1 float64" --members "waver float64" --members "fgs []*ebiten.Image" --members "bgs []*ebiten.Image"
+//go:generate ecsgen -n OrbitalMovement -p layerexample -o orbitalmovement_system.go --system-tpl --vars "Priority=0" --vars "UUID=826684C9-E190-4BF2-93D7-2FA61A5BCEEC" --vars "Setup=s.setupVars()" --components "OrbitalMovement" --components "Sprite;*graphics.Sprite;graphics.GetSpriteComponent(v.world).Data(e)" --components "DrawLayer;*graphics.DrawLayer;graphics.GetDrawLayerComponent(v.world).Data(e)" --components "Transform;*components.Transform;components.GetTransformComponent(v.world).Data(e)" --go-import "\"github.com/gabstv/primen/components\"" --go-import "\"github.com/gabstv/primen/components/graphics\"" --go-import "\"github.com/gabstv/ebiten\"" --members "paused bool" --members "globalScale float64" --members "radiusScale float64" --members "xframes chan struct{}" --members "wave1 float64" --members "waver float64" --members "fgs []*ebiten.Image" --members "bgs []*ebiten.Image"
 
 var matchOrbitalMovementSystem = func(eflag ecs.Flag, w ecs.BaseWorld) bool {
 	// must contain

@@ -1,7 +1,7 @@
 package core
 
 import (
-	"github.com/hajimehoshi/ebiten"
+	"github.com/gabstv/ebiten"
 )
 
 type DrawManager interface {

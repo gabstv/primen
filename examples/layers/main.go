@@ -8,6 +8,9 @@ import (
 	"math/rand"
 	"unsafe"
 
+	"github.com/gabstv/ebiten"
+	"github.com/gabstv/ebiten/ebitenutil"
+	"github.com/gabstv/ebiten/inpututil"
 	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen"
 	"github.com/gabstv/primen/components"
@@ -16,9 +19,6 @@ import (
 	"github.com/gabstv/primen/examples/layers/layerexample"
 	"github.com/gabstv/primen/examples/layers/res"
 	"github.com/gabstv/primen/io"
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/ebitenutil"
-	"github.com/hajimehoshi/ebiten/inpututil"
 	// "github.com/pkg/profile" // enable line 24
 )
 

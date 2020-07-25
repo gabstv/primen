@@ -4,13 +4,13 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/gabstv/ebiten"
+	"github.com/gabstv/ebiten/ebitenutil"
 	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen"
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/core/debug"
 	"github.com/gabstv/primen/io"
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/ebitenutil"
 	"github.com/urfave/cli"
 )
 

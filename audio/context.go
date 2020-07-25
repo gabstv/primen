@@ -3,7 +3,7 @@ package audio
 import (
 	"sync"
 
-	"github.com/hajimehoshi/ebiten/audio"
+	"github.com/gabstv/ebiten/audio"
 )
 
 // SampleRate is the rate (in Hz) at which all the audio will be played.

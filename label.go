@@ -63,7 +63,7 @@ func (n *LabelNode) ZIndex() int64 {
 // 	"image/color"
 
 // 	"github.com/gabstv/primen/core"
-// 	"github.com/hajimehoshi/ebiten"
+// 	"github.com/gabstv/ebiten"
 // 	"golang.org/x/image/font"
 // )
 

@@ -5,15 +5,15 @@ import (
 	"image/color"
 	"math"
 
+	"github.com/gabstv/ebiten"
+	"github.com/gabstv/ebiten/ebitenutil"
+	"github.com/gabstv/ebiten/inpututil"
 	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen"
 	"github.com/gabstv/primen/components"
 	"github.com/gabstv/primen/components/graphics"
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/core/debug"
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/ebitenutil"
-	"github.com/hajimehoshi/ebiten/inpututil"
 )
 
 var pimg *ebiten.Image

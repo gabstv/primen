@@ -5,7 +5,7 @@ package core_test
 
 // 	"github.com/gabstv/primen"
 // 	"github.com/gabstv/primen/core"
-// 	"github.com/hajimehoshi/ebiten"
+// 	"github.com/gabstv/ebiten"
 // 	"github.com/stretchr/testify/assert"
 // )
 

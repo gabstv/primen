@@ -11,13 +11,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gabstv/ebiten"
+	"github.com/gabstv/ebiten/ebitenutil"
 	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/geom"
 	"github.com/gabstv/primen/io"
 	osfs "github.com/gabstv/primen/io/os"
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
 
 type StepInfo struct {

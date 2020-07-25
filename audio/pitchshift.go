@@ -4,7 +4,7 @@ import (
 	"io"
 	"math"
 
-	"github.com/hajimehoshi/ebiten/audio"
+	"github.com/gabstv/ebiten/audio"
 )
 
 // http://blogs.zynaptiq.com/bernsee/pitch-shifting-using-the-ft/

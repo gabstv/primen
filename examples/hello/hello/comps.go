@@ -3,7 +3,7 @@ package hello
 import (
 	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen/core"
-	"github.com/hajimehoshi/ebiten/ebitenutil"
+	"github.com/gabstv/ebiten/ebitenutil"
 )
 
 const SPEED float64 = 120

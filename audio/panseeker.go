@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"math"
 
-	"github.com/hajimehoshi/ebiten/audio"
+	"github.com/gabstv/ebiten/audio"
 )
 
 const sqrt2div2 = math.Sqrt2 / 2 // math.sqrt(2)/2.0
