@@ -226,14 +226,15 @@ func (s *SinglePlayerScene) setupScene() {
 //
 
 type DoublePlayerScene struct {
-	engine  primen.Engine
-	ui      imgui.UID
-	bgimage *ebiten.Image
-	fgimage *ebiten.Image
-	arimage *ebiten.Image
-	w       primen.World
-	s00     core.DrawTargetID
-	s01     core.DrawTargetID
+	engine   primen.Engine
+	ui       imgui.UID
+	bgimage  *ebiten.Image
+	fgimage  *ebiten.Image
+	arimage  *ebiten.Image
+	particle *ebiten.Image
+	w        primen.World
+	s00      core.DrawTargetID
+	s01      core.DrawTargetID
 }
 
 var _ primen.Scene = (*DoublePlayerScene)(nil)
@@ -266,6 +267,7 @@ func (s *DoublePlayerScene) setup() chan struct{} {
 			"public/cambg.png",
 			"public/target.png",
 			"public/arrow.png",
+			"public/particle3.png",
 		})
 		<-done
 		var wg sync.WaitGroup
@@ -284,6 +286,8 @@ func (s *DoublePlayerScene) setup() chan struct{} {
 			s.fgimage, _ = ebiten.NewImageFromImage(im1, ebiten.FilterNearest)
 			im2, _ := c.GetImage("public/arrow.png")
 			s.arimage, _ = ebiten.NewImageFromImage(im2, ebiten.FilterNearest)
+			im3, _ := c.GetImage("public/particle3.png")
+			s.particle, _ = ebiten.NewImageFromImage(im3, ebiten.FilterNearest)
 			s.setupScene()
 		})
 		wg.Wait()
@@ -312,6 +316,8 @@ func (s *DoublePlayerScene) setupScene() {
 	var player1 *primen.SpriteNode
 	var player2 *primen.SpriteNode
 	var ar1, ar2 *primen.SpriteNode
+	var psys1 *primen.ParticleEmitterNode
+	var psys2 *primen.ParticleEmitterNode
 	// player 1
 	{
 		player1 = primen.NewChildSpriteNode(wtrn, primen.Layer1)
@@ -320,6 +326,7 @@ func (s *DoublePlayerScene) setupScene() {
 		ar1 = primen.NewChildSpriteNode(player1, primen.Layer2)
 		ar1.Transform().SetScale(3, 3)
 		ar1.Sprite().SetImage(arimage).SetOrigin(.5, .5)
+		psys1 = particleSys(wtrn, s.particle)
 	}
 	// player 2
 	{
@@ -329,6 +336,7 @@ func (s *DoublePlayerScene) setupScene() {
 		ar2 = primen.NewChildSpriteNode(player2, primen.Layer2)
 		ar2.Transform().SetScale(3, 3)
 		ar2.Sprite().SetImage(arimage).SetOrigin(.5, .5)
+		psys2 = particleSys(wtrn, s.particle)
 	}
 	// camera 1
 	{
@@ -419,7 +427,40 @@ func (s *DoublePlayerScene) setupScene() {
 		if dtr2.Y() > 2038 {
 			dtr2.SetY(2038)
 		}
+		psys1.Transform().SetPos(dtr.Pos())
+		psys2.Transform().SetPos(dtr2.Pos())
 	}
+}
+
+func particleSys(parent primen.ObjectContainer, img *ebiten.Image) *primen.ParticleEmitterNode {
+	p := primen.NewChildParticleEmitterNode(parent, primen.Layer0)
+	pe := p.ParticleEmitter()
+	pe.SetCompositeMode(ebiten.CompositeModeLighter)
+	props := pe.Props()
+	props.DurationVar1 = .5
+	props.Source = []*ebiten.Image{img}
+	props.EndColor = primen.ColorFromHex("#ff000000")
+	props.InitScale = 0.2
+	props.InitScaleVar0 = 0.1
+	props.InitScaleVar1 = 2
+	props.InitColor = primen.ColorFromHex("#ffffff33")
+	props.RotationAccelVar0 = -0.1
+	props.RotationAccelVar1 = 0.1
+	props.XVelocity = 0
+	props.YVelocity = 0
+	props.XVelocityVar0 = -10
+	props.XVelocityVar1 = 10
+	props.YVelocityVar0 = -10
+	props.YVelocityVar1 = 10
+	pe.SetProps(props)
+	eprop := pe.EmissionProp()
+	eprop.N0 = 3
+	eprop.N1 = 6
+	eprop.T0 = 1 / 60
+	eprop.T1 = 2 / 60
+	pe.SetEmissionProp(eprop)
+	pe.SetMaxParticles(512)
+	return p
 }
 
 //
