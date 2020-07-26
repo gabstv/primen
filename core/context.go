@@ -38,6 +38,7 @@ type Engine interface {
 	RemoveEventListener(id EventID) bool
 	DispatchEvent(eventName string, data interface{})
 	SetDebugTPS(v bool)
+	SetDebugFPS(v bool)
 	SetScreenScale(scale float64)
 }
 
