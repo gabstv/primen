@@ -404,19 +404,19 @@ func particleSys(parent primen.ObjectContainer, img *ebiten.Image) *primen.Parti
 	props.InitScale = 0.2
 	props.InitScaleVar0 = 0.1
 	props.InitScaleVar1 = 2
-	props.InitColor = primen.ColorFromHex("#ffffff33")
-	props.RotationAccelVar0 = -0.1
-	props.RotationAccelVar1 = 0.1
+	props.InitColor = primen.ColorFromHex("#ffaf1388")
+	props.RotationAccelVar0 = -0.3
+	props.RotationAccelVar1 = 0.3
 	props.XVelocity = 0
 	props.YVelocity = 0
-	props.XVelocityVar0 = -10
-	props.XVelocityVar1 = 10
-	props.YVelocityVar0 = -10
-	props.YVelocityVar1 = 10
+	props.XVelocityVar0 = -30
+	props.XVelocityVar1 = 30
+	props.YVelocityVar0 = -30
+	props.YVelocityVar1 = 30
 	pe.SetProps(props)
 	eprop := pe.EmissionProp()
-	eprop.N0 = 2
-	eprop.N1 = 6
+	eprop.N0 = 1
+	eprop.N1 = 1
 	eprop.T0 = 1 / 60
 	eprop.T1 = 2 / 60
 	pe.SetEmissionProp(eprop)

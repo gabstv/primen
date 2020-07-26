@@ -56,12 +56,14 @@ github.com/hajimehoshi/ebiten v1.12.0-alpha.7.0.20200726032503-637afe6d67c4 h1:o
 github.com/hajimehoshi/ebiten v1.12.0-alpha.7.0.20200726032503-637afe6d67c4/go.mod h1:0KjDhc/AEq+RSBl3QmwKQ0xlWYjr0LberJSQ0u1/DBU=
 github.com/hajimehoshi/go-mp3 v0.2.1 h1:DH4ns3cPv39n3cs8MPcAlWqPeAwLCK8iNgqvg0QBWI8=
 github.com/hajimehoshi/go-mp3 v0.2.1/go.mod h1:Rr+2P46iH6PwTPVgSsEwBkon0CK5DxCAeX/Rp65DCTE=
+github.com/hajimehoshi/go-mp3 v0.3.0 h1:fTM5DXjp/DL2G74HHAs/aBGiS9Tg7wnp+jkU38bHy4g=
 github.com/hajimehoshi/go-mp3 v0.3.0/go.mod h1:qMJj/CSDxx6CGHiZeCgbiq2DSUkbK0UbtXShQcnfyMM=
 github.com/hajimehoshi/go2dotnet v0.0.0-20200424065834-214e39ae7ba9/go.mod h1:+8Cy6laz1rGBpWrlF6xpunxYgj/Oy/XPSgl/JFJ0lHo=
 github.com/hajimehoshi/oto v0.3.4/go.mod h1:PgjqsBJff0efqL2nlMJidJgVJywLn6M4y8PI4TfeWfA=
 github.com/hajimehoshi/oto v0.5.4 h1:Dn+WcYeF310xqStKm0tnvoruYUV5Sce8+sfUaIvWGkE=
 github.com/hajimehoshi/oto v0.5.4/go.mod h1:0QXGEkbuJRohbJaxr7ZQSxnju7hEhseiPx2hrh6raOI=
 github.com/hajimehoshi/oto v0.6.1/go.mod h1:0QXGEkbuJRohbJaxr7ZQSxnju7hEhseiPx2hrh6raOI=
+github.com/hajimehoshi/oto v0.6.2-0.20200724171257-f1053dcd9165 h1:MU2PJgWZ85n4JOsuw8AbxqyLQ+qMRvz82uj2FX2/Rck=
 github.com/hajimehoshi/oto v0.6.2-0.20200724171257-f1053dcd9165/go.mod h1:0QXGEkbuJRohbJaxr7ZQSxnju7hEhseiPx2hrh6raOI=
 github.com/inkyblackness/imgui-go/v2 v2.4.1 h1:yD6m1xqTNl/HF0M4ceN1HNhUKRrk+SU7nbGs2KNOXUA=
 github.com/inkyblackness/imgui-go/v2 v2.4.1/go.mod h1:cwQKd6U2onyuT5qwSC3DKCRsUE1SQ58TSVVpLoW/pDs=
