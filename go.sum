@@ -7,8 +7,6 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/andybalholm/brotli v1.0.0 h1:7UCwP93aiSfvWpapti8g88vVVGp2qqtGyePsSuDafo4=
 github.com/andybalholm/brotli v1.0.0/go.mod h1:loMXtMfwqflxFJPmdbJO0a3KNoPuLBgiu3qAvBg8x/Y=
-github.com/aymerick/douceur v0.2.0 h1:Mv+mAeH1Q+n9Fr+oyamOlAkUNPWPlA8PPGR0QAaYuPk=
-github.com/aymerick/douceur v0.2.0/go.mod h1:wlT5vV2O3h55X9m7iVYN0TBM0NH/MmbLnd30/FjWUq4=
 github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d h1:U+s90UTSYgptZMwQh2aRr3LuazLJIa+Pg3Kc1ylSYVY=
 github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d/go.mod h1:maD7wRr/U5Z6m/iR4s+kqSMx2CaBsrgA7czyZG/E6dU=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
@@ -22,10 +20,6 @@ github.com/dop251/goja v0.0.0-20200629185240-bfd59704b500/go.mod h1:Mw6PkjjMXWbT
 github.com/edsrzf/mmap-go v1.0.0/go.mod h1:YO35OhQPt3KJa3ryjFM5Bs14WD66h8eGKpfaBNrHW5M=
 github.com/fogleman/gg v1.3.0 h1:/7zJX8F6AaYQc57WQCyN9cAIz+4bCJGO9B+dyW29am8=
 github.com/fogleman/gg v1.3.0/go.mod h1:R/bRT+9gY/C5z7JzPU0zXsXHKM4/ayA+zqcVNZzPa1k=
-github.com/gabstv/ebiten v1.12.0-alpha.6.0.20200725023434-2a88b5f1a727 h1:my0K6cI/LI6tYC7wTHYg5493BDYQqLOEudcpDDUCQgA=
-github.com/gabstv/ebiten v1.12.0-alpha.6.0.20200725023434-2a88b5f1a727/go.mod h1:1xOc7jgYwyMjGNYiSJNmD744IpwMsmaXkrEYIw+oMoE=
-github.com/gabstv/ebiten-imgui v0.0.3 h1:LySzTGKLzRp3iydDgn8gXfVHJ3e9jeMNTCV7fedmtz4=
-github.com/gabstv/ebiten-imgui v0.0.3/go.mod h1:2S8Tim0VzXWTcRiWemjlD28pTnJw0VOak8PjdzTzsuk=
 github.com/gabstv/ebiten-imgui v0.0.5 h1:qn411ZRMrKuuJn4OxD2w1ge6fyxcrZfQ4wcreHgUnQg=
 github.com/gabstv/ebiten-imgui v0.0.5/go.mod h1:2S8Tim0VzXWTcRiWemjlD28pTnJw0VOak8PjdzTzsuk=
 github.com/gabstv/ebiten-imgui v0.0.7-0.20200725153901-91cefd46d079 h1:EuRdOCkMO8CURUEImYeQoU6mC8eayYxd90x0cUQ7ElM=
@@ -39,7 +33,6 @@ github.com/go-gl/glfw/v3.3/glfw v0.0.0-20200222043503-6f7a984d4dc4/go.mod h1:tQ2
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20200707082815-5321531c36a2 h1:Ac1OEHHkbAZ6EUnJahF0GKcU0FjPc/V8F1DvjhKngFE=
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20200707082815-5321531c36a2/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=
 github.com/go-interpreter/wagon v0.6.1-0.20200226200811-4ca95707c808/go.mod h1:lQUozviuTS6v7A2HXs6L0Wc72Apl9+mKsGLsJOHYiME=
-github.com/go-sourcemap/sourcemap v1.0.5 h1:oaGf6nqLxwhWPrW5jjNWUYM1SWqHIsJSFcPZojn23Mc=
 github.com/go-sourcemap/sourcemap v2.1.3+incompatible h1:W1iEw64niKVGogNgBN3ePyLFfuisuzeidWPMPWmECqU=
 github.com/go-sourcemap/sourcemap v2.1.3+incompatible/go.mod h1:F8jJfvm2KbVjc5NqelyYJmf/v5J0dwNLS2mL4sNA1Jg=
 github.com/gofrs/flock v0.7.1 h1:DP+LD/t0njgoPBvT5MJLeliUIVQR03hiKR6vezdwHlc=
@@ -57,12 +50,12 @@ github.com/google/go-cmp v0.3.0/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMyw
 github.com/google/go-cmp v0.3.1/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMywk6iLU=
 github.com/google/go-cmp v0.4.0 h1:xsAVV57WRhGj6kEIi8ReJzQlHHqcBYCElAvkovg3B/4=
 github.com/google/go-cmp v0.4.0/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
-github.com/gorilla/css v1.0.0 h1:BQqNyPTi50JCFMTw/b67hByjMVXZRwGha6wxVGkeihY=
-github.com/gorilla/css v1.0.0/go.mod h1:Dn721qIggHpt4+EFCcTLTU/vk5ySda2ReITrtgBl60c=
 github.com/hajimehoshi/bitmapfont v1.2.0 h1:hw6OjRGdgmHUe56BPju/KU/QD/KLOiTQ+6t+TJpfSfU=
 github.com/hajimehoshi/bitmapfont v1.2.0/go.mod h1:h9QrPk6Ktb2neObTlAbma6Ini1xgMjbJ3w7ysmD7IOU=
 github.com/hajimehoshi/ebiten v1.12.0-alpha.1.0.20200514190429-f7f507e912dc h1:Y5Ctt2/jfUqFBY0gJ/LkzkdiIOUYtNqKfWxn2BMwAis=
 github.com/hajimehoshi/ebiten v1.12.0-alpha.1.0.20200514190429-f7f507e912dc/go.mod h1:Zy9GBgQYkaRgxdM0i1i3F2t/+Hz2kwQbfs1zHz3yK04=
+github.com/hajimehoshi/ebiten v1.12.0-alpha.7.0.20200726032503-637afe6d67c4 h1:o1bpPwk0mtqPi/enVqlB9M4MIHp8k2kg6cuw+8hAamw=
+github.com/hajimehoshi/ebiten v1.12.0-alpha.7.0.20200726032503-637afe6d67c4/go.mod h1:0KjDhc/AEq+RSBl3QmwKQ0xlWYjr0LberJSQ0u1/DBU=
 github.com/hajimehoshi/go-mp3 v0.2.1 h1:DH4ns3cPv39n3cs8MPcAlWqPeAwLCK8iNgqvg0QBWI8=
 github.com/hajimehoshi/go-mp3 v0.2.1/go.mod h1:Rr+2P46iH6PwTPVgSsEwBkon0CK5DxCAeX/Rp65DCTE=
 github.com/hajimehoshi/go-mp3 v0.3.0 h1:fTM5DXjp/DL2G74HHAs/aBGiS9Tg7wnp+jkU38bHy4g=

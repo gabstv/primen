@@ -70,6 +70,7 @@ type engine struct {
 	ebiScale     float64
 	eventManager *core.EventManager
 	debugfps     bool
+	debugtps     bool
 	sceneldrs    map[string]NewSceneFn
 	runfns       chan func()
 	runctx       context.Context
@@ -224,6 +225,10 @@ func NewEngine(v *NewEngineInput) Engine {
 }
 
 func (e *engine) SetDebugTPS(v bool) {
+	e.debugtps = v
+}
+
+func (e *engine) SetDebugFPS(v bool) {
 	e.debugfps = v
 }
 
@@ -527,6 +532,9 @@ func (e *engine) Draw(screen *ebiten.Image) {
 
 	if e.debugfps {
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("FPS: %.2f", ebiten.CurrentFPS()), 10, 10)
+	}
+	if e.debugtps {
+		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("TPS: %.2f", ebiten.CurrentTPS()), 10, 22)
 	}
 
 	select {
