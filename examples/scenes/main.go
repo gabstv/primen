@@ -73,8 +73,8 @@ func (s *SceneA) load() chan struct{} {
 		ttl := primen.NewChildLabelNode(root, primen.Layer0)
 		ttl.Label().SetText("Scene: "+s.Name()).SetOrigin(.5, .5)
 		ttl.Transform().SetY(-30).SetScale(sf*.1, sf*.1)
+		s.w.SetEnabled(true)
 	}()
-	s.w.SetEnabled(true)
 	return ch
 }
 

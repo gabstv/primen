@@ -2,18 +2,18 @@ package primen
 
 import (
 	"github.com/gabstv/ecs/v2"
-	"github.com/gabstv/primen/core"
+	"github.com/gabstv/primen/components"
 )
 
 type TransformGetter interface {
 	Entity() ecs.Entity
-	Transform() *core.Transform
+	Transform() *components.Transform
 }
 
 type Node struct {
 	*mObjectContainer
-	wtr    core.WatchTransform
-	wtrtwn core.WatchTrTweening
+	wtr    components.WatchTransform
+	wtrtwn components.WatchTrTweening
 }
 
 func NewRootNode(w World) *Node {
@@ -25,8 +25,8 @@ func NewRootNode(w World) *Node {
 			},
 		},
 	}
-	core.SetTransformComponentData(w, tr.Entity(), core.NewTransform(0, 0))
-	tr.wtr = core.WatchTransformComponentData(w, tr.Entity())
+	components.SetTransformComponentData(w, tr.Entity(), components.NewTransform(0, 0))
+	tr.wtr = components.WatchTransformComponentData(w, tr.Entity())
 	return tr
 }
 
@@ -42,20 +42,20 @@ func NewChildNode(parent ObjectContainer) *Node {
 			},
 		},
 	}
-	core.SetTransformComponentData(tr.World(), tr.Entity(), core.NewTransform(0, 0))
-	tr.wtr = core.WatchTransformComponentData(tr.World(), tr.Entity())
+	components.SetTransformComponentData(tr.World(), tr.Entity(), components.NewTransform(0, 0))
+	tr.wtr = components.WatchTransformComponentData(tr.World(), tr.Entity())
 	tr.SetParent(parent)
 	return tr
 }
 
-func (t *Node) Transform() *core.Transform {
+func (t *Node) Transform() *components.Transform {
 	return t.wtr.Data()
 }
 
-func (t *Node) TrTweening() *core.TrTweening {
+func (t *Node) TrTweening() *components.TrTweening {
 	if t.wtrtwn == nil {
-		core.SetTrTweeningComponentData(t.w, t.e, core.NewTrTweening())
-		t.wtrtwn = core.WatchTrTweeningComponentData(t.w, t.e)
+		components.SetTrTweeningComponentData(t.w, t.e, components.NewTrTweening())
+		t.wtrtwn = components.WatchTrTweeningComponentData(t.w, t.e)
 	}
 	return t.wtrtwn.Data()
 }

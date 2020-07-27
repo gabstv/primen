@@ -1,0 +1,4 @@
+<window id="Single Camera">
+    Movement: Arrow Keys
+        <!-- <button onclick="$scenes.load('main_menu')">back</button> -->
+</window>

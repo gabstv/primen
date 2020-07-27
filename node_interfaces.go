@@ -1,11 +1,13 @@
 package primen
 
-import "github.com/gabstv/primen/core"
+import (
+	"github.com/gabstv/primen/components"
+)
 
 type NodeWithTransform interface {
-	Transform() *core.Transform
+	Transform() *components.Transform
 }
 
 type NodeWithAudioPlayer interface {
-	AudioPlayer() *core.AudioPlayer
+	AudioPlayer() *components.AudioPlayer
 }

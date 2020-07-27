@@ -13,6 +13,7 @@ import (
 
 	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen/core"
+	"github.com/gabstv/primen/geom"
 	"github.com/gabstv/primen/io"
 	osfs "github.com/gabstv/primen/io/os"
 	"github.com/hajimehoshi/ebiten"
@@ -69,12 +70,16 @@ type engine struct {
 	ebiScale     float64
 	eventManager *core.EventManager
 	debugfps     bool
+	debugtps     bool
 	sceneldrs    map[string]NewSceneFn
 	runfns       chan func()
 	runctx       context.Context
 	exits        bool
 
-	lastScn Scene
+	lastScn          Scene
+	drawTargetLock   sync.Mutex
+	drawTargets      []EngineDrawTarget
+	lastDrawTargetID core.DrawTargetID
 }
 
 // NewEngineInput is the input data of NewEngine
@@ -196,6 +201,7 @@ func NewEngine(v *NewEngineInput) Engine {
 		eventManager: &core.EventManager{},
 		runfns:       make(chan func(), 128),
 		runctx:       context.Background(), // redefined on Run()
+		drawTargets:  make([]EngineDrawTarget, 0, 8),
 	}
 
 	e.loadScenes() // load all registered scenes constructor
@@ -219,6 +225,10 @@ func NewEngine(v *NewEngineInput) Engine {
 }
 
 func (e *engine) SetDebugTPS(v bool) {
+	e.debugtps = v
+}
+
+func (e *engine) SetDebugFPS(v bool) {
 	e.debugfps = v
 }
 
@@ -363,6 +373,12 @@ func (e *engine) Height() int {
 	return e.ebiLogicalH
 }
 
+func (e *engine) SizeVec() geom.Vec {
+	wi := e.Width()
+	hi := e.Height()
+	return geom.Vec{float64(wi), float64(hi)}
+}
+
 // EBITEN Game interface
 
 // Layout for ebiten.Game inteface
@@ -466,7 +482,10 @@ func (e *engine) Draw(screen *ebiten.Image) {
 	frame := lastf + 1
 	e.drawInfo.Set(now, frame)
 
-	ctx := core.NewDrawCtx(e, frame, delta, ebiten.CurrentTPS(), screen)
+	mgr := e.newDrawManager(screen)
+	ctx := core.NewDrawCtx(e, frame, delta, ebiten.CurrentTPS(), mgr)
+
+	mgr.PrepareTargets()
 
 	for _, modulec := range modules {
 		modulec.module.BeforeDraw(ctx)
@@ -485,6 +504,8 @@ func (e *engine) Draw(screen *ebiten.Image) {
 			return true
 		})
 	}
+
+	mgr.DrawTargets()
 
 	for _, modulec := range modules {
 		modulec.module.AfterDraw(ctx)
@@ -510,7 +531,10 @@ func (e *engine) Draw(screen *ebiten.Image) {
 	}
 
 	if e.debugfps {
-		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("TPS: %.2f", ebiten.CurrentTPS()), 10, 10)
+		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("FPS: %.2f", ebiten.CurrentFPS()), 10, 10)
+	}
+	if e.debugtps {
+		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("TPS: %.2f", ebiten.CurrentTPS()), 10, 22)
 	}
 
 	select {

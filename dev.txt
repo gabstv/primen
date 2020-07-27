@@ -1,1 +1,0 @@
-go run cmd/sprite-utils/sprcenter/main.go --input tmp/cliffGrey_block_NE.png --scale 3

@@ -27,8 +27,9 @@ jobs:
         uses: actions/checkout@v2
       - name: Generate assets
         run: |
-          go get aletheia.icu/broccoli
-          cd examples/shared && go generate ./...
+          go get aletheia.icu/broccoli@v1.0.3
+          cd examples/shared && go generate ./... && cd -
+          cd examples/camera && go generate ./... && cd -
       - name: Test
         env:
           DISPLAY: ":99.0"
