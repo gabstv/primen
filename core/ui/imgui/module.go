@@ -70,7 +70,7 @@ func Setup(engine core.Engine) {
 	mainRenderer.Update(1.0/60, float32(engine.Width()), float32(engine.Height()))
 }
 
-func AddUI(doc dom.ElementNode) UID {
+func AddUI(doc []dom.Node) UID {
 	lock.Lock()
 	defer lock.Unlock()
 	if mainRenderer == nil {

@@ -11,10 +11,11 @@ func TestParser(t *testing.T) {
     <!-- test comment -->
     <button id="bt1" x="10" y="10" w="50" h="20" on-click="exit">Hello</button>
 </window>`
-	root, err := ParseXMLText(txml)
+	root, err := ParseXMLString(txml)
 	assert.NoError(t, err)
-	assert.Equal(t, NodeElement, root.Type())
-	roote := root.(ElementNode)
+	assert.Equal(t, 1, len(root))
+	assert.Equal(t, NodeElement, root[0].Type())
+	roote := root[0].(ElementNode)
 	assert.Equal(t, "window", roote.TagName())
 	assert.Equal(t, "2.0", roote.Attributes()["scale"])
 }

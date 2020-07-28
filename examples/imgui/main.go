@@ -16,11 +16,11 @@ func main() {
 		Height:    600,
 		Resizable: true,
 		OnReady: func(e primen.Engine) {
-			node, err := dom.ParseXMLText(string(fb))
+			nodes, err := dom.ParseXMLString(string(fb))
 			if err != nil {
 				panic(err)
 			}
-			imgui.AddUI(node.(dom.ElementNode))
+			imgui.AddUI(nodes)
 			e.AddEventListener("test", func(eventName string, e core.Event) {
 				println(e.Data.(string))
 			})

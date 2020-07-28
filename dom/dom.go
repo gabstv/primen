@@ -39,6 +39,7 @@ func (a Attributes) IntD(name string, defaultv int) int {
 	return v
 }
 
+// String returns an attribute value
 func (a Attributes) String(name string) string {
 	return a[name]
 }
@@ -80,6 +81,7 @@ type TextNode interface {
 	Text() string
 }
 
+// ElementNode is a structured node that may contain attributes and children
 type ElementNode interface {
 	Node
 	TagName() string
@@ -186,12 +188,14 @@ func (n *elementNode) FindChildByID(id string) Node {
 	return nil
 }
 
+// Text creates a text node
 func Text(str string) TextNode {
 	return &textNode{
 		data: str,
 	}
 }
 
+// Element creates an element node
 func Element(tagname string, attributes map[string]string, children ...Node) ElementNode {
 	n := &elementNode{
 		tagname:    tagname,

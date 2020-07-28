@@ -4,7 +4,6 @@ import (
 	"github.com/gabstv/primen"
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/core/ui/imgui"
-	"github.com/gabstv/primen/dom"
 	"github.com/gabstv/primen/io"
 	osfs "github.com/gabstv/primen/io/os"
 	"github.com/hajimehoshi/ebiten"
@@ -39,12 +38,12 @@ func (s *DefaultScene) init() chan struct{} {
 		defer close(ch)
 		_, donech := s.container.LoadAll([]string{"default.xml"})
 		<-donech
-		dom0, err := s.container.GetXMLDOM("default.xml")
+		doms, err := s.container.GetXMLDOM("default.xml")
 		if err != nil {
 			panic(err)
 		}
 		s.engine.RunFn(func() {
-			s.uiID = imgui.AddUI(dom0.(dom.ElementNode))
+			s.uiID = imgui.AddUI(doms)
 		})
 	}()
 	return nil
@@ -100,12 +99,12 @@ func (s *GameScene) init() chan struct{} {
 		defer close(ch)
 		_, donech := s.container.LoadAll([]string{"game.xml"})
 		<-donech
-		dom0, err := s.container.GetXMLDOM("game.xml")
+		doms, err := s.container.GetXMLDOM("game.xml")
 		if err != nil {
 			panic(err)
 		}
 		s.engine.RunFn(func() {
-			s.uiID = imgui.AddUI(dom0.(dom.ElementNode))
+			s.uiID = imgui.AddUI(doms)
 		})
 	}()
 	return nil

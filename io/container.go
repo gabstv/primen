@@ -26,7 +26,7 @@ type Container interface {
 	GetAtlas(name string) (*Atlas, error)
 	GetAudioStream(name string) (*AudioStream, error)
 	GetAudioBytes(name string) ([]byte, error)
-	GetXMLDOM(name string) (dom.Node, error)
+	GetXMLDOM(name string) ([]dom.Node, error)
 }
 
 type container struct {
@@ -231,12 +231,12 @@ func (c *container) GetAudioBytes(name string) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (c *container) GetXMLDOM(name string) (dom.Node, error) {
+func (c *container) GetXMLDOM(name string) ([]dom.Node, error) {
 	b, err := c.Get(name)
 	if err != nil {
 		return nil, err
 	}
-	return dom.ParseXMLText(string(b))
+	return dom.ParseXMLString(string(b))
 }
 
 func NewContainer(ctx context.Context, fs Filesystem) Container {

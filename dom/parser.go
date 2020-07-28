@@ -7,22 +7,20 @@ import (
 	"strings"
 )
 
-func ParseXMLText(xmlstr string) (Node, error) {
+// ParseXMLString parses a XLM string.
+func ParseXMLString(xmlstr string) ([]Node, error) {
 	rdr := strings.NewReader(xmlstr)
 	return parsexml(rdr)
 }
 
-func parsexml(rdr io.Reader) (Node, error) {
+func parsexml(rdr io.Reader) ([]Node, error) {
 	d := xml.NewDecoder(rdr)
 	vroot := Element("_root", nil)
 	err := parsenode(d, vroot)
 	if err != nil {
 		return nil, err
 	}
-	if len(vroot.Children()) == 1 {
-		return vroot.Children()[0], nil
-	}
-	return vroot, nil
+	return vroot.Children(), nil
 }
 
 //TODO: maybe consider namespaces (?)

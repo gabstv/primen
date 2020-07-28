@@ -21,11 +21,11 @@ type UI struct {
 	jsvm     *goja.Runtime
 }
 
-func newUI(id UID, doc dom.ElementNode) *UI {
+func newUI(id UID, doc []dom.Node) *UI {
 	//goja.New()
 	ui := &UI{
 		id:       id,
-		document: doc,
+		document: dom.Element("_root", nil, doc...),
 		data:     newUIMemory(),
 		jsvm:     goja.New(),
 	}
