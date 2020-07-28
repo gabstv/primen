@@ -11,10 +11,9 @@ import (
 	"github.com/gabstv/primen"
 	"github.com/gabstv/primen/components"
 	"github.com/gabstv/primen/core"
-	"github.com/gabstv/primen/core/ui/imgui"
-	"github.com/gabstv/primen/dom"
 	"github.com/gabstv/primen/examples/camera/res"
 	"github.com/gabstv/primen/geom"
+	"github.com/gabstv/primen/modules/imgui"
 	"github.com/hajimehoshi/ebiten"
 	//"github.com/pkg/profile"
 )
@@ -66,8 +65,8 @@ func (s *MainMenuScene) setup() chan struct{} {
 		<-done
 		// run on main thread
 		s.engine.RunFn(func() {
-			node, _ := c.GetXMLDOM("public/mainmenu.xml")
-			s.ui = imgui.AddUI(node.(dom.ElementNode))
+			nodes, _ := c.GetXMLDOM("public/mainmenu.xml")
+			s.ui = imgui.AddUI(nodes)
 		})
 	}()
 	return ch
@@ -119,8 +118,8 @@ func (s *SinglePlayerScene) setup() chan struct{} {
 		// run on main thread
 		s.engine.RunFn(func() {
 			defer wg.Done()
-			node, _ := c.GetXMLDOM("public/single.xml")
-			s.ui = imgui.AddUI(node.(dom.ElementNode))
+			nodes, _ := c.GetXMLDOM("public/single.xml")
+			s.ui = imgui.AddUI(nodes)
 		})
 		s.engine.RunFn(func() {
 			defer wg.Done()
@@ -239,8 +238,8 @@ func (s *DoublePlayerScene) setup() chan struct{} {
 		// run on main thread
 		s.engine.RunFn(func() {
 			defer wg.Done()
-			node, _ := c.GetXMLDOM("public/double.xml")
-			s.ui = imgui.AddUI(node.(dom.ElementNode))
+			nodes, _ := c.GetXMLDOM("public/double.xml")
+			s.ui = imgui.AddUI(nodes)
 		})
 		s.engine.RunFn(func() {
 			defer wg.Done()
@@ -398,31 +397,32 @@ func (s *DoublePlayerScene) setupScene() {
 func particleSys(parent primen.ObjectContainer, img *ebiten.Image) *primen.ParticleEmitterNode {
 	p := primen.NewChildParticleEmitterNode(parent, primen.Layer0)
 	pe := p.ParticleEmitter()
-	pe.SetCompositeMode(ebiten.CompositeModeLighter)
+	// pe.SetCompositeMode(ebiten.CompositeModeXor)
 	props := pe.Props()
+	props.DurationVar0 = -.3
 	props.DurationVar1 = .3
 	props.Source = []*ebiten.Image{img}
 	props.EndColor = primen.ColorFromHex("#ff000000")
 	props.InitScale = 0.2
 	props.InitScaleVar0 = 0.1
-	props.InitScaleVar1 = 2
+	props.InitScaleVar1 = 2.5
 	props.InitColor = primen.ColorFromHex("#ffaf1388")
 	props.RotationAccelVar0 = -0.3
 	props.RotationAccelVar1 = 0.3
 	props.XVelocity = 0
 	props.YVelocity = 0
-	props.XVelocityVar0 = -30
-	props.XVelocityVar1 = 30
-	props.YVelocityVar0 = -30
-	props.YVelocityVar1 = 30
+	props.XVelocityVar0 = -60
+	props.XVelocityVar1 = 60
+	props.YVelocityVar0 = -60
+	props.YVelocityVar1 = 60
 	pe.SetProps(props)
 	eprop := pe.EmissionProp()
 	eprop.N0 = 1
 	eprop.N1 = 1
 	eprop.T0 = 1 / 60
-	eprop.T1 = 2 / 60
+	eprop.T1 = 10 / 60
 	pe.SetEmissionProp(eprop)
-	pe.SetMaxParticles(512)
+	pe.SetMaxParticles(64)
 	return p
 }
 

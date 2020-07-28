@@ -3,9 +3,9 @@ package main
 import (
 	"github.com/gabstv/primen"
 	"github.com/gabstv/primen/core"
-	"github.com/gabstv/primen/core/ui/imgui"
 	"github.com/gabstv/primen/io"
 	osfs "github.com/gabstv/primen/io/os"
+	"github.com/gabstv/primen/modules/imgui"
 	"github.com/hajimehoshi/ebiten"
 )
 

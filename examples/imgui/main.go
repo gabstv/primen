@@ -5,8 +5,8 @@ import (
 
 	"github.com/gabstv/primen"
 	"github.com/gabstv/primen/core"
-	"github.com/gabstv/primen/core/ui/imgui"
 	"github.com/gabstv/primen/dom"
+	"github.com/gabstv/primen/modules/imgui"
 )
 
 func main() {

@@ -5,6 +5,7 @@ require (
 	github.com/dlclark/regexp2 v1.2.0 // indirect
 	github.com/dop251/goja v0.0.0-20200629185240-bfd59704b500
 	github.com/fogleman/gg v1.3.0
+	github.com/gabstv/ebiten-imgui v0.0.6
 	github.com/gabstv/ecs v1.6.4
 	github.com/gabstv/ecs/v2 v2.1.3
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20200707082815-5321531c36a2 // indirect
