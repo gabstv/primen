@@ -1,4 +1,4 @@
-package imgui
+package style
 
 import (
 	"strings"
@@ -6,13 +6,15 @@ import (
 	"github.com/dop251/goja"
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/internal/z"
+	"github.com/gabstv/primen/modules/imgui/common"
+	"github.com/gabstv/primen/modules/imgui/store"
 	"github.com/inkyblackness/imgui-go/v2"
 )
 
-type styleUpdateFn func(nodeid, v string, memory *uiMemory) (styles, colors int)
+type styleUpdateFn func(nodeid, v string, memory *store.DB) (styles, colors int)
 
 func styleFloatGetter(name string, style imgui.StyleVarID) styleUpdateFn {
-	return func(nodeid, v string, memory *uiMemory) (styles, colors int) {
+	return func(nodeid, v string, memory *store.DB) (styles, colors int) {
 		if vf, ok := memory.ImGuiFloat(nodeid + "->" + name + "f"); ok {
 			imgui.PushStyleVarFloat(style, vf)
 			return 1, 0
@@ -28,12 +30,12 @@ func styleFloatGetter(name string, style imgui.StyleVarID) styleUpdateFn {
 }
 
 func styleVec2Getter(name string, style imgui.StyleVarID) styleUpdateFn {
-	return func(nodeid, v string, memory *uiMemory) (styles, colors int) {
+	return func(nodeid, v string, memory *store.DB) (styles, colors int) {
 		if vf, ok := memory.ImGuiVec2(nodeid + "->" + name + "vec2"); ok {
 			imgui.PushStyleVarVec2(style, vf)
 			return 1, 0
 		}
-		vf, ok := parseVec2(v)
+		vf, ok := common.ParseVec2(v)
 		if !ok {
 			return 0, 0
 		}
@@ -44,12 +46,12 @@ func styleVec2Getter(name string, style imgui.StyleVarID) styleUpdateFn {
 }
 
 func colorVec4Getter(name string, style imgui.StyleColorID) styleUpdateFn {
-	return func(nodeid, v string, memory *uiMemory) (styles, colors int) {
+	return func(nodeid, v string, memory *store.DB) (styles, colors int) {
 		if vf, ok := memory.ImGuiVec4(nodeid + "->" + name + "vec4c"); ok {
 			imgui.PushStyleColor(style, vf)
 			return 0, 1
 		}
-		vf, ok := parseVec4(v)
+		vf, ok := common.ParseVec4(v)
 		if !ok {
 			return 0, 0
 		}
@@ -134,7 +136,7 @@ var stparser = map[string]styleUpdateFn{
 	"st-color-modal-window-darkening":  colorVec4Getter("color-modal-window-darkening", imgui.StyleColorModalWindowDarkening),
 }
 
-func pushStyles(attributes map[string]string, memory *uiMemory) (styles, colors int) {
+func Push(attributes map[string]string, memory *store.DB) (styles, colors int) {
 	if attributes["id"] == "" {
 		println("warning: [pushStyles] element didn't have an ID")
 		attributes["id"] = z.Rs()
@@ -153,13 +155,13 @@ func pushStyles(attributes map[string]string, memory *uiMemory) (styles, colors 
 	return
 }
 
-func popStyles(nstyles, ncolors int) {
+func Pop(nstyles, ncolors int) {
 	imgui.PopStyleVarV(nstyles)
 	imgui.PopStyleColorV(ncolors)
 }
 
-// parse position attributes
-func setupWindowPos(ctx core.DrawCtx, attributes map[string]string, memory *uiMemory, jsvm *goja.Runtime) {
+// SetupWindowPos parses position attributes
+func SetupWindowPos(ctx core.DrawCtx, attributes map[string]string, memory *store.DB, jsvm *goja.Runtime) {
 	switch attributes["position"] {
 	case "fixed":
 		yset := false

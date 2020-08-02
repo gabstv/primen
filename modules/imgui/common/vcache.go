@@ -1,4 +1,4 @@
-package imgui
+package common
 
 import (
 	"strconv"
@@ -8,7 +8,7 @@ import (
 	"github.com/inkyblackness/imgui-go/v2"
 )
 
-func parseVec2(v string) (imgui.Vec2, bool) {
+func ParseVec2(v string) (imgui.Vec2, bool) {
 	if v == "" {
 		return imgui.Vec2{}, false
 	}
@@ -36,7 +36,7 @@ func parseVec2(v string) (imgui.Vec2, bool) {
 	return out, true
 }
 
-func parseVec4(v string) (imgui.Vec4, bool) {
+func ParseVec4(v string) (imgui.Vec4, bool) {
 	if v == "" {
 		return imgui.Vec4{}, false
 	}
@@ -78,10 +78,10 @@ func parseVec4(v string) (imgui.Vec4, bool) {
 	return imgui.Vec4{}, false
 }
 
-func varVisible(nodeid string) string {
+func VarVisible(nodeid string) string {
 	return nodeid + "_visible"
 }
 
-func varPosition(nodeid string) string {
+func VarPosition(nodeid string) string {
 	return nodeid + "_position"
 }
