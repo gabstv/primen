@@ -9,14 +9,16 @@ import (
 )
 
 type Context struct {
-	Draw core.DrawCtx
-	JS   *goja.Runtime
+	Draw  core.DrawCtx
+	JS    *goja.Runtime
+	Stack *style.Stack
 }
 
 func NewContext(ctx core.DrawCtx, jsvm *goja.Runtime) *Context {
 	return &Context{
-		Draw: ctx,
-		JS:   jsvm,
+		Draw:  ctx,
+		JS:    jsvm,
+		Stack: &style.Stack{},
 	}
 }
 
@@ -25,22 +27,22 @@ type DomRenderFn func(ctx *Context, node dom.ElementNode)
 func renderNodeByTagName(ctx *Context, node dom.ElementNode) bool {
 	switch node.TagName() {
 	case "_root":
-		Children(ctx, node)
+		children(ctx, node)
 		return true
 	case "button":
-		Button(ctx, node)
+		button(ctx, node)
 		return true
 	case "column":
-		GroupColumn(ctx, node)
+		groupColumn(ctx, node)
 		return true
 	case "columns":
-		GroupColumns(ctx, node)
+		groupColumns(ctx, node)
 		return true
 	case "demowindow":
-		DemoWindow(ctx, node)
+		demoWindow(ctx, node)
 		return true
 	case "group":
-		Group(ctx, node)
+		group(ctx, node)
 		return true
 	case "separator":
 		imgui.Separator()
@@ -49,7 +51,7 @@ func renderNodeByTagName(ctx *Context, node dom.ElementNode) bool {
 		imgui.Spacing()
 		return true
 	case "window":
-		Window(ctx, node)
+		window(ctx, node)
 		return true
 	}
 	return false
@@ -58,20 +60,22 @@ func renderNodeByTagName(ctx *Context, node dom.ElementNode) bool {
 func Node(ctx *Context, node dom.ElementNode) {
 	attrs := node.Attributes()
 	// lctx := setNodeLayout(node, data, jsvm) // FIXME: better solution for w="" h=""
+	n := pushNodeVariants(ctx, node)
 	sn, cn := style.Push(attrs)
 	// setNodeLayout(node, data, jsvm)
 	defer style.Pop(sn, cn)
 	_ = renderNodeByTagName(ctx, node)
+	popNodeVariants(ctx, node, n)
 }
 
-func Group(ctx *Context, node dom.ElementNode) {
+func group(ctx *Context, node dom.ElementNode) {
 	//TODO: common styles and things
 	imgui.BeginGroup()
-	Children(ctx, node)
+	children(ctx, node)
 	imgui.EndGroup()
 }
 
-func GroupColumns(ctx *Context, node dom.ElementNode) {
+func groupColumns(ctx *Context, node dom.ElementNode) {
 	attr := node.Attributes()
 	if v := attr.IntD("count", 0); v > 0 {
 		imgui.ColumnsV(v, attr.String("label"), attr.BoolD("border", false))
@@ -87,14 +91,34 @@ func GroupColumns(ctx *Context, node dom.ElementNode) {
 		}
 		imgui.ColumnsV(nc, attr.String("label"), attr.BoolD("border", false))
 	}
-	Children(ctx, node)
+	children(ctx, node)
 }
 
-func GroupColumn(ctx *Context, node dom.ElementNode) {
-	Children(ctx, node)
+func groupColumn(ctx *Context, node dom.ElementNode) {
+	children(ctx, node)
 	//FIXME: get width if defined
 	// if lctx.Size.X > 0 {
 	// 	imgui.SetColumnWidth(-1, lctx.Size.X)
 	// }
 	imgui.NextColumn()
 }
+
+func pushNodeVariants(ctx *Context, node dom.ElementNode) int {
+	attrs := node.Attributes()
+	n := 0
+	if attrs.HasAttr("width", "w") {
+		if v, ok := parseWidth(ctx, attrs.FirstAttr("width", "w")); ok {
+			ctx.Stack.PushWidth(v)
+			n++
+		}
+	}
+	return n
+}
+
+func popNodeVariants(ctx *Context, node dom.ElementNode, n int) {
+	for i := 0; i < n; i++ {
+		ctx.Stack.Pop()
+	}
+}
+
+func mf32(v float32, ok bool) float32 { return v }

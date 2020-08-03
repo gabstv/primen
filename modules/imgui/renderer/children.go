@@ -5,7 +5,7 @@ import (
 	"github.com/inkyblackness/imgui-go/v2"
 )
 
-func Children(ctx *Context, node dom.ElementNode) {
+func children(ctx *Context, node dom.ElementNode) {
 	for _, child := range node.Children() {
 		if child.Type() == dom.NodeElement {
 			Node(ctx, child.(dom.ElementNode))

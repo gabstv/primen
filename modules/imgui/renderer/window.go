@@ -9,7 +9,7 @@ import (
 )
 
 // Window handle imgui's Begin()
-func Window(ctx *Context, node dom.ElementNode) {
+func window(ctx *Context, node dom.ElementNode) {
 	attrs := node.Attributes()
 	if node.ID() == "" {
 		println("warning: window didn't have an ID")
@@ -25,7 +25,9 @@ func Window(ctx *Context, node dom.ElementNode) {
 	if show {
 		style.SetupWindowPos(ctx.Draw, attrs, ctx.JS)
 		imgui.BeginV(wname, &show, parseWindowFlags(attrs))
-		Children(ctx, node)
+		ctx.Stack.PushMaxWidth(float32(imgui.ColumnWidth()))
+		children(ctx, node)
+		ctx.Stack.Pop()
 		imgui.End()
 	}
 	if lshow != show {
@@ -34,7 +36,7 @@ func Window(ctx *Context, node dom.ElementNode) {
 	}
 }
 
-func DemoWindow(ctx *Context, node dom.ElementNode) {
+func demoWindow(ctx *Context, node dom.ElementNode) {
 	if node.ID() == "" {
 		println("warning: demo window didn't have an ID")
 		node.SetAttribute("id", z.Rs())

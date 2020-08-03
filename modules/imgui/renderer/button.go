@@ -6,10 +6,12 @@ import (
 	"github.com/inkyblackness/imgui-go/v2"
 )
 
-func Button(ctx *Context, node dom.ElementNode) {
+func button(ctx *Context, node dom.ElementNode) {
 	attrs := node.Attributes()
 	//FIXME: get size if defined width and height
-	tempsize := imgui.Vec2{}
+	tempsize := imgui.Vec2{
+		X: mf32(ctx.Stack.Width()),
+	}
 	if imgui.ButtonV(z.S(attrs.String("label"), node.FirstChildAsText()), tempsize) {
 		bubbles := true
 		if jsv := attrs["onclick"]; jsv != "" {
