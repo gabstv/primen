@@ -5,7 +5,7 @@ import (
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/dom"
 	"github.com/gabstv/primen/modules/imgui/style"
-	"github.com/inkyblackness/imgui-go"
+	"github.com/inkyblackness/imgui-go/v2"
 )
 
 type Context struct {
@@ -22,28 +22,46 @@ func NewContext(ctx core.DrawCtx, jsvm *goja.Runtime) *Context {
 
 type DomRenderFn func(ctx *Context, node dom.ElementNode)
 
-var renderers = map[string]DomRenderFn{
-	"_root":      func(ctx *Context, node dom.ElementNode) { Children(ctx, node) },
-	"button":     Button,
-	"column":     GroupColumn,
-	"columns":    GroupColumns,
-	"demowindow": DemoWindow,
-	"group":      Group,
-	"separator":  func(ctx *Context, node dom.ElementNode) { imgui.Separator() },
-	"spacing":    func(ctx *Context, node dom.ElementNode) { imgui.Spacing() },
-	"window":     Window,
+func renderNodeByTagName(ctx *Context, node dom.ElementNode) bool {
+	switch node.TagName() {
+	case "_root":
+		Children(ctx, node)
+		return true
+	case "button":
+		Button(ctx, node)
+		return true
+	case "column":
+		GroupColumn(ctx, node)
+		return true
+	case "columns":
+		GroupColumns(ctx, node)
+		return true
+	case "demowindow":
+		DemoWindow(ctx, node)
+		return true
+	case "group":
+		Group(ctx, node)
+		return true
+	case "separator":
+		imgui.Separator()
+		return true
+	case "spacing":
+		imgui.Spacing()
+		return true
+	case "window":
+		Window(ctx, node)
+		return true
+	}
+	return false
 }
 
 func Node(ctx *Context, node dom.ElementNode) {
 	attrs := node.Attributes()
 	// lctx := setNodeLayout(node, data, jsvm) // FIXME: better solution for w="" h=""
-	sn, cn := style.Push(attrs, data)
+	sn, cn := style.Push(attrs)
 	// setNodeLayout(node, data, jsvm)
 	defer style.Pop(sn, cn)
-	renderer, ok := renderers[node.TagName()]
-	if ok {
-		renderer(ctx, node)
-	}
+	_ = renderNodeByTagName(ctx, node)
 }
 
 func Group(ctx *Context, node dom.ElementNode) {

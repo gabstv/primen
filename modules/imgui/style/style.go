@@ -7,55 +7,54 @@ import (
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/internal/z"
 	"github.com/gabstv/primen/modules/imgui/common"
-	"github.com/gabstv/primen/modules/imgui/store"
 	"github.com/inkyblackness/imgui-go/v2"
 )
 
-type styleUpdateFn func(nodeid, v string, memory *store.DB) (styles, colors int)
+type styleUpdateFn func(nodeid, v string) (styles, colors int)
 
 func styleFloatGetter(name string, style imgui.StyleVarID) styleUpdateFn {
-	return func(nodeid, v string, memory *store.DB) (styles, colors int) {
-		if vf, ok := memory.ImGuiFloat(nodeid + "->" + name + "f"); ok {
-			imgui.PushStyleVarFloat(style, vf)
-			return 1, 0
-		}
+	return func(nodeid, v string) (styles, colors int) {
+		// if vf, ok := memory.ImGuiFloat(nodeid + "->" + name + "f"); ok {
+		// 	imgui.PushStyleVarFloat(style, vf)
+		// 	return 1, 0
+		// }
 		vf, ok := z.Float32V(v)
 		if !ok {
 			return 0, 0
 		}
-		memory.Add(nodeid+"->"+name+"f", vf)
+		// memory.Add(nodeid+"->"+name+"f", vf)
 		imgui.PushStyleVarFloat(style, vf)
 		return 1, 0
 	}
 }
 
 func styleVec2Getter(name string, style imgui.StyleVarID) styleUpdateFn {
-	return func(nodeid, v string, memory *store.DB) (styles, colors int) {
-		if vf, ok := memory.ImGuiVec2(nodeid + "->" + name + "vec2"); ok {
-			imgui.PushStyleVarVec2(style, vf)
-			return 1, 0
-		}
+	return func(nodeid, v string) (styles, colors int) {
+		// if vf, ok := memory.ImGuiVec2(nodeid + "->" + name + "vec2"); ok {
+		// 	imgui.PushStyleVarVec2(style, vf)
+		// 	return 1, 0
+		// }
 		vf, ok := common.ParseVec2(v)
 		if !ok {
 			return 0, 0
 		}
-		memory.Add(nodeid+"->"+name+"vec2", vf)
+		// memory.Add(nodeid+"->"+name+"vec2", vf)
 		imgui.PushStyleVarVec2(style, vf)
 		return 1, 0
 	}
 }
 
 func colorVec4Getter(name string, style imgui.StyleColorID) styleUpdateFn {
-	return func(nodeid, v string, memory *store.DB) (styles, colors int) {
-		if vf, ok := memory.ImGuiVec4(nodeid + "->" + name + "vec4c"); ok {
-			imgui.PushStyleColor(style, vf)
-			return 0, 1
-		}
+	return func(nodeid, v string) (styles, colors int) {
+		// if vf, ok := memory.ImGuiVec4(nodeid + "->" + name + "vec4c"); ok {
+		// 	imgui.PushStyleColor(style, vf)
+		// 	return 0, 1
+		// }
 		vf, ok := common.ParseVec4(v)
 		if !ok {
 			return 0, 0
 		}
-		memory.Add(nodeid+"->"+name+"vec4c", vf)
+		// memory.Add(nodeid+"->"+name+"vec4c", vf)
 		imgui.PushStyleColor(style, vf)
 		return 0, 1
 	}
@@ -136,7 +135,7 @@ var stparser = map[string]styleUpdateFn{
 	"st-color-modal-window-darkening":  colorVec4Getter("color-modal-window-darkening", imgui.StyleColorModalWindowDarkening),
 }
 
-func Push(attributes map[string]string, memory *store.DB) (styles, colors int) {
+func Push(attributes map[string]string) (styles, colors int) {
 	if attributes["id"] == "" {
 		println("warning: [pushStyles] element didn't have an ID")
 		attributes["id"] = z.Rs()
@@ -145,7 +144,7 @@ func Push(attributes map[string]string, memory *store.DB) (styles, colors int) {
 		if len(name) > 3 {
 			if name[:3] == "st-" {
 				if f, ok := stparser[name]; ok {
-					s1, c1 := f(attributes["id"], rawval, memory)
+					s1, c1 := f(attributes["id"], rawval)
 					styles += s1
 					colors += c1
 				}
@@ -161,7 +160,7 @@ func Pop(nstyles, ncolors int) {
 }
 
 // SetupWindowPos parses position attributes
-func SetupWindowPos(ctx core.DrawCtx, attributes map[string]string, memory *store.DB, jsvm *goja.Runtime) {
+func SetupWindowPos(ctx core.DrawCtx, attributes map[string]string, jsvm *goja.Runtime) {
 	switch attributes["position"] {
 	case "fixed":
 		yset := false

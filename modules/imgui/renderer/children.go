@@ -2,7 +2,7 @@ package renderer
 
 import (
 	"github.com/gabstv/primen/dom"
-	"github.com/inkyblackness/imgui-go"
+	"github.com/inkyblackness/imgui-go/v2"
 )
 
 func Children(ctx *Context, node dom.ElementNode) {

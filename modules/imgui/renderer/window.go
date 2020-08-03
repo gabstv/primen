@@ -5,7 +5,7 @@ import (
 	"github.com/gabstv/primen/internal/z"
 	"github.com/gabstv/primen/modules/imgui/common"
 	"github.com/gabstv/primen/modules/imgui/style"
-	"github.com/inkyblackness/imgui-go"
+	"github.com/inkyblackness/imgui-go/v2"
 )
 
 // Window handle imgui's Begin()
@@ -20,10 +20,10 @@ func Window(ctx *Context, node dom.ElementNode) {
 		wname = node.ID()
 	}
 
-	show := node.Attributes().BoolD("visible")
+	show := node.Attributes().BoolD("visible", true)
 	lshow := show
 	if show {
-		style.SetupWindowPos(ctx, attrs, data, jsvm)
+		style.SetupWindowPos(ctx.Draw, attrs, ctx.JS)
 		imgui.BeginV(wname, &show, parseWindowFlags(attrs))
 		Children(ctx, node)
 		imgui.End()
@@ -32,7 +32,6 @@ func Window(ctx *Context, node dom.ElementNode) {
 		// the window was closed by the X button
 		node.SetAttribute("visible", common.TernaryString(show, "true", "false"))
 	}
-	return lctx
 }
 
 func DemoWindow(ctx *Context, node dom.ElementNode) {
@@ -47,6 +46,6 @@ func DemoWindow(ctx *Context, node dom.ElementNode) {
 	}
 	if lshow != show {
 		// the window was closed by the X button
-		node.SetAttribute("visible", common.TernaryString(show), "true", "false")
+		node.SetAttribute("visible", common.TernaryString(show, "true", "false"))
 	}
 }

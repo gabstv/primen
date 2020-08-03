@@ -5,9 +5,7 @@ import (
 	"strings"
 
 	"github.com/dop251/goja"
-	"github.com/gabstv/primen/dom"
-	"github.com/gabstv/primen/modules/imgui/store"
-	"github.com/inkyblackness/imgui-go"
+	"github.com/inkyblackness/imgui-go/v2"
 )
 
 type Context struct {
@@ -18,28 +16,28 @@ func (c Context) SizeZero() bool {
 	return c.Size.X == 0 && c.Size.Y == 0
 }
 
-func setNodeLayout(node dom.ElementNode, data *store.DB, jsvm *goja.Runtime) (layout Context) {
-	initjs := false
-	attrs := node.Attributes()
-	//if attrs.HasAttr("w", "width")
-	if v, rel, ok := getattrparsejsNumber(jsvm, &initjs, attrs.FirstAttr("w", "width")); ok {
-		if rel {
-			cravail := imgui.ContentRegionAvail()
-			layout.Size.X = cravail.X * (float32(v) / 100.0)
-		} else {
-			layout.Size.X = float32(v)
-		}
-	}
-	if v, rel, ok := getattrparsejsNumber(jsvm, &initjs, attrs.FirstAttr("h", "height")); ok {
-		if rel {
-			cravail := imgui.ContentRegionAvail()
-			layout.Size.X = cravail.Y * (float32(v) / 100.0)
-		} else {
-			layout.Size.X = float32(v)
-		}
-	}
-	return
-}
+// func setNodeLayout(node dom.ElementNode, data *store.DB, jsvm *goja.Runtime) (layout Context) {
+// 	initjs := false
+// 	attrs := node.Attributes()
+// 	//if attrs.HasAttr("w", "width")
+// 	if v, rel, ok := getattrparsejsNumber(jsvm, &initjs, attrs.FirstAttr("w", "width")); ok {
+// 		if rel {
+// 			cravail := imgui.ContentRegionAvail()
+// 			layout.Size.X = cravail.X * (float32(v) / 100.0)
+// 		} else {
+// 			layout.Size.X = float32(v)
+// 		}
+// 	}
+// 	if v, rel, ok := getattrparsejsNumber(jsvm, &initjs, attrs.FirstAttr("h", "height")); ok {
+// 		if rel {
+// 			cravail := imgui.ContentRegionAvail()
+// 			layout.Size.X = cravail.Y * (float32(v) / 100.0)
+// 		} else {
+// 			layout.Size.X = float32(v)
+// 		}
+// 	}
+// 	return
+// }
 
 func vhasJS(v string) (bool, string) {
 	if strings.HasPrefix(v, "js:") {
