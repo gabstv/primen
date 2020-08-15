@@ -79,10 +79,10 @@ func (l *TextLabel) SetText(t string) *TextLabel {
 	} else if l.area.Eq(image.ZP) {
 		// calc if image needs to be bigger
 		ff := l.validFontFace()
-		p := text.MeasureString(t, ff)
-		p.X += l.dborder.X
-		p.Y += l.dborder.Y
-		if ww, hh := l.base.Size(); ww < p.X || hh < p.Y {
+		p := text.BoundString(ff, t)
+		// p.X += l.dborder.X
+		// p.Y += l.dborder.Y
+		if ww, hh := l.base.Size(); ww < p.Dx()+l.dborder.X || hh < p.Dy()+l.dborder.Y {
 			redraw = true
 		}
 	}
@@ -118,7 +118,8 @@ func (l *TextLabel) SetFilter(f ebiten.Filter) {
 
 // ComputedSize returns the width and height of the printable area of the label
 func (l *TextLabel) ComputedSize() image.Point {
-	return text.MeasureString(l.text, l.validFontFace())
+	r := text.BoundString(l.validFontFace(), l.text)
+	return r.Size()
 }
 
 // FontFaceHeight returns the font height
@@ -154,8 +155,8 @@ func (l *TextLabel) setupInnerImage() {
 	if l.area.Eq(image.ZP) {
 		// dynamic
 		ff := l.validFontFace()
-		p := text.MeasureString(l.text, ff)
-		l.base, _ = ebiten.NewImage(p.X+l.dborder.X, p.Y+l.dborder.Y, l.filter)
+		p := text.BoundString(ff, l.text)
+		l.base, _ = ebiten.NewImage(p.Dx()+l.dborder.X, p.Dy()+l.dborder.Y, l.filter)
 	} else {
 		l.base, _ = ebiten.NewImage(l.area.X, l.area.Y, l.filter)
 	}
@@ -172,7 +173,7 @@ func (l *TextLabel) renderText() {
 		autoh = l.FontFaceHeight()
 	}
 	text.Draw(l.base, l.text, ff, l.faceOffsetX, l.faceOffsetY+autoh, l.color)
-	l.realSize = text.MeasureString(l.text, ff)
+	l.realSize = text.BoundString(ff, l.text).Size()
 	l.textdirty = false
 }
 
