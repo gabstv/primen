@@ -11,11 +11,11 @@ require (
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/golang/protobuf v1.4.1
-	github.com/hajimehoshi/ebiten v1.12.0-alpha.7.0.20200728050405-c032d61f93b9
+	github.com/hajimehoshi/ebiten v1.12.0-alpha.8.0.20200815063927-a67fd4a2b367
 	github.com/inkyblackness/imgui-go/v2 v2.4.1
 	github.com/stretchr/testify v1.5.1
 	github.com/urfave/cli v1.22.4
-	golang.org/x/image v0.0.0-20200618115811-c13761719519
+	golang.org/x/image v0.0.0-20200801110659-972c09e46d76
 )
 
 go 1.13
