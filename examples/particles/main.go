@@ -7,7 +7,10 @@ import (
 
 	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen"
+	"github.com/gabstv/primen/components"
+	"github.com/gabstv/primen/components/graphics"
 	"github.com/gabstv/primen/core"
+	"github.com/gabstv/primen/core/debug"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 	"github.com/hajimehoshi/ebiten/inpututil"
@@ -21,7 +24,7 @@ func main() {
 	pimg, _, _ = ebitenutil.NewImageFromFile("../shared/particle.png", ebiten.FilterNearest)
 	pimg2, _, _ = ebitenutil.NewImageFromFile("../shared/particle2.png", ebiten.FilterNearest)
 	pimg3, _, _ = ebitenutil.NewImageFromFile("../shared/particle3.png", ebiten.FilterNearest)
-	core.DebugDraw = true
+	debug.Draw = true
 	ebiten.SetRunnableOnUnfocused(true)
 	engine := primen.NewEngine(&primen.NewEngineInput{
 		Width:     800,
@@ -73,7 +76,7 @@ func ready(engine primen.Engine) {
 		em.N1 = 10
 		em.T0 = .05
 		em.T1 = .1
-		pen.ParticleEmitter().SetEmissionProp(em).SetStrategy(core.SpawnReplace)
+		pen.ParticleEmitter().SetEmissionProp(em).SetStrategy(graphics.SpawnReplace)
 	}
 	{
 		pen := primen.NewChildParticleEmitterNode(tr, primen.Layer0)
@@ -105,7 +108,7 @@ func ready(engine primen.Engine) {
 		em.N1 = 10
 		em.T0 = .05
 		em.T1 = .1
-		pen.ParticleEmitter().SetEmissionProp(em).SetStrategy(core.SpawnReplace)
+		pen.ParticleEmitter().SetEmissionProp(em).SetStrategy(graphics.SpawnReplace)
 		pen.ParticleEmitter().SetCompositeMode(ebiten.CompositeModeLighter)
 	}
 	{
@@ -148,7 +151,7 @@ func ready(engine primen.Engine) {
 		em.N1 = 10
 		em.T0 = .05
 		em.T1 = .1
-		pen3.ParticleEmitter().SetEmissionProp(em).SetStrategy(core.SpawnReplace)
+		pen3.ParticleEmitter().SetEmissionProp(em).SetStrategy(graphics.SpawnReplace)
 	}
 	penm := primen.NewChildParticleEmitterNode(tr, primen.Layer0)
 	{
@@ -184,7 +187,7 @@ func ready(engine primen.Engine) {
 		em.N1 = 2
 		em.T0 = .001
 		em.T1 = .005
-		penm.ParticleEmitter().SetEmissionProp(em).SetStrategy(core.SpawnReplace)
+		penm.ParticleEmitter().SetEmissionProp(em).SetStrategy(graphics.SpawnReplace)
 	}
 	//tr.Transform().SetScale(1.8, 1.8)
 	fn0 := primen.NewRootFnNode(w)
@@ -210,7 +213,7 @@ func ready(engine primen.Engine) {
 		igx, igy := ebiten.CursorPosition()
 		gx, gy = float64(igx), float64(igy)
 		//fmt.Println(gx, gy)
-		lx, ly, _ = core.GetTransformSystem(w).GlobalToLocal(gx, gy, tr.Entity())
+		lx, ly, _ = components.GetTransformSystem(w).GlobalToLocal(gx, gy, tr.Entity())
 		//fmt.Println(lx, ly)
 		penm.Transform().SetX(lx).SetY(ly)
 		//}

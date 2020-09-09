@@ -106,12 +106,12 @@ func (v *viewMoveHelloSystem) Remove(e ecs.Entity) bool {
 func (v *viewMoveHelloSystem) clearpointers() {
     
     
-    for _, x := range v.entities {
-        e := x.Entity
+    for i := range v.entities {
+        e := v.entities[i].Entity
         
-        x.Hello = nil
+        v.entities[i].Hello = nil
         
-        x.Move = nil
+        v.entities[i].Move = nil
         
         _ = e
     }
@@ -120,12 +120,12 @@ func (v *viewMoveHelloSystem) clearpointers() {
 func (v *viewMoveHelloSystem) rescan() {
     
     
-    for _, x := range v.entities {
-        e := x.Entity
+    for i := range v.entities {
+        e := v.entities[i].Entity
         
-        x.Hello = GetHelloComponent(v.world).Data(e)
+        v.entities[i].Hello = GetHelloComponent(v.world).Data(e)
         
-        x.Move = GetMoveComponent(v.world).Data(e)
+        v.entities[i].Move = GetMoveComponent(v.world).Data(e)
         
         _ = e
         

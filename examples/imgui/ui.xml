@@ -1,0 +1,14 @@
+<window id="centered" flags="no-saved-settings|no-decoration" position="fixed" top="js: __height/5" left="200" right="200" bottom="js: __height/5">
+    HOLLA
+</window>
+<window name="Hello Dudes!">
+    Hello!
+    Line 2
+    <button st-color-button="#ff0000" onclick="show('window2')" w="100%">show WINDOW 2</button>
+    <button label="show demo window" onclick="show('demo'); true" st-color-button="#16a085dd"></button>
+</window>
+<window name="Window 2" id="window2" flags="no-collapse">
+    <button label="close me 2" onclick="dispatch('test','hey!'); hide('window2'); false"></button>
+    <button label="show demo window" onclick="show('demo'); true"></button>
+</window>
+<demowindow id="demo" visible="false" />

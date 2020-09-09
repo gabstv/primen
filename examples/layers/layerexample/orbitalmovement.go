@@ -6,6 +6,8 @@ import (
 
 	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen"
+	"github.com/gabstv/primen/components"
+	"github.com/gabstv/primen/components/graphics"
 	"github.com/gabstv/primen/core"
 	"github.com/hajimehoshi/ebiten"
 )
@@ -24,25 +26,25 @@ type OrbitalMovement struct {
 
 //go:generate ecsgen -n OrbitalMovement -p layerexample -o orbitalmovement_component.go --component-tpl --vars "UUID=DAD60C25-6B0D-4D3D-BF8E-5EB424FD8F1B"
 
-//go:generate ecsgen -n OrbitalMovement -p layerexample -o orbitalmovement_system.go --system-tpl --vars "Priority=0" --vars "UUID=826684C9-E190-4BF2-93D7-2FA61A5BCEEC" --vars "Setup=s.setupVars()" --components "OrbitalMovement" --components "Sprite;*core.Sprite;core.GetSpriteComponent(v.world).Data(e)" --components "DrawLayer;*core.DrawLayer;core.GetDrawLayerComponent(v.world).Data(e)" --components "Transform;*core.Transform;core.GetTransformComponent(v.world).Data(e)" --go-import "\"github.com/gabstv/primen/core\"" --go-import "\"github.com/hajimehoshi/ebiten\"" --members "paused bool" --members "globalScale float64" --members "radiusScale float64" --members "xframes chan struct{}" --members "wave1 float64" --members "waver float64" --members "fgs []*ebiten.Image" --members "bgs []*ebiten.Image"
+//go:generate ecsgen -n OrbitalMovement -p layerexample -o orbitalmovement_system.go --system-tpl --vars "Priority=0" --vars "UUID=826684C9-E190-4BF2-93D7-2FA61A5BCEEC" --vars "Setup=s.setupVars()" --components "OrbitalMovement" --components "Sprite;*graphics.Sprite;graphics.GetSpriteComponent(v.world).Data(e)" --components "DrawLayer;*graphics.DrawLayer;graphics.GetDrawLayerComponent(v.world).Data(e)" --components "Transform;*components.Transform;components.GetTransformComponent(v.world).Data(e)" --go-import "\"github.com/gabstv/primen/components\"" --go-import "\"github.com/gabstv/primen/components/graphics\"" --go-import "\"github.com/hajimehoshi/ebiten\"" --members "paused bool" --members "globalScale float64" --members "radiusScale float64" --members "xframes chan struct{}" --members "wave1 float64" --members "waver float64" --members "fgs []*ebiten.Image" --members "bgs []*ebiten.Image"
 
 var matchOrbitalMovementSystem = func(eflag ecs.Flag, w ecs.BaseWorld) bool {
 	// must contain
-	f := core.GetDrawLayerComponent(w).Flag()
-	f = f.Or(core.GetTransformComponent(w).Flag())
-	f = f.Or(core.GetSpriteComponent(w).Flag())
+	f := graphics.GetDrawLayerComponent(w).Flag()
+	f = f.Or(components.GetTransformComponent(w).Flag())
+	f = f.Or(graphics.GetSpriteComponent(w).Flag())
 	f = f.Or(GetOrbitalMovementComponent(w).Flag())
 	return eflag.Contains(f)
 }
 
 var resizematchOrbitalMovementSystem = func(eflag ecs.Flag, w ecs.BaseWorld) bool {
-	if eflag.Contains(core.GetDrawLayerComponent(w).Flag()) {
+	if eflag.Contains(graphics.GetDrawLayerComponent(w).Flag()) {
 		return true
 	}
-	if eflag.Contains(core.GetTransformComponent(w).Flag()) {
+	if eflag.Contains(components.GetTransformComponent(w).Flag()) {
 		return true
 	}
-	if eflag.Contains(core.GetSpriteComponent(w).Flag()) {
+	if eflag.Contains(graphics.GetSpriteComponent(w).Flag()) {
 		return true
 	}
 	if eflag.Contains(GetOrbitalMovementComponent(w).Flag()) {
@@ -86,10 +88,10 @@ func (s *OrbitalMovementSystem) Update(ctx core.UpdateCtx) {
 		match.Transform.SetAngle(match.Transform.Angle() + (dt * (math.Pi / 4) * movecomp.AngleR))
 		if rand.Float64() < 0.0001 {
 			newlayer := rand.Intn(4)
-			match.DrawLayer.Layer = core.LayerIndex(newlayer)
+			match.DrawLayer.Layer = graphics.LayerIndex(newlayer)
 			match.Sprite.SetImage(s.bgs[newlayer])
-			cspr := core.GetSpriteComponent(s.world).Data(movecomp.ChildSprite)
-			cdl := core.GetDrawLayerComponent(s.world).Data(movecomp.ChildSprite)
+			cspr := graphics.GetSpriteComponent(s.world).Data(movecomp.ChildSprite)
+			cdl := graphics.GetDrawLayerComponent(s.world).Data(movecomp.ChildSprite)
 			cspr.SetImage(s.fgs[newlayer])
 			cdl.Layer = primen.Layer(newlayer)
 			ctx.Engine().DispatchEvent("act_of_nature", match.Entity)

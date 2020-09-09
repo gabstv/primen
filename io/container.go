@@ -10,6 +10,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/gabstv/primen/dom"
 )
 
 type Container interface {
@@ -24,6 +26,7 @@ type Container interface {
 	GetAtlas(name string) (*Atlas, error)
 	GetAudioStream(name string) (*AudioStream, error)
 	GetAudioBytes(name string) ([]byte, error)
+	GetXMLDOM(name string) ([]dom.Node, error)
 }
 
 type container struct {
@@ -226,6 +229,14 @@ func (c *container) GetAudioBytes(name string) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	io.Copy(buf, stream.Data)
 	return buf.Bytes(), nil
+}
+
+func (c *container) GetXMLDOM(name string) ([]dom.Node, error) {
+	b, err := c.Get(name)
+	if err != nil {
+		return nil, err
+	}
+	return dom.ParseXMLString(string(b))
 }
 
 func NewContainer(ctx context.Context, fs Filesystem) Container {

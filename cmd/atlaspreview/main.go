@@ -7,6 +7,7 @@ import (
 	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen"
 	"github.com/gabstv/primen/core"
+	"github.com/gabstv/primen/core/debug"
 	"github.com/gabstv/primen/io"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
@@ -50,7 +51,7 @@ func main() {
 }
 
 func buildReady(c *cli.Context) func(e primen.Engine) {
-	core.DebugDraw = true
+	debug.Draw = true
 	fn := c.Args().First()
 	if fn == "" {
 		return errready("No atlas file specified")

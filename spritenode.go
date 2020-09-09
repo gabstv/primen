@@ -3,7 +3,7 @@ package primen
 import (
 	"image/color"
 
-	"github.com/gabstv/primen/core"
+	"github.com/gabstv/primen/components/graphics"
 	"github.com/hajimehoshi/ebiten"
 )
 
@@ -13,21 +13,21 @@ var (
 
 type SpriteNode struct {
 	*Node
-	wdl  core.WatchDrawLayer
-	wspr core.WatchSprite
+	wdl  graphics.WatchDrawLayer
+	wspr graphics.WatchSprite
 }
 
 func NewRootSpriteNode(w World, layer Layer) *SpriteNode {
 	sprn := &SpriteNode{
 		Node: NewRootNode(w),
 	}
-	core.SetDrawLayerComponentData(w, sprn.e, core.DrawLayer{
+	graphics.SetDrawLayerComponentData(w, sprn.e, graphics.DrawLayer{
 		Layer:  layer,
-		ZIndex: core.ZIndexTop,
+		ZIndex: graphics.ZIndexTop,
 	})
-	core.SetSpriteComponentData(w, sprn.e, core.NewSprite(0, 0, transparentPixel))
-	sprn.wdl = core.WatchDrawLayerComponentData(w, sprn.e)
-	sprn.wspr = core.WatchSpriteComponentData(w, sprn.e)
+	graphics.SetSpriteComponentData(w, sprn.e, graphics.NewSprite(0, 0, transparentPixel))
+	sprn.wdl = graphics.WatchDrawLayerComponentData(w, sprn.e)
+	sprn.wspr = graphics.WatchSpriteComponentData(w, sprn.e)
 	return sprn
 }
 
@@ -35,17 +35,17 @@ func NewChildSpriteNode(parent ObjectContainer, layer Layer) *SpriteNode {
 	sprn := &SpriteNode{
 		Node: NewChildNode(parent),
 	}
-	core.SetDrawLayerComponentData(parent.World(), sprn.e, core.DrawLayer{
+	graphics.SetDrawLayerComponentData(parent.World(), sprn.e, graphics.DrawLayer{
 		Layer:  layer,
-		ZIndex: core.ZIndexTop,
+		ZIndex: graphics.ZIndexTop,
 	})
-	core.SetSpriteComponentData(parent.World(), sprn.e, core.NewSprite(0, 0, transparentPixel))
-	sprn.wdl = core.WatchDrawLayerComponentData(parent.World(), sprn.e)
-	sprn.wspr = core.WatchSpriteComponentData(parent.World(), sprn.e)
+	graphics.SetSpriteComponentData(parent.World(), sprn.e, graphics.NewSprite(0, 0, transparentPixel))
+	sprn.wdl = graphics.WatchDrawLayerComponentData(parent.World(), sprn.e)
+	sprn.wspr = graphics.WatchSpriteComponentData(parent.World(), sprn.e)
 	return sprn
 }
 
-func (n *SpriteNode) Sprite() *core.Sprite {
+func (n *SpriteNode) Sprite() *graphics.Sprite {
 	return n.wspr.Data()
 }
 

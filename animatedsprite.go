@@ -1,34 +1,34 @@
 package primen
 
 import (
-	"github.com/gabstv/primen/core"
+	"github.com/gabstv/primen/components/graphics"
 )
 
-type Animation = core.Animation
+type Animation = graphics.Animation
 
 type AnimatedSpriteNode struct {
 	*SpriteNode
-	ca core.WatchSpriteAnimation
+	ca graphics.WatchSpriteAnimation
 }
 
-func NewRootAnimatedSpriteNode(w World, layer Layer, fps float64, anim core.Animation) *AnimatedSpriteNode {
+func NewRootAnimatedSpriteNode(w World, layer Layer, fps float64, anim graphics.Animation) *AnimatedSpriteNode {
 	sprn := &AnimatedSpriteNode{
 		SpriteNode: NewRootSpriteNode(w, layer),
 	}
-	core.SetSpriteAnimationComponentData(w, sprn.e, core.NewSpriteAnimation(fps, anim))
-	sprn.ca = core.WatchSpriteAnimationComponentData(w, sprn.e)
+	graphics.SetSpriteAnimationComponentData(w, sprn.e, graphics.NewSpriteAnimation(fps, anim))
+	sprn.ca = graphics.WatchSpriteAnimationComponentData(w, sprn.e)
 	return sprn
 }
 
-func NewChildAnimatedSpriteNode(parent ObjectContainer, layer Layer, fps float64, anim core.Animation) *AnimatedSpriteNode {
+func NewChildAnimatedSpriteNode(parent ObjectContainer, layer Layer, fps float64, anim graphics.Animation) *AnimatedSpriteNode {
 	sprn := &AnimatedSpriteNode{
 		SpriteNode: NewChildSpriteNode(parent, layer),
 	}
-	core.SetSpriteAnimationComponentData(parent.World(), sprn.e, core.NewSpriteAnimation(fps, anim))
-	sprn.ca = core.WatchSpriteAnimationComponentData(parent.World(), sprn.e)
+	graphics.SetSpriteAnimationComponentData(parent.World(), sprn.e, graphics.NewSpriteAnimation(fps, anim))
+	sprn.ca = graphics.WatchSpriteAnimationComponentData(parent.World(), sprn.e)
 	return sprn
 }
 
-func (n *AnimatedSpriteNode) SpriteAnim() *core.SpriteAnimation {
+func (n *AnimatedSpriteNode) SpriteAnim() *graphics.SpriteAnimation {
 	return n.ca.Data()
 }

@@ -1,26 +1,26 @@
 package primen
 
 import (
-	"github.com/gabstv/primen/core"
+	"github.com/gabstv/primen/components/graphics"
 )
 
 type ParticleEmitterNode struct {
 	*Node
-	wdl core.WatchDrawLayer
-	wpe core.WatchParticleEmitter
+	wdl graphics.WatchDrawLayer
+	wpe graphics.WatchParticleEmitter
 }
 
 func NewRootParticleEmitterNode(w World, layer Layer) *ParticleEmitterNode {
 	pen := &ParticleEmitterNode{
 		Node: NewRootNode(w),
 	}
-	core.SetDrawLayerComponentData(w, pen.e, core.DrawLayer{
+	graphics.SetDrawLayerComponentData(w, pen.e, graphics.DrawLayer{
 		Layer:  layer,
-		ZIndex: core.ZIndexTop,
+		ZIndex: graphics.ZIndexTop,
 	})
-	core.SetParticleEmitterComponentData(w, pen.e, core.NewParticleEmitter(w))
-	pen.wdl = core.WatchDrawLayerComponentData(w, pen.e)
-	pen.wpe = core.WatchParticleEmitterComponentData(w, pen.e)
+	graphics.SetParticleEmitterComponentData(w, pen.e, graphics.NewParticleEmitter(w))
+	pen.wdl = graphics.WatchDrawLayerComponentData(w, pen.e)
+	pen.wpe = graphics.WatchParticleEmitterComponentData(w, pen.e)
 	return pen
 }
 
@@ -28,17 +28,17 @@ func NewChildParticleEmitterNode(parent ObjectContainer, layer Layer) *ParticleE
 	pen := &ParticleEmitterNode{
 		Node: NewChildNode(parent),
 	}
-	core.SetDrawLayerComponentData(parent.World(), pen.e, core.DrawLayer{
+	graphics.SetDrawLayerComponentData(parent.World(), pen.e, graphics.DrawLayer{
 		Layer:  layer,
-		ZIndex: core.ZIndexTop,
+		ZIndex: graphics.ZIndexTop,
 	})
-	core.SetParticleEmitterComponentData(parent.World(), pen.e, core.NewParticleEmitter(parent.World()))
-	pen.wdl = core.WatchDrawLayerComponentData(parent.World(), pen.e)
-	pen.wpe = core.WatchParticleEmitterComponentData(parent.World(), pen.e)
+	graphics.SetParticleEmitterComponentData(parent.World(), pen.e, graphics.NewParticleEmitter(parent.World()))
+	pen.wdl = graphics.WatchDrawLayerComponentData(parent.World(), pen.e)
+	pen.wpe = graphics.WatchParticleEmitterComponentData(parent.World(), pen.e)
 	return pen
 }
 
-func (n *ParticleEmitterNode) ParticleEmitter() *core.ParticleEmitter {
+func (n *ParticleEmitterNode) ParticleEmitter() *graphics.ParticleEmitter {
 	return n.wpe.Data()
 }
 

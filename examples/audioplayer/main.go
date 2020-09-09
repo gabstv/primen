@@ -7,6 +7,7 @@ import (
 
 	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen"
+	"github.com/gabstv/primen/components"
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/examples/shared"
 	"github.com/gabstv/primen/io"
@@ -27,7 +28,7 @@ func main() {
 				panic(err)
 			}
 			w := e.NewWorldWithDefaults(0)
-			ra := primen.NewRootAudioPlayerNode(w, core.NewAudioPlayerInput{
+			ra := primen.NewRootAudioPlayerNode(w, components.NewAudioPlayerInput{
 				RawAudio:   raw,
 				Panning:    true,
 				PitchShift: true,

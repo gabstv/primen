@@ -1,6 +1,8 @@
 package core
 
-import "github.com/hajimehoshi/ebiten"
+import (
+	"github.com/gabstv/primen/geom"
+)
 
 type Context interface {
 	Frame() int64
@@ -21,6 +23,7 @@ type DrawCtx interface {
 }
 
 type Engine interface {
+	AddModule(module Module, priority int)
 	NewWorld(priority int) World
 	NewWorldWithDefaults(priority int) World
 	RemoveWorld(w World)
@@ -30,10 +33,12 @@ type Engine interface {
 	DrawFrame() int64
 	Width() int
 	Height() int
+	SizeVec() geom.Vec
 	AddEventListener(eventName string, fn EventFn) EventID
 	RemoveEventListener(id EventID) bool
 	DispatchEvent(eventName string, data interface{})
 	SetDebugTPS(v bool)
+	SetDebugFPS(v bool)
 	SetScreenScale(scale float64)
 }
 
@@ -74,12 +79,12 @@ func NewUpdateCtx(e Engine, frame int64, dt, tps float64) UpdateCtx {
 	}
 }
 
-func NewDrawCtx(e Engine, frame int64, dt, tps float64, screen *ebiten.Image) DrawCtx {
+func NewDrawCtx(e Engine, frame int64, dt, tps float64, m DrawManager) DrawCtx {
 	return &ctxt{
 		frame:  frame,
 		dt:     dt,
 		tps:    tps,
-		r:      newDrawManager(screen),
+		r:      m,
 		engine: e,
 	}
 }
