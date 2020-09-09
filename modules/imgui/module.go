@@ -16,7 +16,7 @@ var (
 	lock         sync.Mutex
 	mainRenderer *renderer.Manager
 	renderTarget *ebiten.Image
-	uiinsts      []*UI
+	uiinsts      []Uinstance
 	lastid       UID
 	lastEngine   core.Engine
 )
@@ -37,7 +37,7 @@ func (uiModule) BeforeDraw(ctx core.DrawCtx) {
 		return
 	}
 	mainRenderer.BeginFrame()
-	// TODO: render all doms here
+	// TODO: render all doms here (?)
 	mainRenderer.EndFrame(renderTarget)
 }
 
@@ -49,7 +49,6 @@ func (uiModule) AfterDraw(ctx core.DrawCtx) {
 	for _, ui := range uiinsts {
 		ui.Render(ctx)
 	}
-	// TODO: render all doms here
 	mainRenderer.EndFrame(ctx.Renderer().Screen())
 }
 
@@ -70,7 +69,7 @@ func Setup(engine core.Engine) {
 	mainRenderer.Update(1.0/60, float32(engine.Width()), float32(engine.Height()))
 }
 
-func AddUI(doc dom.ElementNode) UID {
+func AddUI(doc []dom.Node) UID {
 	lock.Lock()
 	defer lock.Unlock()
 	if mainRenderer == nil {
@@ -86,12 +85,30 @@ func AddUI(doc dom.ElementNode) UID {
 	return id
 }
 
+func AddRawUI(renderfn func(ctx core.DrawCtx)) UID {
+	lock.Lock()
+	defer lock.Unlock()
+	if mainRenderer == nil {
+		panic("imgui.Setup(engine) needs to be called before AddUI")
+	}
+
+	lastid++
+	id := lastid
+
+	ui := &uiFuncInstance{
+		fn: renderfn,
+		id: id,
+	}
+	uiinsts = append(uiinsts, ui)
+	return id
+}
+
 func RemoveUI(id UID) {
 	lock.Lock()
 	defer lock.Unlock()
 	index := -1
 	for i := range uiinsts {
-		if uiinsts[i].id == id {
+		if uiinsts[i].ID() == id {
 			index = i
 		}
 	}
@@ -99,4 +116,9 @@ func RemoveUI(id UID) {
 		return
 	}
 	uiinsts = uiinsts[:index+copy(uiinsts[index:], uiinsts[index+1:])]
+}
+
+func SetFilter(filter ebiten.Filter) {
+	mainRenderer.Filter = filter
+	mainRenderer.Cache.ResetFontAtlasCache(filter)
 }

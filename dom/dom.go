@@ -7,15 +7,19 @@ import (
 	"strings"
 )
 
+// NodeType represents an Element/Object or Text
 type NodeType int
 
+// Valid DOM nodes
 const (
 	NodeElement NodeType = iota
 	NodeText    NodeType = iota
 )
 
+// Attributes of an Element node
 type Attributes map[string]string
 
+// BoolD retrieves the attribute [name]. Returns [defaultv] if not found
 func (a Attributes) BoolD(name string, defaultv bool) bool {
 	vs := a[name]
 	if vs == "" {
@@ -25,6 +29,7 @@ func (a Attributes) BoolD(name string, defaultv bool) bool {
 	return v
 }
 
+// IntD retrieves the attribute [name]. Returns [defaultv] if not found
 func (a Attributes) IntD(name string, defaultv int) int {
 	vs := a[name]
 	if vs == "" {
@@ -34,10 +39,12 @@ func (a Attributes) IntD(name string, defaultv int) int {
 	return v
 }
 
+// String returns an attribute value
 func (a Attributes) String(name string) string {
 	return a[name]
 }
 
+// HasAttr returns true if one of the attributes is found
 func (a Attributes) HasAttr(name string, names ...string) bool {
 	if _, ok := a[name]; ok {
 		return true
@@ -50,6 +57,7 @@ func (a Attributes) HasAttr(name string, names ...string) bool {
 	return false
 }
 
+// FirstAttr returns the value of the first attibute that is found (if the name matches)
 func (a Attributes) FirstAttr(name string, names ...string) string {
 	if v, ok := a[name]; ok {
 		return v
@@ -62,15 +70,18 @@ func (a Attributes) FirstAttr(name string, names ...string) string {
 	return ""
 }
 
+// Node is a valid DOM node
 type Node interface {
 	Type() NodeType
 }
 
+// TextNode is a valid DOM node with a text only content
 type TextNode interface {
 	Node
 	Text() string
 }
 
+// ElementNode is a structured node that may contain attributes and children
 type ElementNode interface {
 	Node
 	TagName() string
@@ -89,6 +100,8 @@ type textNode struct {
 	data string
 }
 
+var _ TextNode = (*textNode)(nil)
+
 func (n *textNode) Type() NodeType {
 	return NodeText
 }
@@ -102,6 +115,8 @@ type elementNode struct {
 	attributes Attributes
 	children   []Node
 }
+
+var _ ElementNode = (*elementNode)(nil)
 
 func (n *elementNode) Type() NodeType {
 	return NodeElement
@@ -173,12 +188,14 @@ func (n *elementNode) FindChildByID(id string) Node {
 	return nil
 }
 
+// Text creates a text node
 func Text(str string) TextNode {
 	return &textNode{
 		data: str,
 	}
 }
 
+// Element creates an element node
 func Element(tagname string, attributes map[string]string, children ...Node) ElementNode {
 	n := &elementNode{
 		tagname:    tagname,
