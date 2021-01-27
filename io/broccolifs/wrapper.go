@@ -1,8 +1,8 @@
 package broccolifs
 
 import (
-	"aletheia.icu/broccoli/fs"
 	"github.com/gabstv/primen/io"
+	"github.com/montanaflynn/broccoli/fs"
 )
 
 type ffile struct {
