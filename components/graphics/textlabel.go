@@ -14,6 +14,10 @@ import (
 	"golang.org/x/image/font"
 )
 
+// AutoTextOffset is the default offset for v2
+//FIXME: reason why this changed from ebiten 1 to 2
+const AutoTextOffset = -13
+
 type TextLabel struct {
 	text     string
 	face     font.Face
@@ -156,6 +160,8 @@ func (l *TextLabel) setupInnerImage() {
 		// dynamic
 		ff := l.validFontFace()
 		p := text.BoundString(ff, l.text)
+		a, b := p.Size().X, p.Dx()
+		_, _ = b, a
 		l.base = ebiten.NewImage(p.Dx()+l.dborder.X, p.Dy()+l.dborder.Y)
 	} else {
 		l.base = ebiten.NewImage(l.area.X, l.area.Y)
@@ -170,7 +176,7 @@ func (l *TextLabel) renderText() {
 	l.base.Fill(color.Transparent)
 	autoh := 0
 	if l.faceOffsetAuto {
-		autoh = l.FontFaceHeight()
+		autoh = l.FontFaceHeight() + AutoTextOffset
 	}
 	text.Draw(l.base, l.text, ff, l.faceOffsetX, l.faceOffsetY+autoh, l.color)
 	l.realSize = text.BoundString(ff, l.text).Size()

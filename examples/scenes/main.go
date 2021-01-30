@@ -7,6 +7,7 @@ import (
 	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen"
 	"github.com/gabstv/primen/core"
+	"github.com/gabstv/primen/core/debug"
 	"github.com/gabstv/primen/io"
 	osfs "github.com/gabstv/primen/io/os"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -14,6 +15,7 @@ import (
 )
 
 func main() {
+	debug.Draw = true
 	ebiten.SetRunnableOnUnfocused(true)
 	engine := primen.NewEngine(&primen.NewEngineInput{
 		Width:  1024,
