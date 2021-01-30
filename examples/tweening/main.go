@@ -18,8 +18,8 @@ var pimg *ebiten.Image
 var limg *ebiten.Image
 
 func main() {
-	pimg, _, _ = ebitenutil.NewImageFromFile("../shared/particle.png", ebiten.FilterNearest)
-	limg, _, _ = ebitenutil.NewImageFromFile("../shared/primen_logo@0.5x.png", ebiten.FilterLinear)
+	pimg, _, _ = ebitenutil.NewImageFromFile("../shared/particle.png")
+	limg, _, _ = ebitenutil.NewImageFromFile("../shared/primen_logo@0.5x.png")
 
 	engine := primen.NewEngine(&primen.NewEngineInput{
 		Width:  800,

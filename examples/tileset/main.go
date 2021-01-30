@@ -16,7 +16,7 @@ import (
 )
 
 func main() {
-	ebiten.SetRunnableInBackground(true)
+	ebiten.SetRunnableOnUnfocused(true)
 	fs := res.FS()
 	container := io.NewContainer(context.TODO(), fs)
 	<-container.Load("public/atlas.dat")
