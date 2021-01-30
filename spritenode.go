@@ -4,7 +4,7 @@ import (
 	"image/color"
 
 	"github.com/gabstv/primen/components/graphics"
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 var (
@@ -66,6 +66,6 @@ func (n *SpriteNode) ZIndex() int64 {
 }
 
 func init() {
-	transparentPixel, _ = ebiten.NewImage(1, 1, ebiten.FilterDefault)
-	_ = transparentPixel.Fill(color.Transparent)
+	transparentPixel = ebiten.NewImage(1, 1)
+	transparentPixel.Fill(color.Transparent)
 }

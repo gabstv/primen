@@ -5,7 +5,7 @@ import (
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/core/debug"
 	"github.com/gabstv/primen/geom"
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 // Transform is a hierarchy based matrix

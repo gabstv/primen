@@ -4,7 +4,7 @@ import (
 	"image"
 	"runtime"
 
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type LinkedImage interface {

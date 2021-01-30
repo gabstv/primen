@@ -14,7 +14,7 @@ import (
 	"github.com/gabstv/primen/examples/camera/res"
 	"github.com/gabstv/primen/geom"
 	"github.com/gabstv/primen/modules/imgui"
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 	//"github.com/pkg/profile"
 )
 
@@ -124,11 +124,11 @@ func (s *SinglePlayerScene) setup() chan struct{} {
 		s.engine.RunFn(func() {
 			defer wg.Done()
 			im0, _ := c.GetImage("public/cambg.png")
-			s.bgimage, _ = ebiten.NewImageFromImage(im0, ebiten.FilterNearest)
+			s.bgimage = ebiten.NewImageFromImage(im0)
 			im1, _ := c.GetImage("public/target.png")
-			s.fgimage, _ = ebiten.NewImageFromImage(im1, ebiten.FilterNearest)
+			s.fgimage = ebiten.NewImageFromImage(im1)
 			im2, _ := c.GetImage("public/arrow.png")
-			s.arimage, _ = ebiten.NewImageFromImage(im2, ebiten.FilterNearest)
+			s.arimage = ebiten.NewImageFromImage(im2)
 			s.setupScene()
 		})
 		wg.Wait()
@@ -244,13 +244,13 @@ func (s *DoublePlayerScene) setup() chan struct{} {
 		s.engine.RunFn(func() {
 			defer wg.Done()
 			im0, _ := c.GetImage("public/cambg.png")
-			s.bgimage, _ = ebiten.NewImageFromImage(im0, ebiten.FilterNearest)
+			s.bgimage = ebiten.NewImageFromImage(im0)
 			im1, _ := c.GetImage("public/target.png")
-			s.fgimage, _ = ebiten.NewImageFromImage(im1, ebiten.FilterNearest)
+			s.fgimage = ebiten.NewImageFromImage(im1)
 			im2, _ := c.GetImage("public/arrow.png")
-			s.arimage, _ = ebiten.NewImageFromImage(im2, ebiten.FilterNearest)
+			s.arimage = ebiten.NewImageFromImage(im2)
 			im3, _ := c.GetImage("public/particle3.png")
-			s.particle, _ = ebiten.NewImageFromImage(im3, ebiten.FilterNearest)
+			s.particle = ebiten.NewImageFromImage(im3)
 			s.setupScene()
 		})
 		wg.Wait()
@@ -267,8 +267,8 @@ func (s *DoublePlayerScene) setupScene() {
 	w := e.NewWorldWithDefaults(0)
 	s.w = w
 
-	s.s00 = e.NewDrawTarget(core.DrawMaskDefault, geom.Rect{Max: geom.Vec{.495, 1}}, ebiten.FilterDefault)
-	s.s01 = e.NewDrawTarget(core.DrawMaskDefault, geom.Rect{Min: geom.Vec{0.505, 0}, Max: geom.Vec{1, 1}}, ebiten.FilterDefault)
+	s.s00 = e.NewDrawTarget(core.DrawMaskDefault, geom.Rect{Max: geom.Vec{.495, 1}}, ebiten.FilterNearest)
+	s.s01 = e.NewDrawTarget(core.DrawMaskDefault, geom.Rect{Min: geom.Vec{0.505, 0}, Max: geom.Vec{1, 1}}, ebiten.FilterNearest)
 
 	wtrn := primen.NewRootNode(w)
 

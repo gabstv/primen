@@ -5,7 +5,7 @@ import (
 	"github.com/gabstv/primen/components"
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/core/debug"
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 // Sprite is the data of a sprite component.

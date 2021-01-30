@@ -6,7 +6,7 @@ import (
 	"github.com/gabstv/primen"
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/modules/imgui"
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 	im "github.com/inkyblackness/imgui-go/v2"
 )
 
@@ -35,6 +35,7 @@ func ready(e primen.Engine) {
 	//fcfg.SetGlyphMaxAdvanceX(18)
 	//fcfg.SetGlyphMinAdvanceX(18)
 	gr := im.CurrentIO().Fonts().GlyphRangesDefault()
+	// go build -tags="imguifreetype"
 	if err := im.CurrentIO().Fonts().BuildWithFreeType(); err != nil {
 		panic(err)
 	}

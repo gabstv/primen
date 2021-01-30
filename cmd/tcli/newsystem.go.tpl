@@ -3,7 +3,7 @@ package {{.Tags.Package}}
 
 import (
     "github.com/gabstv/primen"
-    "github.com/hajimehoshi/ebiten"
+    "github.com/hajimehoshi/ebiten/v2"
 )
 
 // {{.Tags.Component}} is the data of a {{tolower .Tags.Component}} component.

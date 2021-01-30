@@ -4,7 +4,7 @@ import (
 	"image/color"
 
 	"github.com/fogleman/gg"
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type Graphics struct {

@@ -11,9 +11,9 @@ import (
 	"github.com/gabstv/primen/components/graphics"
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/core/debug"
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/ebitenutil"
-	"github.com/hajimehoshi/ebiten/inpututil"
+	"github.com/hajimehoshi/ebiten/v2"
+	ebitenutil "github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	inpututil "github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 var pimg *ebiten.Image
@@ -21,9 +21,9 @@ var pimg2 *ebiten.Image
 var pimg3 *ebiten.Image
 
 func main() {
-	pimg, _, _ = ebitenutil.NewImageFromFile("../shared/particle.png", ebiten.FilterNearest)
-	pimg2, _, _ = ebitenutil.NewImageFromFile("../shared/particle2.png", ebiten.FilterNearest)
-	pimg3, _, _ = ebitenutil.NewImageFromFile("../shared/particle3.png", ebiten.FilterNearest)
+	pimg, _, _ = ebitenutil.NewImageFromFile("../shared/particle.png")
+	pimg2, _, _ = ebitenutil.NewImageFromFile("../shared/particle2.png")
+	pimg3, _, _ = ebitenutil.NewImageFromFile("../shared/particle3.png")
 	debug.Draw = true
 	ebiten.SetRunnableOnUnfocused(true)
 	engine := primen.NewEngine(&primen.NewEngineInput{

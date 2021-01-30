@@ -4,7 +4,7 @@ import (
 	"image"
 	"sync"
 
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 // AnimClipMode determines how time is treated outside of the keyframed range of an animation clip.

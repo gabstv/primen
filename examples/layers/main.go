@@ -16,14 +16,14 @@ import (
 	"github.com/gabstv/primen/examples/layers/layerexample"
 	"github.com/gabstv/primen/examples/layers/res"
 	"github.com/gabstv/primen/io"
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/ebitenutil"
-	"github.com/hajimehoshi/ebiten/inpututil"
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	inpututil "github.com/hajimehoshi/ebiten/v2/inpututil"
 	// "github.com/pkg/profile" // enable line 24
 )
 
 func main() {
-	ebiten.SetRunnableInBackground(true)
+	ebiten.SetRunnableOnUnfocused(true)
 	//defer profile.Start(profile.MemProfile).Stop()
 	fs := res.FS()
 	container := io.NewContainer(context.TODO(), fs)

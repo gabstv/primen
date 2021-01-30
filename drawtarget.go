@@ -6,7 +6,7 @@ import (
 
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/geom"
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type EngineDrawTarget interface {
@@ -90,7 +90,7 @@ func (d *baseDrawTarget) drawImage(dst, image *ebiten.Image, opt *ebiten.DrawIma
 			return
 		}
 		opt.GeoM = m
-		_ = dst.DrawImage(image, opt)
+		dst.DrawImage(image, opt)
 		opt.GeoM = pm
 		return
 	}
@@ -129,12 +129,12 @@ func (d *drawTarget) Image() *ebiten.Image {
 func (d *drawTarget) DrawFrame(screen *ebiten.Image) {
 	opt := &ebiten.DrawImageOptions{}
 	if d.bounds.IsZero() {
-		_ = screen.DrawImage(d.image, opt)
+		screen.DrawImage(d.image, opt)
 		return
 	}
 	w, h := screen.Size()
 	opt.GeoM.Translate(float64(w)*d.bounds.Min.X, float64(h)*d.bounds.Min.Y)
-	_ = screen.DrawImage(d.image, opt)
+	screen.DrawImage(d.image, opt)
 }
 
 func (d *drawTarget) PrepareFrame(screen *ebiten.Image) {
@@ -158,7 +158,7 @@ func (d *drawTarget) setSize(screen *ebiten.Image) {
 			d.image.Dispose()
 			d.image = nil
 		}
-		d.image, _ = ebiten.NewImage(int(tsize.X), int(tsize.Y), d.filter)
+		d.image = ebiten.NewImage(int(tsize.X), int(tsize.Y))
 		d.size = tsize
 	}
 }

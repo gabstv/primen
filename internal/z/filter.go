@@ -1,6 +1,6 @@
 package z
 
-import "github.com/hajimehoshi/ebiten"
+import "github.com/hajimehoshi/ebiten/v2"
 
 func Filter(a string, f ebiten.Filter) ebiten.Filter {
 	if a == "" {
@@ -11,8 +11,6 @@ func Filter(a string, f ebiten.Filter) ebiten.Filter {
 		return ebiten.FilterNearest
 	case "linear":
 		return ebiten.FilterLinear
-	case "default":
-		return ebiten.FilterDefault
 	}
 	return f
 }

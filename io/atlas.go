@@ -9,7 +9,7 @@ import (
 	"github.com/gabstv/primen/components/graphics"
 	"github.com/gabstv/primen/io/pb"
 	proto "github.com/golang/protobuf/proto"
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type Atlas struct {
@@ -82,10 +82,7 @@ func ParseAtlas(b []byte) (*Atlas, error) {
 		if err != nil {
 			return nil, err
 		}
-		ei, err := ebiten.NewImageFromImage(im, pb.ToEbitenFilter(src.Filters[i]))
-		if err != nil {
-			return nil, err
-		}
+		ei := ebiten.NewImageFromImage(im)
 		imgs[i] = ei
 	}
 	// frames!

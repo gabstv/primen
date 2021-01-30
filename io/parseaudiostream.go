@@ -2,14 +2,14 @@ package io
 
 import (
 	"bytes"
+	"io"
 	"path"
 
-	"github.com/hajimehoshi/ebiten/audio/mp3"
-	"github.com/hajimehoshi/ebiten/audio/wav"
+	"github.com/hajimehoshi/ebiten/v2/audio/mp3"
+	"github.com/hajimehoshi/ebiten/v2/audio/wav"
 
 	paudio "github.com/gabstv/primen/audio"
-	"github.com/hajimehoshi/ebiten/audio"
-	"github.com/hajimehoshi/ebiten/audio/vorbis"
+	"github.com/hajimehoshi/ebiten/v2/audio/vorbis"
 )
 
 type AudioType int
@@ -27,7 +27,7 @@ var AudioExtensions = map[string]AudioType{
 }
 
 type AudioStream struct {
-	Data   audio.ReadSeekCloser
+	Data   io.ReadSeeker
 	Length int64
 }
 

@@ -5,8 +5,8 @@ package debug
 import (
 	"image/color"
 
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2"
+	ebitenutil "github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 var (
@@ -48,6 +48,6 @@ func LineM(dst *ebiten.Image, m ebiten.GeoM, x1, y1, x2, y2 float64, clr color.C
 }
 
 func init() {
-	debugPixel, _ = ebiten.NewImage(1, 1, ebiten.FilterDefault)
-	_ = debugPixel.Fill(color.White)
+	debugPixel = ebiten.NewImage(1, 1)
+	debugPixel.Fill(color.White)
 }

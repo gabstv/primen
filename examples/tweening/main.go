@@ -10,8 +10,8 @@ import (
 	"github.com/gabstv/primen/components"
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/easing"
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2"
+	ebitenutil "github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 var pimg *ebiten.Image

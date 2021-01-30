@@ -11,8 +11,8 @@ import (
 
 	"github.com/gabstv/primen"
 	"github.com/gabstv/primen/components/graphics"
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 func main() {
@@ -31,8 +31,8 @@ func main() {
 }
 
 func einit(engine primen.Engine) {
-	ebimg, _, _ := ebitenutil.NewImageFromFile("zombie_kenney.png", ebiten.FilterDefault)
-	ppimg, _, _ := ebitenutil.NewImageFromFile("ping_pong.png", ebiten.FilterDefault)
+	ebimg, _, _ := ebitenutil.NewImageFromFile("zombie_kenney.png")
+	ppimg, _, _ := ebitenutil.NewImageFromFile("ping_pong.png")
 	dw := engine.NewWorldWithDefaults(0)
 	createCharacter(dw, ebimg)
 	createPingPonger(dw, ppimg, 370, 180, 0)

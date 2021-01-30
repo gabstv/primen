@@ -1,10 +1,11 @@
 package components
 
 import (
+	"io"
 	"time"
 
 	paudio "github.com/gabstv/primen/audio"
-	"github.com/hajimehoshi/ebiten/audio"
+	"github.com/hajimehoshi/ebiten/v2/audio"
 )
 
 type AudioPlayer struct {
@@ -15,9 +16,9 @@ type AudioPlayer struct {
 }
 
 type NewAudioPlayerInput struct {
-	RawAudio      []byte               // use RawAudio (for shared buffers) and sfx
-	Buffer        audio.ReadSeekCloser // use Buffer for large files
-	Panning       bool                 // use audio Panning feature
+	RawAudio      []byte        // use RawAudio (for shared buffers) and sfx
+	Buffer        io.ReadSeeker // use Buffer for large files
+	Panning       bool          // use audio Panning feature
 	StereoPanning bool
 	PitchShift    bool
 	Infinite      bool
@@ -36,7 +37,7 @@ func NewAudioPlayer(input NewAudioPlayerInput) AudioPlayer {
 	if input.Buffer == nil && input.RawAudio == nil {
 		panic("input.Buffer and input.RawAudio are nil at the same time")
 	}
-	var lsrk audio.ReadSeekCloser
+	var lsrk io.ReadSeeker
 	if input.RawAudio != nil {
 		lsrk = paudio.NewWrapper(input.RawAudio)
 	} else {
@@ -67,11 +68,11 @@ func NewAudioPlayer(input NewAudioPlayerInput) AudioPlayer {
 }
 
 func (p *AudioPlayer) Play() {
-	_ = p.ebiplayer.Play()
+	p.ebiplayer.Play()
 }
 
 func (p *AudioPlayer) Pause() {
-	_ = p.ebiplayer.Pause()
+	p.ebiplayer.Pause()
 }
 
 func (p *AudioPlayer) Rewind() error {

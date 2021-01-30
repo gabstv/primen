@@ -4,7 +4,7 @@ import (
 	"sort"
 
 	"github.com/gabstv/primen/core"
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type EngineDrawManager interface {

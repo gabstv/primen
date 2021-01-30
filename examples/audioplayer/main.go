@@ -12,8 +12,8 @@ import (
 	"github.com/gabstv/primen/examples/shared"
 	"github.com/gabstv/primen/io"
 	"github.com/gabstv/primen/io/broccolifs"
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/inpututil"
+	"github.com/hajimehoshi/ebiten/v2"
+	inpututil "github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 func main() {
@@ -95,7 +95,7 @@ func pem2(w primen.World, c io.Container) *primen.ParticleEmitterNode {
 	props.OriginX = .5
 	props.OriginY = .5
 	rawimg, _ := c.GetImage("particle.png")
-	img, _ := ebiten.NewImageFromImage(rawimg, ebiten.FilterNearest)
+	img := ebiten.NewImageFromImage(rawimg)
 	props.Source = []*ebiten.Image{img}
 	props.XVelocity = 0
 	props.YVelocity = 0
@@ -118,7 +118,7 @@ func pem1(w primen.World, c io.Container) *primen.ParticleEmitterNode {
 	props.OriginX = .5
 	props.OriginY = .5
 	rawimg, _ := c.GetImage("particle.png")
-	img, _ := ebiten.NewImageFromImage(rawimg, ebiten.FilterNearest)
+	img := ebiten.NewImageFromImage(rawimg)
 	props.Source = []*ebiten.Image{img}
 	props.DurationVar0 = -.5
 	props.DurationVar1 = 1
@@ -148,7 +148,7 @@ func pem3(w primen.World, c io.Container) *primen.ParticleEmitterNode {
 	props.OriginX = .5
 	props.OriginY = .5
 	rawimg, _ := c.GetImage("particle3.png")
-	img, _ := ebiten.NewImageFromImage(rawimg, ebiten.FilterNearest)
+	img := ebiten.NewImageFromImage(rawimg)
 	props.Source = []*ebiten.Image{img}
 	props.DurationVar0 = 0
 	props.DurationVar1 = .5

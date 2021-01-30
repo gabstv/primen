@@ -10,9 +10,9 @@ import (
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/examples/layers/res"
 	"github.com/gabstv/primen/io"
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/ebitenutil"
-	"github.com/hajimehoshi/ebiten/inpututil"
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 func main() {

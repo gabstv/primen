@@ -16,8 +16,8 @@ import (
 	"github.com/gabstv/primen/geom"
 	"github.com/gabstv/primen/io"
 	osfs "github.com/gabstv/primen/io/os"
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2"
+	ebitenutil "github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 type StepInfo struct {
@@ -409,7 +409,7 @@ func (e *engine) SetScreenScale(scale float64) {
 	e.ebiScale = scale
 }
 
-func (e *engine) Update(screen *ebiten.Image) error {
+func (e *engine) Update() error {
 	lastt, lastf := e.updateInfo.Get()
 	now := time.Now()
 	delta := now.Sub(lastt).Seconds()
@@ -541,7 +541,7 @@ func (e *engine) Draw(screen *ebiten.Image) {
 	case grabrq := <-e.screencopych:
 		grabrq.Lock()
 		w, h := screen.Size()
-		grabrq.img, _ = ebiten.NewImage(w, h, ebiten.FilterDefault)
+		grabrq.img = ebiten.NewImage(w, h)
 		grabrq.img.Fill(color.RGBA{0, 0, 0, 255})
 		grabrq.img.DrawImage(screen, &ebiten.DrawImageOptions{})
 		grabrq.Unlock()

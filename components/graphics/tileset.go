@@ -6,7 +6,7 @@ import (
 	"github.com/gabstv/ecs/v2"
 	"github.com/gabstv/primen/components"
 	"github.com/gabstv/primen/core"
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 // TileSet is a drawable that efficiently draws tiles in a 2d array

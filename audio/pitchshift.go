@@ -3,8 +3,6 @@ package audio
 import (
 	"io"
 	"math"
-
-	"github.com/hajimehoshi/ebiten/audio"
 )
 
 // http://blogs.zynaptiq.com/bernsee/pitch-shifting-using-the-ft/
@@ -12,7 +10,8 @@ import (
 // PitchShiftStream is an audio buffer that can dynamically alter the pitch oif the
 // original audio as it is being played
 type PitchShiftStream struct {
-	audio.ReadSeekCloser
+	io.ReadSeeker
+	io.Closer
 	pitchm1 float64 // pitch -1
 	fb      []byte  // buffer size * 2
 }
@@ -40,18 +39,18 @@ func (s *PitchShiftStream) Pitch() float64 {
 func (s *PitchShiftStream) Read(p []byte) (n int, err error) {
 	pitch := s.pitchm1 + 1
 	if pitch == 1.0 {
-		return s.ReadSeekCloser.Read(p)
+		return s.ReadSeeker.Read(p)
 	}
 	if len(s.fb) < len(p)*2 {
 		s.fb = make([]byte, len(p)*2)
 	}
 
-	lcpos, _ := s.ReadSeekCloser.Seek(0, io.SeekCurrent)
+	lcpos, _ := s.ReadSeeker.Seek(0, io.SeekCurrent)
 	limit := int(math.Ceil(float64(len(p))*pitch/4) * 4)
 	if limit < 0 {
-		return s.ReadSeekCloser.Read(p)
+		return s.ReadSeeker.Read(p)
 	}
-	xn, err := s.ReadSeekCloser.Read(s.fb[:limit])
+	xn, err := s.ReadSeeker.Read(s.fb[:limit])
 	if err != nil {
 		return 0, err
 	}
@@ -68,12 +67,12 @@ func (s *PitchShiftStream) Read(p []byte) (n int, err error) {
 		targeti += 4
 		if targeti >= plen {
 			//TODO: debug line below
-			s.ReadSeekCloser.Seek(lcpos+int64(i)+4, io.SeekStart)
+			s.ReadSeeker.Seek(lcpos+int64(i)+4, io.SeekStart)
 			return plen, nil
 		}
 		if int(math.Floor(cursor*4))+4 >= xn {
 			//TODO: debug line below
-			s.ReadSeekCloser.Seek(lcpos+int64(i)+4, io.SeekStart)
+			s.ReadSeeker.Seek(lcpos+int64(i)+4, io.SeekStart)
 			break
 		}
 	}
@@ -85,8 +84,8 @@ func (s *PitchShiftStream) Read(p []byte) (n int, err error) {
 // The src's format must be linear PCM (16bits little endian, 2 channel stereo)
 // without a header (e.g. RIFF header). The sample rate must be same as that
 // of the audio context.
-func NewPitchShiftStreamFromReader(src audio.ReadSeekCloser) *PitchShiftStream {
+func NewPitchShiftStreamFromReader(src io.ReadSeeker) *PitchShiftStream {
 	return &PitchShiftStream{
-		ReadSeekCloser: src,
+		ReadSeeker: src,
 	}
 }

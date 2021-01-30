@@ -7,7 +7,7 @@ import (
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/geom"
 	"github.com/gabstv/primen/io"
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type Engine interface {

@@ -6,7 +6,7 @@ import (
 	"github.com/gabstv/primen/io"
 	osfs "github.com/gabstv/primen/io/os"
 	"github.com/gabstv/primen/modules/imgui"
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 func main() {

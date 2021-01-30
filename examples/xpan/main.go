@@ -8,8 +8,8 @@ import (
 	"github.com/gabstv/primen"
 	paudio "github.com/gabstv/primen/audio"
 	"github.com/gabstv/primen/core"
-	"github.com/hajimehoshi/ebiten/audio"
-	"github.com/hajimehoshi/ebiten/audio/wav"
+	"github.com/hajimehoshi/ebiten/v2/audio"
+	"github.com/hajimehoshi/ebiten/v2/audio/wav"
 )
 
 func main() {

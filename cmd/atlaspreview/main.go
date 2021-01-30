@@ -9,8 +9,8 @@ import (
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/core/debug"
 	"github.com/gabstv/primen/io"
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2"
+	ebitenutil "github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/urfave/cli"
 )
 

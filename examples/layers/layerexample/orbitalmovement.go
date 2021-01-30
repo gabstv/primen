@@ -9,7 +9,7 @@ import (
 	"github.com/gabstv/primen/components"
 	"github.com/gabstv/primen/components/graphics"
 	"github.com/gabstv/primen/core"
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type OrbitalMovement struct {

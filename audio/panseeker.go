@@ -2,17 +2,17 @@ package audio
 
 import (
 	"bytes"
+	"io"
 	"io/ioutil"
 	"math"
-
-	"github.com/hajimehoshi/ebiten/audio"
 )
 
 const sqrt2div2 = math.Sqrt2 / 2 // math.sqrt(2)/2.0
 const rad45 = math.Pi / 4        // 45º
 
 type PanStream interface {
-	audio.ReadSeekCloser
+	io.ReadSeeker
+	io.Closer
 	SetPan(pan float64)
 	Pan() float64
 }
@@ -20,12 +20,13 @@ type PanStream interface {
 // StereoPanStream is an audio buffer that changes the stereo channel's signal
 // based on the Panning.
 type StereoPanStream struct {
-	audio.ReadSeekCloser
+	io.ReadSeeker
+	io.Closer
 	pan float64 // -1: left; 0: center; 1: right
 }
 
 func (s *StereoPanStream) Read(p []byte) (n int, err error) {
-	n, err = s.ReadSeekCloser.Read(p)
+	n, err = s.ReadSeeker.Read(p)
 	if err != nil {
 		return
 	}
@@ -63,7 +64,7 @@ func (s *StereoPanStream) Pan() float64 {
 // The src can be shared by multiple buffers.
 func NewStereoPanStream(src []byte) *StereoPanStream {
 	return &StereoPanStream{
-		ReadSeekCloser: ioutil.NopCloser(bytes.NewReader(src)).(audio.ReadSeekCloser),
+		ReadSeeker: ioutil.NopCloser(bytes.NewReader(src)).(io.ReadSeeker),
 	}
 }
 
@@ -72,24 +73,25 @@ func NewStereoPanStream(src []byte) *StereoPanStream {
 // The src's format must be linear PCM (16bits little endian, 2 channel stereo)
 // without a header (e.g. RIFF header). The sample rate must be same as that
 // of the audio context.
-func NewStereoPanStreamFromReader(src audio.ReadSeekCloser) *StereoPanStream {
+func NewStereoPanStreamFromReader(src io.ReadSeeker) *StereoPanStream {
 	return &StereoPanStream{
-		ReadSeekCloser: src,
+		ReadSeeker: src,
 	}
 }
 
 // test that it fulfills Ebiten's ReadSeekCloser
-var _ audio.ReadSeekCloser = &StereoPanStream{}
+var _ io.ReadSeeker = &StereoPanStream{}
 
 // MonoPanStream is an audio buffer that changes the stereo channel's signal
 // based on the Panning.
 type MonoPanStream struct {
-	audio.ReadSeekCloser
+	io.ReadSeeker
+	io.Closer
 	pan float64 // -1: left; 0: center; 1: right
 }
 
 func (s *MonoPanStream) Read(p []byte) (n int, err error) {
-	n, err = s.ReadSeekCloser.Read(p)
+	n, err = s.ReadSeeker.Read(p)
 	if err != nil {
 		return
 	}
@@ -133,7 +135,7 @@ func (s *MonoPanStream) Pan() float64 {
 // The src can be shared by multiple buffers.
 func NewMonoPanStream(src []byte) *MonoPanStream {
 	return &MonoPanStream{
-		ReadSeekCloser: ioutil.NopCloser(bytes.NewReader(src)).(audio.ReadSeekCloser),
+		ReadSeeker: ioutil.NopCloser(bytes.NewReader(src)).(io.ReadSeeker),
 	}
 }
 
@@ -142,9 +144,9 @@ func NewMonoPanStream(src []byte) *MonoPanStream {
 // The src's format must be linear PCM (16bits little endian, 2 channel stereo)
 // without a header (e.g. RIFF header). The sample rate must be same as that
 // of the audio context.
-func NewMonoPanStreamFromReader(src audio.ReadSeekCloser) *MonoPanStream {
+func NewMonoPanStreamFromReader(src io.ReadSeeker) *MonoPanStream {
 	return &MonoPanStream{
-		ReadSeekCloser: src,
+		ReadSeeker: src,
 	}
 }
 

@@ -9,8 +9,8 @@ import (
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/core/debug"
 	"github.com/gabstv/primen/rx"
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/text"
+	"github.com/hajimehoshi/ebiten/v2"
+	text "github.com/hajimehoshi/ebiten/v2/text"
 	"golang.org/x/image/font"
 )
 
@@ -156,9 +156,9 @@ func (l *TextLabel) setupInnerImage() {
 		// dynamic
 		ff := l.validFontFace()
 		p := text.BoundString(ff, l.text)
-		l.base, _ = ebiten.NewImage(p.Dx()+l.dborder.X, p.Dy()+l.dborder.Y, l.filter)
+		l.base = ebiten.NewImage(p.Dx()+l.dborder.X, p.Dy()+l.dborder.Y)
 	} else {
-		l.base, _ = ebiten.NewImage(l.area.X, l.area.Y, l.filter)
+		l.base = ebiten.NewImage(l.area.X, l.area.Y)
 	}
 }
 

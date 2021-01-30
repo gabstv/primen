@@ -4,7 +4,7 @@ import (
 	"strconv"
 
 	"github.com/gabstv/primen/geom"
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 // DrawMask is a flag to choose the draw target(s) of a drawable component

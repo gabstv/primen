@@ -3,7 +3,7 @@ package audio
 import (
 	"sync"
 
-	"github.com/hajimehoshi/ebiten/audio"
+	"github.com/hajimehoshi/ebiten/v2/audio"
 )
 
 // SampleRate is the rate (in Hz) at which all the audio will be played.
@@ -34,6 +34,6 @@ func Context() *audio.Context {
 	if actx != nil {
 		return actx
 	}
-	actx, _ = audio.NewContext(int(DefaultRate))
+	actx = audio.NewContext(int(DefaultRate))
 	return actx
 }

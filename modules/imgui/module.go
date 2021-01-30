@@ -6,7 +6,7 @@ import (
 	"github.com/gabstv/ebiten-imgui/renderer"
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/dom"
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type UID int64

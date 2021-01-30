@@ -9,8 +9,8 @@ import (
 	"github.com/gabstv/primen/core"
 	"github.com/gabstv/primen/io"
 	osfs "github.com/gabstv/primen/io/os"
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/inpututil"
+	"github.com/hajimehoshi/ebiten/v2"
+	inpututil "github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 func main() {
