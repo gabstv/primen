@@ -15,7 +15,7 @@ require (
 	github.com/inkyblackness/imgui-go/v2 v2.4.1
 	github.com/stretchr/testify v1.5.1
 	github.com/urfave/cli v1.22.4
-	golang.org/x/image v0.0.0-20200801110659-972c09e46d76
+	golang.org/x/image v0.5.0
 )
 
 go 1.13
